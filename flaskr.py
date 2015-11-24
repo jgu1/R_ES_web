@@ -2,21 +2,23 @@
 
 import pdb
 import sqlite3
-import MySQL
+import MySQLdb
 from flask import Flask, request, session, g, redirect, url_for, \
-     abort, render_template, flash
+     abort, render_template, flash, jsonify
 from contextlib import closing
 from time import sleep
 from flask.ext.paginate import Pagination
 import re
 import socket
 from datetime import datetime,timedelta
+from db_classes import DAO
+import json
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME_PASSWORD_DICT={'hao':'genome','jiashun':'genome','erxin':'genome','jun':'genome','yanqiu':'genome','jialiang':'genome'}
-PAPER_PER_PAGE=10
-
+GENE_P_Q_PER_PAGE=10
+page=1
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -24,24 +26,34 @@ app.config.from_object(__name__)
 #app = Blueprint('papers',__name__)
 
 def connect_db():
-    db =  sqlite3.connect(app.config['DATABASE'])
-    #db.text_factory = str
+#    db =  sqlite3.connect(app.config['DATABASE'])
+    '''
+    db = MySQLdb.connect(host="localhost", # your host, usually localhost
+        user="root", # your username
+        passwd="genome", # your password
+        db="ES_OUTPUT") # name of the data base
     return db
+    '''
+    return DAO()
+
+
+'''
 def init_db():
     with closing(connect_db()) as db:
         with app.open_resource('create_pubmed_cache.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
+'''
 
 @app.before_request
 def before_request():
-    g.db = connect_db()
+    g.dao = connect_db()
 
 @app.teardown_request
 def teardown_request(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
+    dao = getattr(g, 'dao', None)
+    if dao is not None:
+        dao.db.close()
 
 def fetch_db_for_search_terms(disease,genes_included,genes_excluded):
     papers=[]
@@ -88,16 +100,19 @@ def delete_db_for_one_search_term(search_term):
     cur = g.db.execute(sql_delete_search_terms_for_search_term)
     g.db.commit()
 
-def highlight_search_terms(abstract, search_term):
-    terms = re.split('\+|AND|OR',search_term)
-    terms = filter(bool,terms)
-    for term in terms:
-        abstract = abstract.replace(term,'<mark>'+term+'</mark>')
-    return abstract
+@app.route('/data')
+@app.route("/data/<int:page>")
+def data():
 
+    dao = getattr(g, 'dao', None)
+    gene_p_qs = dao.fetch_all_gene_p_q() 
+    first_ten = gene_p_qs[:10]
+    ret =  json.dumps(first_ten)
+    return ret
 @app.route('/')
 def show_papers():
-   
+
+    ''' 
     if 'disease' not in session or 'genes_included' not in session:
         return render_template('show_papers.html')
 
@@ -107,24 +122,20 @@ def show_papers():
     genes_excluded = session['genes_excluded']
 
     all_papers,count_dict = fetch_db_for_search_terms(disease,genes_included,genes_excluded)
-  
+    '''
+    dao = getattr(g, 'dao', None)
+    gene_p_qs = dao.fetch_all_gene_p_q()
     #begin pagination 
     try:
         page = int(request.args.get('page', 1))
     except ValueError:
         page = 1
-
-    PAPER_PER_PAGE= app.config['PAPER_PER_PAGE'] 
-    papers_for_this_page = all_papers[(page-1)*PAPER_PER_PAGE:page*PAPER_PER_PAGE] 
     
-    for paper in papers_for_this_page:
-        abstract = paper['abstract']
-        if abstract is not None:
-            paper['abstract'] = highlight_search_terms(abstract,paper['search_term'])
-    
-    pagination = Pagination(page=page, total=len(all_papers), per_page=PAPER_PER_PAGE, record_name='papers')
+    GENE_P_Q_PER_PAGE= app.config['GENE_P_Q_PER_PAGE'] 
+    gene_p_qs_for_this_page = gene_p_qs[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE] 
+    pagination = Pagination(page=page, total=len(gene_p_qs), per_page=GENE_P_Q_PER_PAGE, record_name='gene_p_qs')
     #end pagination
-    return render_template('show_papers.html',papers=papers_for_this_page,count_dict=count_dict,pagination=pagination)
+    return render_template('show_papers.html',gene_p_qs=gene_p_qs_for_this_page,pagination=pagination,page=page)
 
 
 def pop_db(disease,genes_included,genes_excluded):

@@ -1,5 +1,10 @@
 {% extends "layout.html" %}
 {% block body %}
+  <script src={{ url_for ('static',filename='d3.v3.min.js')}}></script>
+  <script src={{ url_for ('static',filename='jquery.min.js')}}></script>
+  <script src={{ url_for ('static',filename='main.js')}}></script>
+
+
   {% if session.logged_in %}
     <form action="{{ url_for('search') }}" method=post class=search>
       <dl>
@@ -12,20 +17,19 @@
     </form>
 
 
-    {% if gene_p_qs %}
     {{ pagination.info }}
-    {{ pagination.links }}  
+    {{ pagination.links }} 
+      {% for gene_p_q in gene_p_qs %}
       <ul class=gene_p_q>
-        {% for gene_p_q in gene_p_qs %}
-        <li><span>GWAS</span>{{gene_p_q.GWAS|safe}}<br>
-        <li><span>eQTL</span>{{gene_p_q.eQTL|safe}}<br>
-        <li><span>gene</span>{{gene_p_q.gene|safe}}<br>
-        <li><span>pval</span>{{gene_p_q.pval|safe}}<br>
-        <li><span>qval</span>{{gene_p_q.qval|safe}}<br>
+        <li><span>GWAS: </span>{{gene_p_q.GWAS|safe}}<br>
+        <li><span>eQTL: </span>{{gene_p_q.eQTL|safe}}<br>
+        <li><span>gene: </span>{{gene_p_q.gene|safe}}<br>
+        <li><span>pval: </span>{{gene_p_q.pval|safe}}<br>
+        <li><span>qval: </span>{{gene_p_q.qval|safe}}<br>
       </ul>
+      {% endfor%}
     {{ pagination.links }}
-    {% else %}
-    Welcome!
-    {% endif %}
+
+  <div id="chart"></div>
   {% endif %}
 {% endblock %}
