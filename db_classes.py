@@ -33,6 +33,7 @@ class DAO(object):
             print 'table Geg is contaminated!' 
             exit(-1)
         elif len(rows) == 1:
+            pdb.set_trace()
             return rows[0][0]   #the id of table Geg
         else:
             return self.do_insert_Geg(GWAS,eQTL,gene)           # this is a new GWAS_eQTL_gene combination
@@ -98,3 +99,45 @@ class DAO(object):
             eSNP = t[1]
             Gpval= t[2]
             self.insert_single_GSNP_eSNP_Gpval(GSNP,eSNP,Gpval,Geg_id)
+   
+    def fetch_gene_p_q_by_GWAS_eQTL(self,GWAS,eQTL):
+        sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
+        ' where Geg.id = gene_p_q.Geg_id'
+        ' and Geg.GWAS="' + GWAS +'"'
+        ' and Geg.eQTL="' + eQTL + '";' )
+        cur = self.db.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        return list(rows) 
+
+    def get_comm_genes(self,result_lists):
+        individual_genes = []
+        for result in result_lists:
+            curr_gene = [x[2] for x in result]
+            individual_genes.append(set(curr_gene))
+        comm_genes = set.intersection(*individual_genes)
+        return comm_genes
+
+    def filter_result_lists_by_comm_genes(self,result_lists):
+        return_list = []
+        comm_genes = self.get_comm_genes(result_lists)
+        new_lists = []
+        for result in result_lists:
+            curr_new_list = []
+            for row in result:
+                if row[2] in comm_genes:
+                    curr_new_list.append(row)
+            new_lists.append(curr_new_list) 
+
+        pdb.set_trace()
+        return new_lists 
+
+    def fetch_all_gene_p_q(self):
+
+        Barrett = self.fetch_gene_p_q_by_GWAS_eQTL('Barrett_08','merged_pickle')
+        Longevity = self.fetch_gene_p_q_by_GWAS_eQTL('Longevity_2014_Age85','merged_pickle')    
+        pdb.set_trace()
+        result_lists = [Barrett,Longevity]
+        new_lists = self.filter_result_lists_by_comm_genes(result_lists)        
+
+        return gene_p_qs 
