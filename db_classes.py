@@ -129,15 +129,21 @@ class DAO(object):
                     curr_new_list.append(row)
             new_lists.append(curr_new_list) 
 
-        pdb.set_trace()
         return new_lists 
 
     def fetch_all_gene_p_q(self):
+        GWAS1 = 'Barrett_08'
+        GWAS2 = 'Longevity_2014_Age85'
+        eQTL1 = 'merged_pickle'
+        eQTL2 = 'merged_pickle'
 
-        Barrett = self.fetch_gene_p_q_by_GWAS_eQTL('Barrett_08','merged_pickle')
-        Longevity = self.fetch_gene_p_q_by_GWAS_eQTL('Longevity_2014_Age85','merged_pickle')    
-        pdb.set_trace()
+        Barrett = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS1,eQTL1)
+        Longevity = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS2,eQTL2)    
         result_lists = [Barrett,Longevity]
         new_lists = self.filter_result_lists_by_comm_genes(result_lists)        
+
+        gene_p_qs = {}
+        gene_p_qs[GWAS1+eQTL1] = new_lists[0]
+        gene_p_qs[GWAS2+eQTL2] = new_lists[1]
 
         return gene_p_qs 
