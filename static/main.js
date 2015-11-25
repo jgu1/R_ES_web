@@ -4,7 +4,7 @@ $(function() {
 });
 
 function createGraph() {
-  var margin = 80;
+  var margin = 0;
   var w = 700 - 2 * margin, h = 500 - 2 * margin;
   var svg = d3.select("#chart")
                 .append("svg")
@@ -13,25 +13,73 @@ function createGraph() {
                 .append("svg:g")
                         .attr("transform", "translate(" + margin + ", " + margin + ")");
 
+  var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
+                            
   var xscale = d3.scale.linear().range([0, w]);
   var yscale = d3.scale.linear().range([h, 0]);
 
-  var xaxis = d3.svg.axis().scale(xscale).ticks(8);
-  var yaxis = d3.svg.axis().scale(yscale).ticks(8).orient("left");
 
   svg.append("svg:g").attr("class", "x axisyo")
     .attr("transform", "translate(0, " + h + ")");
   svg.append("svg:g").attr("class", "y axis");
 
-  svg.select(".x.axisyo").call(xaxis);
-  svg.select(".y.axis").call(yaxis);
-  
   var callback = function(data){
+    var matrix = []
+
+    for (var pairName in data) {
+        if (data.hasOwnProperty(pairName)) {
+            var genes= data[pairName]
+            var n = genes.length
+            curr_pair = []
+            genes.forEach(function(gene){
+                curr_pair.push(gene);
+            });          
+            matrix.push(curr_pair)
+        }
+    }   
+    x_axis_scale.domain(d3.range(matrix[0].length)) // set x_axis_scale's domain to be number of genes in a pair
+    var max_pval = d3.max(matrix, function(pair) {
+                   return d3.max(pair.map(function(gene){return parseFloat(gene[3])})) 
+                   }); 
+    var min_pval = d3.min(matrix, function(pair) {
+                   return d3.min(pair.map(function(gene){return parseFloat(gene[3])}));
+                   }); 
+
+    var color_scale=d3.scale.pow()
+                        .exponent(0.25)
+                        .domain([min_pval,max_pval])
+                        .range(['red','blue']);
+
+    svg.append("rect")
+      .attr("class", "background")
+      .attr("width", w)
+      .attr("height", h);
+
+    var pair = svg.selectAll(".pair")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "pair")
+      .attr("transform", function(d, i) { return "translate(0," + x_axis_scale(i) + ")"; })
+      .each(pair);
+
+    function pair(pair) {
+    var cell = d3.select(this).selectAll(".gene")
+        .data(pair)
+      .enter().append("rect")
+        .attr("class", "gene")
+        .attr("x", function(d,i) { return x_axis_scale(i); })
+        .attr("width", x_axis_scale.rangeBand())
+        .attr("height", x_axis_scale.rangeBand())
+        .attr("title",function(d){return d[3]})
+        .style("fill", function(d) { return color_scale(parseFloat(d[3])) })
+         
+    }
+
+
     console.log('you called callback! you know how to get data!');
   };
 
   d3.json("/data", callback);
-  
 
   // Code goes here
 }
