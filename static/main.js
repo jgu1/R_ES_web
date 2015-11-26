@@ -26,6 +26,7 @@ function createGraph() {
   var callback = function(data){
     var matrix = []
     var pairNames = []
+    var geneNames = []
     for (var pairName in data) {
         if (data.hasOwnProperty(pairName)) {
             pairNames.push(pairName);
@@ -34,6 +35,9 @@ function createGraph() {
             curr_pair = []
             genes.forEach(function(gene){
                 curr_pair.push(gene);
+                if (geneNames.length < n){
+                    geneNames.push(gene[2]);
+                }
             });          
             matrix.push(curr_pair)
         }
@@ -69,17 +73,19 @@ function createGraph() {
         .attr("y",x_axis_scale.rangeBand())
         .text(function(d,i) { return pairNames[i]; });
 
-    var gene =svg.selectAll(".gene")
-        
+    svg.selectAll(".column").data([]).exit().remove();
+    var column =svg.selectAll(".column")
+              .data(geneNames)
+              .enter().append("g")
+              .attr("class","column")
+              .attr("transform", function(d, i) { return "translate(" + i*15 + ")rotate(-90)"; });
+               
+    column.append("line")
 
-
-    gene.append("text")
+    column.append("text")
       .attr("x", 6)
-      .attr("y", x.rangeBand() / 2)
-      .attr("dy", ".32em")
-      .attr("text-anchor", "start")
-      .text(function(d, i) { return nodes[i].name; });
-
+      .attr("y", 7)
+      .text(function(d, i) { return geneNames[i]; }) ;
 
     function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
