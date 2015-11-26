@@ -4,7 +4,7 @@ $(function() {
 });
 
 function createGraph() {
-  var margin = 0;
+  var margin = 80;
   var w = 700 - 2 * margin, h = 500 - 2 * margin;
   var svg = d3.select("#chart")
                 .append("svg")
@@ -25,9 +25,10 @@ function createGraph() {
 
   var callback = function(data){
     var matrix = []
-
+    var pairNames = []
     for (var pairName in data) {
         if (data.hasOwnProperty(pairName)) {
+            pairNames.push(pairName);
             var genes= data[pairName]
             var n = genes.length
             curr_pair = []
@@ -62,6 +63,24 @@ function createGraph() {
       .attr("transform", function(d, i) { return "translate(0," + x_axis_scale(i) + ")"; })
       .each(pair);
 
+    pair.append("text")
+        .attr("x",-80)
+        //.text(function(d,i) { return "haha" });
+        .attr("y",x_axis_scale.rangeBand())
+        .text(function(d,i) { return pairNames[i]; });
+
+    var gene =svg.selectAll(".gene")
+        
+
+
+    gene.append("text")
+      .attr("x", 6)
+      .attr("y", x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "start")
+      .text(function(d, i) { return nodes[i].name; });
+
+
     function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
         .data(pair)
@@ -72,8 +91,9 @@ function createGraph() {
         .attr("height", x_axis_scale.rangeBand())
         .attr("title",function(d){return d[3]})
         .style("fill", function(d) { return color_scale(parseFloat(d[3])) })
-         
+           
     }
+
 
 
     console.log('you called callback! you know how to get data!');
