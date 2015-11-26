@@ -81,13 +81,44 @@ function createGraph() {
               .attr("transform", function(d, i) { return "translate(" + i*15 + ")rotate(-90)"; });
                
     column.append("line")
+  
+    function getColumnI(i){
+      var index=0;
+      var log2r=[];
+      var cd;
+      for(index=0; index<matrix.length; index++){
+           genes=matrix[index];
+           if(genes.length>i){
+                log2r.push(parseFloat(genes[i][3]));
+           }else{
+                log2r.push(0);
+           }
+      }
+      return log2r;
+    }
+
+    function sortbylabel(i){
+       var t = svg.transition().duration(3000);
+       var log2r=getColumnI(i);
+       var sorted; // sorted is zero-based index
+       sorted=d3.range(matrix.length).sort(function(a,b){ return log2r[a]-log2r[b];});
+       t.selectAll(".pair")
+        .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * x_axis_scale.rangeBand()+")";});
+  }  
+
 
     column.append("text")
       .attr("x", 6)
       .attr("y", 7)
-      .text(function(d, i) { return geneNames[i]; }) ;
+      .attr("width",x_axis_scale.rangeBand())
+      .attr("height",x_axis_scale.rangeBand())
+      .attr("dy", ".32em")
+      .text(function(d, i) { return geneNames[i]; }) 
+      .on("click", function(d,i) { sortbylabel(i);}) ;
 
-    function pair(pair) {
+
+ 
+  function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
         .data(pair)
       .enter().append("rect")
@@ -96,10 +127,12 @@ function createGraph() {
         .attr("width", x_axis_scale.rangeBand())
         .attr("height", x_axis_scale.rangeBand())
         .attr("title",function(d){return d[3]})
-        .style("fill", function(d) { return color_scale(parseFloat(d[3])) })
-           
+        .style("fill", function(d) { return color_scale(parseFloat(d[3])) });
+  
+       
     }
 
+    
 
 
     console.log('you called callback! you know how to get data!');
