@@ -120,6 +120,10 @@ function createGraph() {
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * x_axis_scale.rangeBand()+")";});
   }  
 
+    column.append("line")
+        .attr("x1",-w)
+        .style("stroke","#fff");
+
 
     column.append("text")
       .attr("x", 6)
