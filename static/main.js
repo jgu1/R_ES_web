@@ -4,14 +4,14 @@ $(function() {
 });
 
 function createGraph() {
-  var margin = 80;
+  var margin = 120;
   var w = 700 - 2 * margin, h = 500 - 2 * margin;
   var svg = d3.select("#chart")
                 .append("svg")
                     .attr("width", w + 2 * margin)
                     .attr("height", h + 2 * margin)
                 .append("svg:g")
-                        .attr("transform", "translate(" + margin + ", " + margin + ")");
+                        .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
 
   var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
                             
@@ -27,6 +27,9 @@ function createGraph() {
     var matrix = []
     var pairNames = []
     var geneNames = []
+    var colSortOrderDesc;
+    
+    colSortOrderDesc = false;
     for (var pairName in data) {
         if (data.hasOwnProperty(pairName)) {
             pairNames.push(pairName);
@@ -68,9 +71,10 @@ function createGraph() {
       .each(pair);
 
     pair.append("text")
-        .attr("x",-80)
+        .attr("x",-5)
         //.text(function(d,i) { return "haha" });
         .attr("y",x_axis_scale.rangeBand())
+        .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; });
 
     svg.selectAll(".column").data([]).exit().remove();
@@ -97,11 +101,17 @@ function createGraph() {
       return log2r;
     }
 
-    function sortbylabel(i){
+    function sortbylabel(i,colSortOrderDesc){
        var t = svg.transition().duration(3000);
        var log2r=getColumnI(i);
        var sorted; // sorted is zero-based index
-       sorted=d3.range(matrix.length).sort(function(a,b){ return log2r[a]-log2r[b];});
+       sorted=d3.range(matrix.length).sort(function(a,b){
+        if(colSortOrderDesc == true){
+            return log2r[a] - log2r[b];
+        }else{
+            return log2r[b] - log2r[a];
+        }
+       });
        t.selectAll(".pair")
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * x_axis_scale.rangeBand()+")";});
   }  
@@ -114,7 +124,7 @@ function createGraph() {
       .attr("height",x_axis_scale.rangeBand())
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; }) 
-      .on("click", function(d,i) { sortbylabel(i);}) ;
+      .on("click", function(d,i) { colSortOrderDesc=!colSortOrderDesc;sortbylabel(i,colSortOrderDesc);}) ;
 
 
  
@@ -128,12 +138,7 @@ function createGraph() {
         .attr("height", x_axis_scale.rangeBand())
         .attr("title",function(d){return d[3]})
         .style("fill", function(d) { return color_scale(parseFloat(d[3])) });
-  
-       
     }
-
-    
-
 
     console.log('you called callback! you know how to get data!');
   };
