@@ -9,6 +9,12 @@ class DAO(object):
                     passwd="genome", # your password
                     db="ES_OUTPUT") # name of the data base
 
+    def exec_fetch_SQL(self,sql_template):
+        cur = self.db.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        return list(rows) 
+
 
     def do_insert_Geg(self,GWAS,eQTL,gene):
         sql_template = 'insert into Geg(GWAS,eQTL,gene) values(%s,%s,%s)'
@@ -110,6 +116,8 @@ class DAO(object):
         rows = cur.fetchall()
         return list(rows) 
 
+
+
     def get_comm_genes(self,result_lists):
         individual_genes = []
         for result in result_lists:
@@ -134,16 +142,28 @@ class DAO(object):
     def fetch_all_gene_p_q(self):
         GWAS1 = 'Barrett_08'
         GWAS2 = 'Longevity_2014_Age85'
+        GWAS3 = 'UCSF_AML'
         eQTL1 = 'merged_pickle'
         eQTL2 = 'merged_pickle'
-
+        eQTL3 = 'merged_pickle'
         Barrett = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS1,eQTL1)
         Longevity = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS2,eQTL2)    
-        result_lists = [Barrett,Longevity]
+        UCSF_AML = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS3,eQTL3)    
+        result_lists = [Barrett,Longevity,UCSF_AML]
         new_lists = self.filter_result_lists_by_comm_genes(result_lists)        
 
         gene_p_qs = {}
         gene_p_qs[GWAS1+eQTL1] = new_lists[0]
         gene_p_qs[GWAS2+eQTL2] = new_lists[1]
+        gene_p_qs[GWAS3+eQTL3] = new_lists[2]
+        return gene_p_qs
 
-        return gene_p_qs 
+    def fetch_detail(self,GWAS,eQTL,gene):
+        sql_template = ('select GSNP,eSNP,Gpval from Geg, GSNP_eSNP_Gpval'
+                        ' where Geg.GWAS = "' + GWAS + '"'
+                        ' and Geg.eQTL = "' + eQTL + '"'
+                        ' and Geg.gene = "' + gene + '"'
+                        ' and GSNP_eSNP_Gpval.Geg_id = Geg.id;'  
+                        )
+        list_detail = self.exec_fetch_SQL(sql_template)
+        return list_detail 

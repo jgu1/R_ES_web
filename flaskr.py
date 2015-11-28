@@ -119,9 +119,14 @@ def detail():
     GWAS = request.args.get('GWAS', 'empty')
     eQTL = request.args.get('eQTL', 'empty')
     gene = request.args.get('gene', 'empty')
-    pdb.set_trace()
-    a = 1
-
+    dao = getattr(g, 'dao', None)
+    list_detail = dao.fetch_detail(GWAS,eQTL,gene)
+    ret = {}
+    ret['GWAS'] = GWAS
+    ret['eQTL'] = eQTL
+    ret['gene'] = gene
+    ret['SNP_list'] = list_detail
+    return jsonify(ret)
 @app.route('/')
 def show_papers():
 
