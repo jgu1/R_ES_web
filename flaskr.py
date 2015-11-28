@@ -17,7 +17,7 @@ import json
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME_PASSWORD_DICT={'hao':'genome','jiashun':'genome','erxin':'genome','jun':'genome','yanqiu':'genome','jialiang':'genome'}
-GENE_P_Q_PER_PAGE=10
+GENE_P_Q_PER_PAGE=30
 page=1
 
 app = Flask(__name__)
@@ -104,11 +104,24 @@ def delete_db_for_one_search_term(search_term):
 @app.route("/data/<int:page>")
 def data():
 
+    page = session['page']
     dao = getattr(g, 'dao', None)
-    gene_p_qs = dao.fetch_all_gene_p_q() 
-    first_ten = gene_p_qs[:10]
-    ret =  json.dumps(first_ten)
-    return ret
+    gene_p_qs = dao.fetch_all_gene_p_q()
+    gene_p_qs_for_this_page = {}
+    for key in gene_p_qs:
+         curr_rows = gene_p_qs[key]
+         gene_p_qs_for_this_page[key] = curr_rows[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]
+    return jsonify(gene_p_qs_for_this_page)
+
+@app.route('/detail')
+@app.route("/data/<string:GWAS>/<string:eQTL>/<string:gene>")
+def detail():
+    GWAS = request.args.get('GWAS', 'empty')
+    eQTL = request.args.get('eQTL', 'empty')
+    gene = request.args.get('gene', 'empty')
+    pdb.set_trace()
+    a = 1
+
 @app.route('/')
 def show_papers():
 
@@ -124,7 +137,7 @@ def show_papers():
     all_papers,count_dict = fetch_db_for_search_terms(disease,genes_included,genes_excluded)
     '''
     dao = getattr(g, 'dao', None)
-    gene_p_qs = dao.fetch_all_gene_p_q()
+    #gene_p_qs = dao.fetch_all_gene_p_q()
     #begin pagination 
     try:
         page = int(request.args.get('page', 1))
@@ -132,11 +145,20 @@ def show_papers():
         page = 1
     
     GENE_P_Q_PER_PAGE= app.config['GENE_P_Q_PER_PAGE'] 
+    '''
     gene_p_qs_for_this_page = gene_p_qs[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE] 
     pagination = Pagination(page=page, total=len(gene_p_qs), per_page=GENE_P_Q_PER_PAGE, record_name='gene_p_qs')
     #end pagination
+    
+    session['page'] = page
     return render_template('show_papers.html',gene_p_qs=gene_p_qs_for_this_page,pagination=pagination,page=page)
-
+    '''
+    
+    session['page'] = page
+    gene_p_qs = dao.fetch_all_gene_p_q()
+    keys = gene_p_qs.keys()
+    pagination = Pagination(page=page, total=len(gene_p_qs[keys[0]]), per_page=GENE_P_Q_PER_PAGE, record_name='gene_p_qs')
+    return render_template('show_papers.html',pagination=pagination,page=page)
 
 def pop_db(disease,genes_included,genes_excluded):
     

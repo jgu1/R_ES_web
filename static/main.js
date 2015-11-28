@@ -12,6 +12,19 @@ function createGraph() {
                     .attr("height", h + 2 * margin)
                 .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
+   
+   var margin = {top: 200, right: 200, bottom: 10, left: 100};
+   var canvas2=d3.select("#detail").append("svg")
+           .attr("width", 300)
+           .attr("height", 300)
+           .style("margin-left", -margin.left + "px");
+
+   var svg2=canvas2
+       .append("g")
+       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
 
   var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
                             
@@ -131,7 +144,11 @@ function createGraph() {
       .text(function(d, i) { return geneNames[i]; }) 
       .on("click", function(d,i) { colSortOrderDesc=!colSortOrderDesc;sortbylabel(i,colSortOrderDesc);}) ;
 
+  var detailcallback = function(data){
+   var dummy = 1; 
+    
 
+  }
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
@@ -142,8 +159,18 @@ function createGraph() {
         .attr("width", x_axis_scale.rangeBand())
         .attr("height", x_axis_scale.rangeBand())
         .attr("title",function(d){return d[3]})
-        .style("fill", function(d) { return color_scale(parseFloat(d[3])) });
-    }
+        .style("fill", function(d) { return color_scale(parseFloat(d[3])) })
+        .on("click",function(d){
+            d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
+            
+            //plotDetail(d);
+            }
+           );  
+  }
+
+  function plotDetail(name){
+    var a = 1;
+  }
 
     console.log('you called callback! you know how to get data!');
   };
