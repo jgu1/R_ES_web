@@ -18,11 +18,6 @@ function createGraph() {
   var xscale = d3.scale.linear().range([0, w]);
   var yscale = d3.scale.linear().range([h, 0]);
 
-
-  svg.append("svg:g").attr("class", "x axisyo")
-    .attr("transform", "translate(0, " + h + ")");
-  svg.append("svg:g").attr("class", "y axis");
-
   var callback = function(data){
     var matrix = []
     var pairNames = []
@@ -75,9 +70,10 @@ function createGraph() {
         .style("stroke","#fff");
 
     pair.append("text")
-        .attr("x",-5)
+        .attr("x",-6)
         //.text(function(d,i) { return "haha" });
-        .attr("y",x_axis_scale.rangeBand())
+        .attr("y",x_axis_scale.rangeBand()/2)
+        .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; });
 
@@ -120,6 +116,7 @@ function createGraph() {
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * x_axis_scale.rangeBand()+")";});
   }  
 
+
     column.append("line")
         .attr("x1",-w)
         .style("stroke","#fff");
@@ -127,7 +124,7 @@ function createGraph() {
 
     column.append("text")
       .attr("x", 6)
-      .attr("y", 7)
+      .attr("y", x_axis_scale.rangeBand()/2)
       .attr("width",x_axis_scale.rangeBand())
       .attr("height",x_axis_scale.rangeBand())
       .attr("dy", ".32em")
