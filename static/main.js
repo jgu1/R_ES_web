@@ -12,29 +12,100 @@ function createGraph() {
                     .attr("height", h + 2 * margin)
                 .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
-   
+
    var margin = {top: 200, right: 200, bottom: 10, left: 100};
    var canvas2=d3.select("#detail").append("svg")
            .attr("width", 300)
            .attr("height", 300)
            .style("margin-left", -margin.left + "px");
-
    var svg2=canvas2
        .append("g")
-       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
+       .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
 
 
   var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
-                            
+
+ 
   var xscale = d3.scale.linear().range([0, w]);
   var yscale = d3.scale.linear().range([h, 0]);
 
+
+  var detailcallback = function(data){
+    var dummy = 1; 
+    var matrix = [];
+    var SNP_names = [];
+  
+    var GWAS = data.GWAS;
+    var eQTL = data.eQTL;
+    var gene = data.gene;
+    var SNP_list = data.SNP_list;
+
+    var size = 15;
+    var width;
+    var height;
+
+    SNP_list.forEach(function(SNP){
+        single_SNP_row = [SNP[2]];
+        matrix.push(single_SNP_row);
+    });  
+    var max_pval = d3.max(matrix,function(row){
+                   return parseFloat(row[0])
+                   });
+    var min_pval = d3.min(matrix, function(row){
+                   return parseFloat(row[0])
+                   }); 
+        
+    var c_scale=d3.scale.linear()
+                        .domain([Math.log10(min_pval),Math.log10(max_pval)])
+                        .range(['red','blue']);
+
+    var n = matrix[0].length;
+    var dimension = {};
+    dimension.w=width;
+    dimension.h=height;
+    width = size * n;
+    height = size * matrix.length;
+    
+    var x = d3.scale.ordinal().rangeBands([0, width]) 
+                              .domain(d3.range(n));
+    var y = d3.scale.ordinal().rangeBands([0,height])
+                              .domain(d3.range(matrix.length))
+
+
+    svg2.selectAll(".background").data([]).exit().remove();
+
+    svg2.selectAll(".background")
+           .data(dimension)
+           .append("rect")
+           .attr("class", "background")
+           .attr("width", function(d){return d.w;})
+           .attr("height", function(d){return d.h;});
+ 
+    var row2 = svg2.selectAll(".row2");
+    row2.data([]).exit().remove();
+    row2=svg2.selectAll(".row2")
+        .data(matrix)
+        .enter().append("g")
+        .attr("class", "row2")
+        .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
+        .each(drawSNP);
+
+       function drawSNP(row2) {
+        var cell = d3.select(this).selectAll(".row")
+            .data(row2)
+            .enter().append("rect")
+            .attr("class", "cell2")
+            .attr("x", function(d,i) { return x(i); })
+            .attr("width",x.rangeBand() )
+            .attr("height", x.rangeBand())
+            .style("fill", function(d) { return c_scale(Math.log10(parseFloat(d[2]))); })
+      }
+  }
+
   var callback = function(data){
-    var matrix = []
-    var pairNames = []
-    var geneNames = []
+    var matrix = [];
+    var pairNames = [];
+    var geneNames = [];
     var colSortOrderDesc;
     
     colSortOrderDesc = false;
@@ -143,12 +214,6 @@ function createGraph() {
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; }) 
       .on("click", function(d,i) { colSortOrderDesc=!colSortOrderDesc;sortbylabel(i,colSortOrderDesc);}) ;
-
-  var detailcallback = function(data){
-   var dummy = 1; 
-    
-
-  }
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
