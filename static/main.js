@@ -70,6 +70,10 @@ function createGraph() {
       .attr("transform", function(d, i) { return "translate(0," + x_axis_scale(i) + ")"; })
       .each(pair);
 
+    pair.append("line")
+        .attr("x2",w)
+        .style("stroke","#fff");
+
     pair.append("text")
         .attr("x",-5)
         //.text(function(d,i) { return "haha" });
