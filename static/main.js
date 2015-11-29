@@ -24,13 +24,10 @@ function createGraph() {
        .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
 
-
   var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
-
  
   var xscale = d3.scale.linear().range([0, w]);
   var yscale = d3.scale.linear().range([h, 0]);
-
 
   var detailcallback = function(data){
     var dummy = 1; 
@@ -47,14 +44,14 @@ function createGraph() {
     var height;
 
     SNP_list.forEach(function(SNP){
-        var SNP_obj = {GWAS:SNP[0],eQTL:SNP[1],pval:SNP[2]};
+        var SNP_obj = {GWAS_SNP_name:SNP[0],eQTL_SNP_name:SNP[1],GWAS_SNP_pval:SNP[2]};
         SNP_obj_list.push(SNP_obj);
     });  
     var max_pval = d3.max(SNP_obj_list,function(SNP_obj){
-                   return parseFloat(SNP_obj.pval)
+                   return parseFloat(SNP_obj.GWAS_SNP_pval)
                    });
     var min_pval = d3.min(SNP_obj_list,function(SNP_obj){
-                   return parseFloat(SNP_obj.pval)
+                   return parseFloat(SNP_obj.GWAS_SNP_pval)
                    }); 
         
     var c_scale=d3.scale.linear()
@@ -62,18 +59,6 @@ function createGraph() {
                         .range(['red','blue']);
 
     var num_SNP = SNP_obj_list.length;
-/*  
-    var dimension = {};
-    dimension.w=width;
-    dimension.h=height;
-    width = size * n;
-    height = size * matrix.length;
-    
-    var x = d3.scale.ordinal().rangeBands([0, width]) 
-                              .domain(d3.range(n));
-    var y = d3.scale.ordinal().rangeBands([0,height])
-                              .domain(d3.range(matrix.length))
-*/
     var detail_width  = size;
     var detail_height = size * num_SNP;
 
@@ -84,7 +69,38 @@ function createGraph() {
            .attr("class", "background")
            .attr("width", detail_width)
            .attr("height", detail_height);
- 
+   
+    var detail_title = svg2.selectAll(".detail_title");
+    detail_title.data([]).exit().remove();
+
+    detail_title =svg2.append("g")
+              .attr("class","detail_title")
+              .attr("transform", "translate(-90,-75)");
+    detail_title.append("text")
+            .append('svg:tspan')
+            .attr('x', 0)
+            .attr('dy', 20)
+            .text(function(d) { return " GWAS: " + GWAS; })
+            .append('svg:tspan')
+            .attr('x', 0)
+            .attr('dy', 20)
+            .text(function(d) { return " eQTL: " + eQTL; })
+            .append('svg:tspan')
+            .attr('x', 0)
+            .attr('dy', 20)
+            .text(function(d) { return " gene: " + gene; });
+
+    detail_title.on("click",function{sortbyGWASpval();})
+/*
+    column2.append("text")
+      .attr("x", 6)
+      .attr("y", x_axis_scale.rangeBand()/2)
+      .attr("width",x_axis_scale.rangeBand())
+      .attr("height",x_axis_scale.rangeBand())
+      .attr("dy", ".32em")
+      .text("GWAS:" + GWAS + " eQTL:" + eQTL + " gene:" + gene)
+      .on("click", function(d,i) { colSortOrderDesc=!colSortOrderDesc;sortbylabel(i,colSortOrderDesc);}) ;
+*/    
     var row2 = svg2.selectAll(".row2");
     row2.data([]).exit().remove();
     row2=svg2.selectAll(".row2")
@@ -100,13 +116,10 @@ function createGraph() {
 
     row2.append("text")
         .attr("x",-6)
-        //.text(function(d,i) { return "haha" });
         .attr("y",7)
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
-        .text(function(d) { return d.pval; });
-
-
+        .text(function(d) { return d.GWAS_SNP_name; });
 
        function drawSNP(row2) {
         var cell = d3.select(this)
@@ -115,7 +128,7 @@ function createGraph() {
             .attr("x", 0)
             .attr("width", size )
             .attr("height", size)
-            .style("fill",c_scale(Math.log10(parseFloat(row2.pval))))
+            .style("fill",c_scale(Math.log10(parseFloat(row2.GWAS_SNP_pval))))
         }
   }
 
@@ -186,7 +199,8 @@ function createGraph() {
               .attr("transform", function(d, i) { return "translate(" + i*15 + ")rotate(-90)"; });
                
     column.append("line")
-  
+          .style("stroke","#fff");
+    
     function getColumnI(i){
       var index=0;
       var log2r=[];
