@@ -19,7 +19,7 @@ function createGraph() {
    var margin = {top: 200, right: 200, bottom: 10, left: 100};
    var canvas2=d3.select("#detail").append("svg")
            .attr("width", 180)
-           .attr("height", 300)
+           .attr("height", 1000)
    var svg2=canvas2
        .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
@@ -47,14 +47,14 @@ function createGraph() {
     var height;
 
     SNP_list.forEach(function(SNP){
-        single_SNP_row = [SNP[2]];
+        single_SNP_row = [SNP[0],SNP[1],SNP[2]];
         matrix.push(single_SNP_row);
     });  
     var max_pval = d3.max(matrix,function(row){
-                   return parseFloat(row[0])
+                   return parseFloat(row[2])
                    });
     var min_pval = d3.min(matrix, function(row){
-                   return parseFloat(row[0])
+                   return parseFloat(row[2])
                    }); 
         
     var c_scale=d3.scale.linear()
@@ -92,15 +92,33 @@ function createGraph() {
         .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
         .each(drawSNP);
 
+    row2.append("line")
+        .attr("x2",w)
+        .style("stroke","#fff");
+
+    row2.append("text")
+        .attr("x",-6)
+        //.text(function(d,i) { return "haha" });
+        .attr("y",7)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "end")
+        .text(function(d) { return d[0]; });
+
+
+
        function drawSNP(row2) {
-        var cell = d3.select(this).selectAll(".row")
-            .data(row2)
+        var cell = d3.select(this).selectAll(".cell")
+            .data(row2.filter(function(d) { 
+                return d[2]; 
+                }))
             .enter().append("rect")
             .attr("class", "cell2")
             .attr("x", function(d,i) { return x(i); })
             .attr("width",x.rangeBand() )
             .attr("height", x.rangeBand())
-            .style("fill", function(d) { return c_scale(Math.log10(parseFloat(d[2]))); })
+            .style("fill", function(d) { 
+                return c_scale(Math.log10(parseFloat(d[0])));
+             })
         }
   }
 
