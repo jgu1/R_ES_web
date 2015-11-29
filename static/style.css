@@ -63,3 +63,10 @@ h2              { font-size: 1.2em; }
     background:#6aa6ed;
     color:white
 }
+
+aside{
+    font-size: small;
+    right: 60px;
+    position: absolute;
+    width: 180px;   
+}

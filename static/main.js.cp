@@ -5,12 +5,9 @@ $(function() {
 
 function createGraph() {
   var margin = 120;
-  
-  var w = 900 - 2 * margin, h = 500 - 2 * margin;
+  var w = 700 - 2 * margin, h = 500 - 2 * margin;
   var svg = d3.select("#chart")
-              .style("border-color","#000")
-              .style("border-style","solid")
-                  .append("svg")
+                .append("svg")
                     .attr("width", w + 2 * margin)
                     .attr("height", h + 2 * margin)
                 .append("svg:g")
@@ -18,16 +15,16 @@ function createGraph() {
 
    var margin = {top: 200, right: 200, bottom: 10, left: 100};
    var canvas2=d3.select("#detail").append("svg")
-           .attr("width", 180)
+           .attr("width", 300)
            .attr("height", 300)
+           .style("margin-left", -margin.left + "px");
    var svg2=canvas2
        .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
 
 
   var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
-
- 
+                            
   var xscale = d3.scale.linear().range([0, w]);
   var yscale = d3.scale.linear().range([h, 0]);
 
@@ -47,20 +44,20 @@ function createGraph() {
     var height;
 
     SNP_list.forEach(function(SNP){
-        single_SNP_row = [SNP[2]];
+        single_SNP_row = [SNP[0],SNP[1],SNP[2]];
         matrix.push(single_SNP_row);
     });  
     var max_pval = d3.max(matrix,function(row){
-                   return parseFloat(row[0])
+                   return parseFloat(row[2])
                    });
     var min_pval = d3.min(matrix, function(row){
-                   return parseFloat(row[0])
+                   return parseFloat(row[2])
                    }); 
         
-    var c_scale=d3.scale.linear()
-                        .domain([Math.log10(min_pval),Math.log10(max_pval)])
+    var c_scale=d3.scale.pow()
+                        .exponent(0.25)
+                        .domain([min_pval,max_pval])
                         .range(['red','blue']);
-
     var n = matrix[0].length;
     var dimension = {};
     dimension.w=width;
@@ -70,8 +67,6 @@ function createGraph() {
     
     var x = d3.scale.ordinal().rangeBands([0, width]) 
                               .domain(d3.range(n));
-    var y = d3.scale.ordinal().rangeBands([0,height])
-                              .domain(d3.range(matrix.length))
 
 
     svg2.selectAll(".background").data([]).exit().remove();
@@ -83,25 +78,38 @@ function createGraph() {
            .attr("width", function(d){return d.w;})
            .attr("height", function(d){return d.h;});
  
-    var row2 = svg2.selectAll(".row2");
+    var pair = svg.selectAll(".pair")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "pair")
+      .attr("transform", function(d, i) { return "translate(0," + x_axis_scale(i) + ")"; })
+      .each(pair);
+
+
+
+
+
+ 
+    var row2 = svg2.selectAll(".row");
     row2.data([]).exit().remove();
-    row2=svg2.selectAll(".row2")
+    row2=svg2.selectAll(".row")
         .data(matrix)
         .enter().append("g")
-        .attr("class", "row2")
-        .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
+        .attr("class", "row")
+        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
         .each(drawSNP);
 
-       function drawSNP(row2) {
-        var cell = d3.select(this).selectAll(".row")
-            .data(row2)
-            .enter().append("rect")
-            .attr("class", "cell2")
-            .attr("x", function(d,i) { return x(i); })
-            .attr("width",x.rangeBand() )
-            .attr("height", x.rangeBand())
-            .style("fill", function(d) { return c_scale(Math.log10(parseFloat(d[2]))); })
-        }
+   function drawSNP(SNP) {
+    var cell = d3.select(this).selectAll(".row")
+        .data(row)
+        .enter().append("rect")
+        .attr("class", "row")
+        .attr("x", function(d,i) { return x(i); })
+        .attr("width",x.rangeBand() )
+        .attr("height", x.rangeBand())
+        .style("fill", function(d) { return c_scale(parseFloat(d[2])); })
+
+  }
   }
 
   var callback = function(data){
