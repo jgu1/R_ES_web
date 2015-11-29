@@ -34,7 +34,7 @@ function createGraph() {
 
   var detailcallback = function(data){
     var dummy = 1; 
-    var matrix = [];
+    var SNP_obj_list = [];
     var SNP_names = [];
   
     var GWAS = data.GWAS;
@@ -47,21 +47,22 @@ function createGraph() {
     var height;
 
     SNP_list.forEach(function(SNP){
-        single_SNP_row = [SNP[0],SNP[1],SNP[2]];
-        matrix.push(single_SNP_row);
+        var SNP_obj = {GWAS:SNP[0],eQTL:SNP[1],pval:SNP[2]};
+        SNP_obj_list.push(SNP_obj);
     });  
-    var max_pval = d3.max(matrix,function(row){
-                   return parseFloat(row[2])
+    var max_pval = d3.max(SNP_obj_list,function(SNP_obj){
+                   return parseFloat(SNP_obj.pval)
                    });
-    var min_pval = d3.min(matrix, function(row){
-                   return parseFloat(row[2])
+    var min_pval = d3.min(SNP_obj_list,function(SNP_obj){
+                   return parseFloat(SNP_obj.pval)
                    }); 
         
     var c_scale=d3.scale.linear()
                         .domain([Math.log10(min_pval),Math.log10(max_pval)])
                         .range(['red','blue']);
 
-    var n = matrix[0].length;
+    var num_SNP = SNP_obj_list.length;
+/*  
     var dimension = {};
     dimension.w=width;
     dimension.h=height;
@@ -72,24 +73,25 @@ function createGraph() {
                               .domain(d3.range(n));
     var y = d3.scale.ordinal().rangeBands([0,height])
                               .domain(d3.range(matrix.length))
-
+*/
+    var detail_width  = size;
+    var detail_height = size * num_SNP;
 
     svg2.selectAll(".background").data([]).exit().remove();
 
     svg2.selectAll(".background")
-           .data(dimension)
            .append("rect")
            .attr("class", "background")
-           .attr("width", function(d){return d.w;})
-           .attr("height", function(d){return d.h;});
+           .attr("width", detail_width)
+           .attr("height", detail_height);
  
     var row2 = svg2.selectAll(".row2");
     row2.data([]).exit().remove();
     row2=svg2.selectAll(".row2")
-        .data(matrix)
+        .data(SNP_obj_list)
         .enter().append("g")
         .attr("class", "row2")
-        .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
+        .attr("transform", function(d, i) { return "translate(0," + i*size + ")"; })
         .each(drawSNP);
 
     row2.append("line")
@@ -102,23 +104,18 @@ function createGraph() {
         .attr("y",7)
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
-        .text(function(d) { return d[0]; });
+        .text(function(d) { return d.pval; });
 
 
 
        function drawSNP(row2) {
-        var cell = d3.select(this).selectAll(".cell")
-            .data(row2.filter(function(d) { 
-                return d[2]; 
-                }))
-            .enter().append("rect")
+        var cell = d3.select(this)
+            .append("rect")
             .attr("class", "cell2")
-            .attr("x", function(d,i) { return x(i); })
-            .attr("width",x.rangeBand() )
-            .attr("height", x.rangeBand())
-            .style("fill", function(d) { 
-                return c_scale(Math.log10(parseFloat(d[0])));
-             })
+            .attr("x", 0)
+            .attr("width", size )
+            .attr("height", size)
+            .style("fill",c_scale(parseFloat(row2.pval)))
         }
   }
 
