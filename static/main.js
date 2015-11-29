@@ -46,7 +46,10 @@ function createGraph() {
     SNP_list.forEach(function(SNP){
         var SNP_obj = {GWAS_SNP_name:SNP[0],eQTL_SNP_name:SNP[1],GWAS_SNP_pval:SNP[2]};
         SNP_obj_list.push(SNP_obj);
-    });  
+    }); 
+    SNP_obj_list = SNP_obj_list.sort(function(a,b){
+        return parseFloat(a.GWAS_SNP_pval)- parseFloat(b.GWAS_SNP_pval)
+        });
     var max_pval = d3.max(SNP_obj_list,function(SNP_obj){
                    return parseFloat(SNP_obj.GWAS_SNP_pval)
                    });
@@ -76,6 +79,7 @@ function createGraph() {
     detail_title =svg2.append("g")
               .attr("class","detail_title")
               .attr("transform", "translate(-90,-75)");
+
     detail_title.append("text")
             .append('svg:tspan')
             .attr('x', 0)
@@ -90,7 +94,6 @@ function createGraph() {
             .attr('dy', 20)
             .text(function(d) { return " gene: " + gene; });
 
-    detail_title.on("click",function{sortbyGWASpval();})
 /*
     column2.append("text")
       .attr("x", 6)
