@@ -115,7 +115,7 @@ function createGraph() {
             .attr("x", 0)
             .attr("width", size )
             .attr("height", size)
-            .style("fill",c_scale(parseFloat(row2.pval)))
+            .style("fill",c_scale(Math.log10(parseFloat(row2.pval))))
         }
   }
 
