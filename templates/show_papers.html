@@ -8,18 +8,18 @@
   {% if session.logged_in %}
     <form action="{{ url_for('search') }}" method=post class=search>
       <dl>
-        <dt>Disease/Trait:
-        <dd><input type=text size=30 name=disease>
-        <br>genes included<dd><input type=text size=30 name=genes_included>
-        <br>genes excluded<dd><input type=text size=30 name=genes_excluded>
-        <dd><input type=submit value=Search>
+        <dt>Please choose GWAS and eQTL of your interest:
+        <dd>
+        <br>GWAS list<dd><input type=text size=30 name=GWAS_list>
+        <br>eQTL list<dd><input type=text size=30 name=eQTL_list>
+        <dd><input type=submit value=Draw>
       </dl>
     </form>
-    <aside id = "detail" style="margin-top:100px"></aside>
+    <aside id = "detail" style="overflow:scroll; margin-top: 10px;" ></aside>
     {{ pagination.info }}
     {{ pagination.links }}    
 
-    <div id="chart" style="overflow:auto; width:1000px; height:600px;"></div>
+    <div id="chart" style="overflow:scroll; margin-top:10px;"></div>
     {{ pagination.links }}
   {% endif %}
 {% endblock %}
