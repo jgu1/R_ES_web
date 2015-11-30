@@ -137,6 +137,10 @@ class DAO(object):
                     curr_new_list.append(row)
             new_lists.append(curr_new_list) 
 
+        #lists contain the same set of genes, sorting each one by gene will render the lists in the same order in terms of genes
+        for l in new_lists:
+            l.sort(key=lambda x:x[2])
+
         return new_lists 
 
     def fetch_all_gene_p_q(self):
