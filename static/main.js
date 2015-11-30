@@ -4,7 +4,8 @@ $(function() {
 });
 
 function createGraph() {
-  var margin = 120;
+ /* 
+ var margin = 120;
   
   var w = 900 - 2 * margin, h = 500 - 2 * margin;
   var svg = d3.select("#chart")
@@ -15,7 +16,7 @@ function createGraph() {
                     .attr("height", h + 2 * margin)
                 .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
-
+*/
    var margin = {top: 200, right: 200, bottom: 10, left: 100};
    var canvas2=d3.select("#detail").append("svg")
            .attr("width", 180)
@@ -24,10 +25,10 @@ function createGraph() {
        .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
 
-  var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
+  //var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
  
-  var xscale = d3.scale.linear().range([0, w]);
-  var yscale = d3.scale.linear().range([h, 0]);
+  //var xscale = d3.scale.linear().range([0, w]);
+  //var yscale = d3.scale.linear().range([h, 0]);
 
   var detailcallback = function(data){
     var dummy = 1; 
@@ -105,7 +106,7 @@ function createGraph() {
         .each(drawSNP);
 
     row2.append("line")
-        .attr("x2",w)
+        .attr("x2",size)
         .style("stroke","#fff");
 
     row2.append("text")
@@ -148,7 +149,7 @@ function createGraph() {
             matrix.push(curr_pair)
         }
     }   
-    x_axis_scale.domain(d3.range(matrix[0].length)) // set x_axis_scale's domain to be number of genes in a pair
+    //x_axis_scale.domain(d3.range(matrix[0].length)) // set x_axis_scale's domain to be number of genes in a pair
     var max_pval = d3.max(matrix, function(pair) {
                    return d3.max(pair.map(function(gene){return parseFloat(Math.log10(gene[3]))})) 
                    }); 
@@ -160,8 +161,20 @@ function createGraph() {
                         .domain([min_pval,max_pval])
                         .range(['red','blue']);
 
-    var width_pair = matrix.length * size;
-    var height_pair= matrix[0].length * size;
+    var height_pair = matrix.length * size;
+    var width_pair= matrix[0].length * size;
+
+     var margin = 120;
+  
+    var w = 900 - 2 * margin, h = 500 - 2 * margin;
+    var svg = d3.select("#chart")
+              //.style("border-color","#000")
+              //.style("border-style","solid")
+                  .append("svg")
+                    .attr("width", w + 2 * margin)
+                    .attr("height",height_pair + 2 * margin)
+                  .append("svg:g")
+                        .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
 
     svg.append("rect")
       .attr("class", "background")
@@ -182,7 +195,7 @@ function createGraph() {
 
     pair.append("text")
         .attr("x",-6)
-        .attr("y",x_axis_scale.rangeBand()/2)
+        .attr("y",7)
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; });
@@ -224,7 +237,7 @@ function createGraph() {
         }
        });
        t.selectAll(".pair")
-        .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * x_axis_scale.rangeBand()+")";});
+        .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
   }  
 
 
