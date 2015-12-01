@@ -99,7 +99,7 @@ def delete_db_for_one_search_term(search_term):
         )
     cur = g.db.execute(sql_delete_search_terms_for_search_term)
     g.db.commit()
-
+'''
 @app.route('/data')
 @app.route("/data/<int:page>")
 def data():
@@ -112,7 +112,7 @@ def data():
          curr_rows = gene_p_qs[key]
          gene_p_qs_for_this_page[key] = curr_rows[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]
     return jsonify(gene_p_qs_for_this_page)
-
+'''
 @app.route('/detail')
 @app.route("/data/<string:GWAS>/<string:eQTL>/<string:gene>")
 def detail():
@@ -142,14 +142,36 @@ def show_papers():
     all_papers,count_dict = fetch_db_for_search_terms(disease,genes_included,genes_excluded)
     '''
     dao = getattr(g, 'dao', None)
-    #gene_p_qs = dao.fetch_all_gene_p_q()
     #begin pagination 
     try:
         page = int(request.args.get('page', 1))
     except ValueError:
         page = 1
     
+    session['page'] = page
     GENE_P_Q_PER_PAGE= app.config['GENE_P_Q_PER_PAGE'] 
+    
+    web_GWAS_list = session['web_GWAS_list']
+    web_eQTL_list = session['web_eQTL_list']
+
+    if not web_GWAS_list or not web_eQTL_list:
+        return render_template('show_papers.html')
+    
+    gene_p_qs = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
+    gene_p_qs_for_this_page = {}
+    orig_length = -1
+    for pair_name in gene_p_qs:
+        orig_length_result = gene_p_qs[pair_name]
+        if orig_length <0:
+            orig_length = len(orig_length_result)   # get the length for pagination
+        gene_p_qs_for_this_page[pair_name] = orig_length_result[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]       
+ 
+    pagination = Pagination(page=page, total=orig_length, per_page=GENE_P_Q_PER_PAGE, record_name='genes for pairs')
+    
+    #end pagination
+    gene_p_qs_json_obj = json.dumps(gene_p_qs_for_this_page)
+     
+    return render_template('show_papers.html',pagination=pagination, page=page,gene_p_qs_json_obj = gene_p_qs_json_obj)
     '''
     gene_p_qs_for_this_page = gene_p_qs[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE] 
     pagination = Pagination(page=page, total=len(gene_p_qs), per_page=GENE_P_Q_PER_PAGE, record_name='gene_p_qs')
@@ -159,12 +181,12 @@ def show_papers():
     return render_template('show_papers.html',gene_p_qs=gene_p_qs_for_this_page,pagination=pagination,page=page)
     '''
     
-    session['page'] = page
+    '''
     gene_p_qs = dao.fetch_all_gene_p_q()
     keys = gene_p_qs.keys()
     pagination = Pagination(page=page, total=len(gene_p_qs[keys[0]]), per_page=GENE_P_Q_PER_PAGE, record_name='gene_p_qs')
     return render_template('show_papers.html',pagination=pagination,page=page)
-
+    '''
 def pop_db(disease,genes_included,genes_excluded):
     
     disease='+'.join(disease.split())
@@ -192,28 +214,25 @@ def parse_web_search_term(web_search_term_disease,web_search_term_genes_included
     genes_excluded = web_search_term_genes_excluded.strip().split()
     return disease,genes_included,genes_excluded
 
-@app.route('/search', methods=['POST'])
-def search():
+@app.route('/draw', methods=['POST'])
+def draw():
  
     if not session.get('logged_in'):
         abort(401)
     
-    web_search_term_disease = request.form['disease']
-    web_search_term_genes_included  = request.form['genes_included']
-    web_search_term_genes_excluded = request.form['genes_excluded']
-    
-    if web_search_term_disease is None or web_search_term_genes_included is None:
-        return render_template('show_papers.html')
-   
-    disease,genes_included,genes_excluded = parse_web_search_term(web_search_term_disease,web_search_term_genes_included,web_search_term_genes_excluded)
+    web_GWAS_list = request.form['GWAS_list']
+    web_eQTL_list  = request.form['eQTL_list']
 
+    session['web_GWAS_list'] = web_GWAS_list
+    session['web_eQTL_list'] = web_eQTL_list
+    '''
+    dao = getattr(g, 'dao', None) 
+    gene_p_qs = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
 
-    pop_db(disease,genes_included, genes_excluded)
- 
-    session['disease']=disease
-    session['genes_included']=genes_included
-    session['genes_excluded']=genes_excluded
-
+    gene_p_qs_json_obj = json.dumps(gene_p_qs)
+     
+    pdb.set_trace()
+    '''
     return redirect(url_for('show_papers'))
 
 @app.route('/choose_term', methods=['GET'])
@@ -242,6 +261,7 @@ def logout():
 
 if __name__ == '__main__':
     ip_for_current_machine = socket.gethostbyname(socket.gethostname())
-    app.run(host=ip_for_current_machine,port=55555,threaded=True)
+    #app.run(host=ip_for_current_machine,port=55555,threaded=True)
+    app.run(host='localhost',port=55555,threaded=True)
 
 

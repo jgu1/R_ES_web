@@ -127,7 +127,7 @@ function createGraph() {
         }
   }
 
-  var callback = function(data){
+  var draw_pair = function(data){
     var matrix = [];
     var pairNames = [];
     var geneNames = [];
@@ -286,11 +286,11 @@ function createGraph() {
   function plotDetail(name){
     var a = 1;
   }
-
     console.log('you called callback! you know how to get data!');
   };
 
-  d3.json("/data", callback);
-
+  var gene_p_qs_json_text = document.getElementById("gene_p_qs_json_obj").value;
+  var gene_p_qs_json_obj = JSON.parse(gene_p_qs_json_text);
+  draw_pair(gene_p_qs_json_obj);
   // Code goes here
 }
