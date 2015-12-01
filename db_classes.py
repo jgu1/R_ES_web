@@ -116,8 +116,6 @@ class DAO(object):
         rows = cur.fetchall()
         return list(rows) 
 
-
-
     def get_comm_genes(self,result_lists):
         individual_genes = []
         for result in result_lists:
@@ -126,23 +124,22 @@ class DAO(object):
         comm_genes = set.intersection(*individual_genes)
         return comm_genes
 
-    def filter_result_lists_by_comm_genes(self,result_lists):
-        return_list = []
-        comm_genes = self.get_comm_genes(result_lists)
-        new_lists = []
-        for result in result_lists:
+    def filter_result_dict_by_comm_genes(self,result_dict):
+        comm_genes = self.get_comm_genes(result_dict.values())
+        filtered_dict = {}
+        for pair_name in result_dict:
+            result = result_dict[pair_name]
             curr_new_list = []
             for row in result:
                 if row[2] in comm_genes:
                     curr_new_list.append(row)
-            new_lists.append(curr_new_list) 
-
+            filtered_dict[pair_name] = curr_new_list
         #lists contain the same set of genes, sorting each one by gene will render the lists in the same order in terms of genes
-        for l in new_lists:
+        for l in filtered_dict.values() :
             l.sort(key=lambda x:x[2])
 
-        return new_lists 
-
+        return filtered_dict
+    '''
     def fetch_all_gene_p_q(self):
         GWAS1 = 'Barrett_08'
         GWAS2 = 'Longevity_2014_Age85'
@@ -154,13 +151,29 @@ class DAO(object):
         Longevity = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS2,eQTL2)    
         UCSF_AML = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS3,eQTL3)    
         result_lists = [Barrett,Longevity,UCSF_AML]
-        new_lists = self.filter_result_lists_by_comm_genes(result_lists)        
+        new_lists = self.filter_result__by_comm_genes(result_lists)        
 
         gene_p_qs = {}
         gene_p_qs[GWAS1+eQTL1] = new_lists[0]
         gene_p_qs[GWAS2+eQTL2] = new_lists[1]
         gene_p_qs[GWAS3+eQTL3] = new_lists[2]
         return gene_p_qs
+    '''
+    def fetch_pair_gene(self,GWAS_list,eQTL_list):
+        GWASs = GWAS_list.strip().split()
+        eQTLs = eQTL_list.strip().split()
+
+        result_dict = {}
+        for i in range(len(GWASs)):
+            for j in range(len(eQTLs)):
+                GWAS = GWASs[i]
+                eQTL = eQTLs[j]
+                result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
+                if len(result) > 0:
+                    result_dict[GWAS + eQTL] = result
+        filtered_dict = self.filter_result_dict_by_comm_genes(result_dict)        
+        return filtered_dict
+
 
     def fetch_detail(self,GWAS,eQTL,gene):
         sql_template = ('select GSNP,eSNP,Gpval from Geg, GSNP_eSNP_Gpval'

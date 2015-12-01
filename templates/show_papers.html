@@ -6,7 +6,7 @@
 
 
   {% if session.logged_in %}
-    <form action="{{ url_for('search') }}" method=post class=search>
+    <form action="{{ url_for('draw') }}" method=post class=draw>
       <dl>
         <dt>Please choose GWAS and eQTL of your interest:
         <dd>
@@ -16,10 +16,17 @@
       </dl>
     </form>
     <aside id = "detail" style="overflow:scroll; margin-top: 10px;" ></aside>
-    {{ pagination.info }}
-    {{ pagination.links }}    
+
+    {% if pagination %}
+        {{ pagination.info }}
+        {{ pagination.links }}    
+    {% endif %}
 
     <div id="chart" style="overflow:scroll; margin-top:10px;"></div>
-    {{ pagination.links }}
+    {% if pagination %}
+        {{ pagination.links }}
+    {% endif %}
+
+    <input type="hidden" id='gene_p_qs_json_obj' value="{{gene_p_qs_json_obj}}" />
   {% endif %}
 {% endblock %}
