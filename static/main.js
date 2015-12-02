@@ -17,9 +17,9 @@ function createGraph() {
                 .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
 */
-   var margin = {top: 200, right: 200, bottom: 10, left: 100};
+   var margin = {top: 120, right: 200, bottom: 10, left: 360};
    var canvas2=d3.select("#detail").append("svg")
-           .attr("width", 180)
+           .attr("width", 1200)
            .attr("height", 1000)
    var svg2=canvas2
        .append("g")

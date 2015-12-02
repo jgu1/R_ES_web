@@ -15,7 +15,6 @@
         <dd><input type=submit value=Draw>
       </dl>
     </form>
-    <aside id = "detail" style="overflow:scroll; margin-top: 10px;" ></aside>
 
     {% if pagination %}
         {{ pagination.info }}
@@ -26,6 +25,9 @@
     {% if pagination %}
         {{ pagination.links }}
     {% endif %}
+
+
+    <div id = "detail" style="overflow:scroll; margin-top: 10px;" ></div>
 
     <input type="hidden" id='gene_p_qs_json_obj' value="{{gene_p_qs_json_obj}}" />
   {% endif %}
