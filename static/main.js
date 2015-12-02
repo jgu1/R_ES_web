@@ -54,6 +54,7 @@ function createGraph() {
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
 
+    svg2.html("");// clear canvas2 before drawing a new one
     svg2.append("rect")
       .attr("class", "background")
       .attr("width", width_pair)
@@ -77,7 +78,6 @@ function createGraph() {
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; });
 
- 
     function pair2(pair) {
         var cell = d3.select(this).selectAll(".SNP")
             .data(pair)
