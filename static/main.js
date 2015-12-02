@@ -30,7 +30,7 @@ function createGraph() {
     
     d3.select("#gene_of_interest")
         .text("Gene of Interest: " + gene)
-        .style("margin-left","360px");
+        .style("margin-left",margin.left +"px");
 
     for (var pairName in pair_SNP_dict) {
         pairNames.push(pairName);
