@@ -27,6 +27,11 @@ function createGraph() {
     var gene = data.gene;
     var pair_SNP_dict = data.pair_SNP_dict;
     var curr_pair = []
+    
+    d3.select("#gene_of_interest")
+        .text("Gene of Interest: " + gene)
+        .style("margin-left","360px");
+
     for (var pairName in pair_SNP_dict) {
         pairNames.push(pairName);
         var SNPs= pair_SNP_dict[pairName];
