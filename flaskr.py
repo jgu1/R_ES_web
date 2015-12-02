@@ -114,18 +114,17 @@ def data():
     return jsonify(gene_p_qs_for_this_page)
 '''
 @app.route('/detail')
-@app.route("/data/<string:GWAS>/<string:eQTL>/<string:gene>")
+@app.route("/data/<string:gene>")
 def detail():
-    GWAS = request.args.get('GWAS', 'empty')
-    eQTL = request.args.get('eQTL', 'empty')
+    pdb.set_trace()
     gene = request.args.get('gene', 'empty')
+    web_GWAS_list = session['web_GWAS_list']
+    web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    list_detail = dao.fetch_detail(GWAS,eQTL,gene)
+    pair_SNP_dict = dao.fetch_pair_SNP(web_GWAS_list,web_eQTL_list,gene)
     ret = {}
-    ret['GWAS'] = GWAS
-    ret['eQTL'] = eQTL
     ret['gene'] = gene
-    ret['SNP_list'] = list_detail
+    ret['pair_SNP_dict'] = pair_SNP_dict
     return jsonify(ret)
 @app.route('/')
 def show_papers():

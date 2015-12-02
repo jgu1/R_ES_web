@@ -4,19 +4,6 @@ $(function() {
 });
 
 function createGraph() {
- /* 
- var margin = 120;
-  
-  var w = 900 - 2 * margin, h = 500 - 2 * margin;
-  var svg = d3.select("#chart")
-              .style("border-color","#000")
-              .style("border-style","solid")
-                  .append("svg")
-                    .attr("width", w + 2 * margin)
-                    .attr("height", h + 2 * margin)
-                .append("svg:g")
-                        .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
-*/
    var margin = {top: 120, right: 200, bottom: 10, left: 360};
    var canvas2=d3.select("#detail").append("svg")
            .attr("width", 1200)
@@ -31,7 +18,6 @@ function createGraph() {
   //var yscale = d3.scale.linear().range([h, 0]);
 
   var detailcallback = function(data){
-    var dummy = 1; 
     var SNP_obj_list = [];
     var SNP_names = [];
   
@@ -276,8 +262,8 @@ function createGraph() {
         .attr("title",function(d){return d[3]})
         .style("fill", function(d) { return color_scale(parseFloat(Math.log10(d[3]))) })
         .on("click",function(d){
-            d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
-            
+            //d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
+            d3.json("/detail?gene="+d[2],detailcallback);
             //plotDetail(d);
             }
            );  
