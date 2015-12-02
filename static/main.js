@@ -78,6 +78,30 @@ function createGraph() {
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; });
 
+    svg2.selectAll(".column").data([]).exit().remove();
+    var column =svg2.selectAll(".column")
+              .data(SNPNames)
+              .enter().append("g")
+              .attr("class","column")
+              .attr("transform", function(d, i) { return "translate(" + i*size + ")rotate(-90)"; });
+               
+    column.append("line")
+          .style("stroke","#fff");
+ 
+
+    column.append("line")
+        .attr("x1",-height_pair)
+        .style("stroke","#fff");
+
+
+    column.append("text")
+      .attr("x", 6)
+      .attr("y", 7)
+      .attr("width",size)
+      .attr("height",size)
+      .attr("dy", ".32em")
+      .text(function(d, i) { return SNPNames[i]; }); 
+ 
     function pair2(pair) {
         var cell = d3.select(this).selectAll(".SNP")
             .data(pair)
