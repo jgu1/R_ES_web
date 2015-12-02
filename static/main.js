@@ -18,99 +18,77 @@ function createGraph() {
   //var yscale = d3.scale.linear().range([h, 0]);
 
   var detailcallback = function(data){
-    var SNP_obj_list = [];
-    var SNP_names = [];
-  
-    var GWAS = data.GWAS;
-    var eQTL = data.eQTL;
+    var matrix = [];
+    var pairNames = [];
+    var SNPNames = [];
+    var colSortOrderDesc;
+    var size = 15; 
+    colSortOrderDesc = false;
     var gene = data.gene;
-    var SNP_list = data.SNP_list;
-
-    var size = 15;
-    var width;
-    var height;
-
-    SNP_list.forEach(function(SNP){
-        var SNP_obj = {GWAS_SNP_name:SNP[0],eQTL_SNP_name:SNP[1],GWAS_SNP_pval:SNP[2]};
-        SNP_obj_list.push(SNP_obj);
-    }); 
-    SNP_obj_list = SNP_obj_list.sort(function(a,b){
-        return parseFloat(a.GWAS_SNP_pval)- parseFloat(b.GWAS_SNP_pval)
-        });
-    var max_pval = d3.max(SNP_obj_list,function(SNP_obj){
-                   return parseFloat(SNP_obj.GWAS_SNP_pval)
-                   });
-    var min_pval = d3.min(SNP_obj_list,function(SNP_obj){
-                   return parseFloat(SNP_obj.GWAS_SNP_pval)
+    var pair_SNP_dict = data.pair_SNP_dict;
+    var curr_pair = []
+    for (var pairName in pair_SNP_dict) {
+        pairNames.push(pairName);
+        var SNPs= pair_SNP_dict[pairName];
+        var n = SNPs.length;
+        curr_pair = []
+        SNPs.forEach(function(SNP){
+            curr_pair.push(SNP);
+            if (SNPNames.length < n){
+                SNPNames.push(SNP[0]);
+            }
+        });  
+        matrix.push(curr_pair); 
+    } 
+    var max_pval = d3.max(matrix, function(pair) {
+                   return d3.max(pair.map(function(SNP){return -Math.log10(parseFloat(SNP[2]))})) 
                    }); 
-        
-    var c_scale=d3.scale.linear()
-                        .domain([Math.log10(min_pval),Math.log10(max_pval)])
+    var min_pval = d3.min(matrix, function(pair) {
+                   return d3.min(pair.map(function(SNP){return -Math.log10(parseFloat(SNP[2]))}));
+                   }); 
+
+    var color_scale=d3.scale.linear()
+                        .domain([min_pval,max_pval])
                         .range(['red','blue']);
 
-    var num_SNP = SNP_obj_list.length;
-    var detail_width  = size;
-    var detail_height = size * num_SNP;
+    var height_pair = matrix.length * size;
+    var width_pair= matrix[0].length * size;
 
-    svg2.selectAll(".background").data([]).exit().remove();
+    svg2.append("rect")
+      .attr("class", "background")
+      .attr("width", width_pair)
+      .attr("height", height_pair);
 
-    svg2.selectAll(".background")
-           .append("rect")
-           .attr("class", "background")
-           .attr("width", detail_width)
-           .attr("height", detail_height);
-   
-    var detail_title = svg2.selectAll(".detail_title");
-    detail_title.data([]).exit().remove();
+    var pair = svg2.selectAll(".pair2")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "pair2")
+      .attr("transform", function(d, i) { return "translate(0," + i*size + ")"; })
+      .each(pair2);
 
-    detail_title =svg2.append("g")
-              .attr("class","detail_title")
-              .attr("transform", "translate(-90,-75)");
-
-    detail_title.append("text")
-            .append('svg:tspan')
-            .attr('x', 0)
-            .attr('dy', 20)
-            .text(function(d) { return " GWAS: " + GWAS; })
-            .append('svg:tspan')
-            .attr('x', 0)
-            .attr('dy', 20)
-            .text(function(d) { return " eQTL: " + eQTL; })
-            .append('svg:tspan')
-            .attr('x', 0)
-            .attr('dy', 20)
-            .text(function(d) { return " gene: " + gene; });
-
-    var row2 = svg2.selectAll(".row2");
-    row2.data([]).exit().remove();
-    row2=svg2.selectAll(".row2")
-        .data(SNP_obj_list)
-        .enter().append("g")
-        .attr("class", "row2")
-        .attr("transform", function(d, i) { return "translate(0," + i*size + ")"; })
-        .style("overflow","scroll")
-        .each(drawSNP);
-
-    row2.append("line")
-        .attr("x2",size)
+     pair.append("line")
+        .attr("x2",width_pair)
         .style("stroke","#fff");
 
-    row2.append("text")
+     pair.append("text")
         .attr("x",-6)
         .attr("y",7)
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
-        .text(function(d) { return d.GWAS_SNP_name; });
+        .text(function(d,i) { return pairNames[i]; });
 
-       function drawSNP(row2) {
-        var cell = d3.select(this)
-            .append("rect")
-            .attr("class", "cell2")
-            .attr("x", 0)
-            .attr("width", size )
+ 
+    function pair2(pair) {
+        var cell = d3.select(this).selectAll(".SNP")
+            .data(pair)
+          .enter().append("rect")
+            .attr("class", "SNP")
+            .attr("x", function(d,i) { return i*size; })
+            .attr("width", size)
             .attr("height", size)
-            .style("fill",c_scale(Math.log10(parseFloat(row2.GWAS_SNP_pval))))
-        }
+            .style("fill", function(d) { return color_scale(-Math.log10(parseFloat(d[2]))) });
+    }
+  a = 1;
   }
 
   var draw_pair = function(data){
@@ -137,10 +115,10 @@ function createGraph() {
     }   
     //x_axis_scale.domain(d3.range(matrix[0].length)) // set x_axis_scale's domain to be number of genes in a pair
     var max_pval = d3.max(matrix, function(pair) {
-                   return d3.max(pair.map(function(gene){return parseFloat(Math.log10(gene[3]))})) 
+                   return d3.max(pair.map(function(gene){return -Math.log10(parseFloat(gene[3]))})) 
                    }); 
     var min_pval = d3.min(matrix, function(pair) {
-                   return d3.min(pair.map(function(gene){return parseFloat(Math.log10(gene[3]))}));
+                   return d3.min(pair.map(function(gene){return -Math.log10(parseFloat(gene[3]))}));
                    }); 
 
     var color_scale=d3.scale.linear()
@@ -260,7 +238,7 @@ function createGraph() {
         .attr("width", size)
         .attr("height", size)
         .attr("title",function(d){return d[3]})
-        .style("fill", function(d) { return color_scale(parseFloat(Math.log10(d[3]))) })
+        .style("fill", function(d) { return color_scale(-Math.log10(parseFloat(d[3]))) })
         .on("click",function(d){
             //d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
             d3.json("/detail?gene="+d[2],detailcallback);

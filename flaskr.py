@@ -116,7 +116,6 @@ def data():
 @app.route('/detail')
 @app.route("/data/<string:gene>")
 def detail():
-    pdb.set_trace()
     gene = request.args.get('gene', 'empty')
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
