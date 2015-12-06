@@ -8,6 +8,7 @@ function createGraph() {
    var canvas2=d3.select("#detail").append("svg")
            .attr("width", 1200)
            .attr("height", 1000)
+   
    var svg2=canvas2
        .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
@@ -117,7 +118,8 @@ function createGraph() {
              if (parseFloat(d[2]) < 0){
                 return '';   
              }else{
-                return d[2];
+                return "GWAS pval:" + d[2] ;
+                //return "GWAS pval :" + d[2] + "\nGWAS_SNP:" + d[0] + "\neQTL_SNP :" + d[1] ;
              }
             });  
     }
@@ -316,7 +318,11 @@ function createGraph() {
             //plotDetail(d);
             }
            )
-        .append("title").text(function(d){return d[3]});  
+        .append("title")
+            .text(function(d){
+                return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[3];
+                
+            });  
   }
 
   function plotDetail(name){

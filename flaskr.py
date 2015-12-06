@@ -149,13 +149,12 @@ def show_papers():
     
     session['page'] = page
     GENE_P_Q_PER_PAGE= app.config['GENE_P_Q_PER_PAGE'] 
-    
+    if 'web_GWAS_list' not in session or 'web_eQTL_list' not in session:
+        return render_template('show_papers.html')
+
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
 
-    if not web_GWAS_list or not web_eQTL_list:
-        return render_template('show_papers.html')
-    
     gene_p_qs = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
     gene_p_qs_for_this_page = {}
     orig_length = -1
