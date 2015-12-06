@@ -45,16 +45,19 @@ function createGraph() {
         });  
         matrix.push(curr_pair); 
     } 
+    /*
     var max_pval = d3.max(matrix, function(pair) {
                    return d3.max(pair.map(function(SNP){return -Math.log10(parseFloat(SNP[2]))})) 
                    }); 
     var min_pval = d3.min(matrix, function(pair) {
                    return d3.min(pair.map(function(SNP){return -Math.log10(parseFloat(SNP[2]))}));
                    }); 
-
+    */
+    var max_pval = 5;
+    var min_pval = 0;
     var color_scale=d3.scale.linear()
                         .domain([min_pval,max_pval])
-                        .range(['red','blue']);
+                        .range(['#ffeda0','#f03b20']);
 
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
@@ -143,16 +146,19 @@ function createGraph() {
         }
     }   
     //x_axis_scale.domain(d3.range(matrix[0].length)) // set x_axis_scale's domain to be number of genes in a pair
+    /*
     var max_pval = d3.max(matrix, function(pair) {
                    return d3.max(pair.map(function(gene){return -Math.log10(parseFloat(gene[3]))})) 
                    }); 
     var min_pval = d3.min(matrix, function(pair) {
                    return d3.min(pair.map(function(gene){return -Math.log10(parseFloat(gene[3]))}));
                    }); 
-
+    */
+    var max_pval = 5;
+    var min_pval = 0;
     var color_scale=d3.scale.linear()
                         .domain([min_pval,max_pval])
-                        .range(['red','blue']);
+                        .range(['#ffeda0','#f03b20']);
 
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
