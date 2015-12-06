@@ -320,7 +320,7 @@ function createGraph() {
            )
         .append("title")
             .text(function(d){
-                return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[3];
+                return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[2];
                 
             });  
   }
