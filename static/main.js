@@ -112,8 +112,14 @@ function createGraph() {
                     }else{
                         return color_scale(-Math.log10(parseFloat(d[2]))) 
                     }
-                });
-   
+                })
+            .append("title").text(function(d){
+             if (parseFloat(d[2]) < 0){
+                return '';   
+             }else{
+                return d[2];
+             }
+            });  
     }
   }
 
@@ -309,7 +315,8 @@ function createGraph() {
             d3.json("/detail?gene="+d[2],detailcallback);
             //plotDetail(d);
             }
-           );  
+           )
+        .append("title").text(function(d){return d[3]});  
   }
 
   function plotDetail(name){
