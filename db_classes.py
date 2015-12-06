@@ -193,6 +193,36 @@ class DAO(object):
 
         return filtered_dict
 
+    def get_all_SNPs(self,result_lists):
+        individual_SNPs = []
+        for result in result_lists:
+            curr_SNP = [x[0] for x in result]
+            individual_SNPs.append(set(curr_SNP))
+        all_SNPs = set.union(*individual_SNPs)
+        all_SNPs_list = list(all_SNPs)
+        all_SNPs_list.sort()
+        return all_SNPs_list
+
+    def patch_result_dict_by_all_SNPs(self,result_dict):
+        all_SNPs_list = self.get_all_SNPs(result_dict.values())
+        patched_dict = {}
+        for pair_name in result_dict:
+            result = result_dict[pair_name]
+            curr_patched_list = []
+            curr_result_dict = {}
+            for SNP_tuple in result:
+                SNP = SNP_tuple[0]
+                curr_result_dict[SNP] = SNP_tuple
+            for SNP in all_SNPs_list:
+                if SNP in curr_result_dict:
+                    curr_patched_list.append(curr_result_dict[SNP])
+                else:
+                    curr_patched_list.append(('dummy','dummy','-1'))  
+            patched_dict[pair_name] = curr_patched_list
+
+        return patched_dict,all_SNPs_list
+
+
     def fetch_pair_SNP(self,GWAS_list,eQTL_list,gene):
         GWASs = GWAS_list.strip().split()
         eQTLs = eQTL_list.strip().split()
@@ -206,10 +236,9 @@ class DAO(object):
                 #result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     result_dict[GWAS + eQTL] = result
+        patched_dict,all_SNPs_list = self.patch_result_dict_by_all_SNPs(result_dict)        
        
-        filtered_dict = self.filter_result_dict_by_comm_SNPs(result_dict)        
-       
-        return filtered_dict
+        return patched_dict,all_SNPs_list
 
 
 #detail manipulation

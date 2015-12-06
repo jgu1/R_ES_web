@@ -120,10 +120,11 @@ def detail():
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    pair_SNP_dict = dao.fetch_pair_SNP(web_GWAS_list,web_eQTL_list,gene)
+    pair_SNP_dict,all_SNPs_list = dao.fetch_pair_SNP(web_GWAS_list,web_eQTL_list,gene)
     ret = {}
     ret['gene'] = gene
     ret['pair_SNP_dict'] = pair_SNP_dict
+    ret['all_SNPs_list'] = all_SNPs_list
     return jsonify(ret)
 @app.route('/')
 def show_papers():
