@@ -153,7 +153,7 @@ class DAO(object):
                 eQTL = eQTLs[j]
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
-                    result_dict[GWAS + eQTL] = result
+                    result_dict[GWAS + '---' + eQTL] = result
         filtered_dict = self.filter_result_dict_by_comm_genes(result_dict)        
         return filtered_dict
 
@@ -235,7 +235,7 @@ class DAO(object):
                 result = self.fetch_SNP_list_by_GWAS_eQTL_gene(GWAS,eQTL,gene)
                 #result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
-                    result_dict[GWAS + eQTL] = result
+                    result_dict[GWAS + '---' + eQTL] = result
         patched_dict,all_SNPs_list = self.patch_result_dict_by_all_SNPs(result_dict)        
        
         return patched_dict,all_SNPs_list

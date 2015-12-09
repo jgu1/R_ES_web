@@ -93,7 +93,7 @@ def draw():
 
     session['web_GWAS_list'] = web_GWAS_list
     session['web_eQTL_list'] = web_eQTL_list
-    return redirect(url_for('show_papers'))
+    return redirect(url_for('show_matrix'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -104,14 +104,14 @@ def login():
         else:
             session['logged_in'] = True
             flash('You were logged in')
-            return redirect(url_for('show_papers'))
+            return redirect(url_for('show_matrix'))
     return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
-    return redirect(url_for('show_papers'))
+    return redirect(url_for('show_matrix'))
 
 if __name__ == '__main__':
     ip_for_current_machine = socket.gethostbyname(socket.gethostname())
