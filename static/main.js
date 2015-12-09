@@ -97,8 +97,9 @@ function createGraph() {
       .attr("width",size)
       .attr("height",size)
       .attr("dy", ".32em")
-      .text(function(d, i) { return all_SNPs_list[i]; }); 
- 
+      .text(function(d, i) { return all_SNPs_list[i]; }) 
+      .on("click", function(d,i) {sortAlongColumn(i);}) ; 
+    
     function pair2(pair) {
         var cell = d3.select(this).selectAll(".SNP")
             .data(pair)
@@ -156,6 +157,36 @@ function createGraph() {
                     .selectAll(".SNP")
                     .attr("x", function(d,i) { return sorted.indexOf(i)*size; });
     }  
+
+    function getColumnINegLog10(i){
+      var index=0;
+      var negLog10=[];
+      var cd;
+      for(index=0; index<matrix.length; index++){
+           SNPs=matrix[index];
+           if(SNPs.length>i){
+                if (parseFloat(SNPs[i][2]) < 0){
+                    negLog10.push(-1);
+                }else{
+                     negLog10.push(-Math.log10(parseFloat(SNPs[i][2])));
+                }
+           }else{
+                negLog10.push(0);
+           }
+      }
+      return negLog10;
+    }
+
+    function sortAlongColumn(i){
+       var t = svg2.transition().duration(3000);
+       var ColumnIData=getColumnINegLog10(i);
+       var sorted; // sorted is zero-based index
+       sorted=d3.range(matrix.length).sort(function(a,b){   //index array pointing to real data arra
+            return ColumnIData[b] - ColumnIData[a];
+       });
+       t.selectAll(".pair2")
+        .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
+  }  
 
 
 
@@ -299,14 +330,7 @@ function createGraph() {
        var t = svg.transition().duration(3000);
        var ColumnIData=getColumnINegLog10(i);
        var sorted; // sorted is zero-based index
-       sorted=d3.range(matrix.length).sort(function(a,b){   //index array pointing to real data array
-        /*
-        if(colSortOrderDesc == true){
-            return ColumnIData[a] - ColumnIData[b];
-        }else{
-            return ColumnIData[b] - ColumnIData[a];
-        }
-        */
+       sorted=d3.range(matrix.length).sort(function(a,b){   //index array pointing to real data arra
             return ColumnIData[b] - ColumnIData[a];
        });
        t.selectAll(".pair")
