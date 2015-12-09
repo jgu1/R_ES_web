@@ -72,7 +72,8 @@ function createGraph() {
         .attr("y",7)
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
-        .text(function(d,i) { return pairNames[i]; });
+        .text(function(d,i) { return pairNames[i]; })
+        .on("click", function(d,i) {sortAlongRow(i);});
 
     svg2.selectAll(".column").data([]).exit().remove();
     var column =svg2.selectAll(".column")
@@ -123,6 +124,43 @@ function createGraph() {
              }
             });  
     }
+ 
+    function getRowINegLog10(i){
+      var index=0;
+      var negLog10=[];
+      var rowIRaw = matrix[i];
+      for (var i=0; i<rowIRaw.length; i++){
+        SNP = rowIRaw[i];
+        if (parseFloat(SNP[2]) < 0){
+            negLog10.push(-1);    
+        }else{
+            negLog10.push(-Math.log10(parseFloat(SNP[2])));  
+        }
+      }
+      return negLog10;
+    }
+
+
+    function sortAlongRow(i){
+       var t = svg2.transition().duration(3000);
+       var rowIData=getRowINegLog10(i);
+       var sorted; // sorted is zero-based index
+       sorted=d3.range(rowIData.length).sort(function(a,b){   //index array pointing to real data array
+            return rowIData[b] - rowIData[a];
+       });
+       // sort column names
+       t.selectAll(".column")
+        .attr("transform", function(d,i) { return "translate(" + sorted.indexOf(i) * size+")rotate(-90)";});
+       // sort rects in each row 
+       var SNPs = t.selectAll(".pair2")
+                    .selectAll(".SNP")
+                    .attr("x", function(d,i) { return sorted.indexOf(i)*size; });
+    }  
+
+
+
+
+
   }
 
   var draw_pair = function(data){
