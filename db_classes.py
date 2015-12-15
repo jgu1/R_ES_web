@@ -1,5 +1,6 @@
 import pdb
 import MySQLdb
+import math
 class DAO(object):
     db = None
     def __init__(self):
@@ -118,16 +119,18 @@ class DAO(object):
         rows = cur.fetchall()
         return list(rows) 
 
-    def get_comm_genes(self,result_lists):
+    def get_lowest_30_genes_for_all_pairs(self,result_lists):
         individual_genes = []
         for result in result_lists:
-            curr_gene = [x[2] for x in result]
+            result.sort(key=lambda x:float(x[3]))    
+            rows_with_lowest_30_pval = result[:30]
+            curr_gene = [x[2] for x in rows_with_lowest_30_pval] 
             individual_genes.append(set(curr_gene))
-        comm_genes = set.intersection(*individual_genes)
+        comm_genes = set.union(*individual_genes)
         return comm_genes
 
-    def filter_result_dict_by_comm_genes(self,result_dict):
-        comm_genes = self.get_comm_genes(result_dict.values())
+    def filter_result_dict_by_lowest_30_genes_for_each_pair(self,result_dict):
+        comm_genes = self.get_lowest_30_genes_for_all_pairs(result_dict.values())
         filtered_dict = {}
         for pair_name in result_dict:
             result = result_dict[pair_name]
@@ -154,7 +157,7 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     result_dict[GWAS + '---' + eQTL] = result
-        filtered_dict = self.filter_result_dict_by_comm_genes(result_dict)        
+        filtered_dict = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
         return filtered_dict
 
 #pair manipulation   
