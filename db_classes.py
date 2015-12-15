@@ -127,23 +127,33 @@ class DAO(object):
             curr_gene = [x[2] for x in rows_with_lowest_30_pval] 
             individual_genes.append(set(curr_gene))
         comm_genes = set.union(*individual_genes)
-        return comm_genes
+        comm_gene_names = list(comm_genes)
+        comm_gene_names.sort() 
+        return comm_gene_names
 
     def filter_result_dict_by_lowest_30_genes_for_each_pair(self,result_dict):
-        comm_genes = self.get_lowest_30_genes_for_all_pairs(result_dict.values())
+        filtered_gene_names = self.get_lowest_30_genes_for_all_pairs(result_dict.values())
         filtered_dict = {}
         for pair_name in result_dict:
             result = result_dict[pair_name]
-            curr_new_list = []
-            for row in result:
-                if row[2] in comm_genes:
-                    curr_new_list.append(row)
-            filtered_dict[pair_name] = curr_new_list
+            curr_patched_list = []
+            curr_result_dict = {}
+            for gene_tuple in result:
+                gene = gene_tuple[2]
+                curr_result_dict[gene] = gene_tuple
+            
+            for gene in filtered_gene_names:
+                if gene in curr_result_dict:
+                    curr_patched_list.append(curr_result_dict[gene])
+                else:
+                    curr_patched_list.append(('dummy_GWAS','dummy_eQTL','dummy_gene','-1','-1'))  
+            filtered_dict[pair_name] = curr_patched_list
+        '''
         #lists contain the same set of genes, sorting each one by gene will render the lists in the same order in terms of genes
         for l in filtered_dict.values() :
             l.sort(key=lambda x:x[2])
-
-        return filtered_dict
+        '''
+        return filtered_dict,filtered_gene_names
 
     def fetch_pair_gene(self,GWAS_list,eQTL_list):
         GWASs = GWAS_list.strip().split()
@@ -157,8 +167,8 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     result_dict[GWAS + '---' + eQTL] = result
-        filtered_dict = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
-        return filtered_dict
+        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
+        return filtered_dict,filtered_gene_names
 
 #pair manipulation   
 #detail manipulation

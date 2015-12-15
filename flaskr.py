@@ -49,6 +49,40 @@ def detail():
     ret['pair_SNP_dict'] = pair_SNP_dict
     ret['all_SNPs_list'] = all_SNPs_list
     return jsonify(ret)
+
+@app.route('/sortAlongPair')
+@app.route("/sortAlongPair/<string:sortAlongPairName>")
+def sortAlongPair():
+    pdb.set_trace()
+    sortAlongPairName = request.args.get('sortAlongPairName','empty')
+    web_GWAS_list = session['web_GWAS_list']
+    web_eQTL_list = session['web_eQTL_list']
+    dao = getattr(g, 'dao', None)
+    gene_p_qs = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
+    
+    sortAlongPairList = gene_p_qs[sortAlongPairName]
+    sort_idx = sorted(range(len(sortAlongPairList)),key=lambda x:sortAlongPairList[x][3])
+    
+
+
+    gene_p_qs_for_this_page = {}
+    page = 1
+    max_length = -1
+    for pair_name in gene_p_qs:
+        orig_length_result = gene_p_qs[pair_name]
+        if max_length < len(orig_length_result):
+            max_length = len(orig_length_result)   # get the length for pagination
+        gene_p_qs_for_this_page[pair_name] = orig_length_result[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]       
+ 
+    pagination = Pagination(page=page, total=orig_length, per_page=GENE_P_Q_PER_PAGE, record_name='genes for pairs')
+    
+    #end pagination
+    gene_p_qs_json_obj = json.dumps(gene_p_qs_for_this_page)
+     
+    return render_template('show_matrix.html',pagination=pagination, page=page,gene_p_qs_json_obj = gene_p_qs_json_obj)
+ 
+
+
 @app.route('/')
 def show_matrix():
     dao = getattr(g, 'dao', None)
@@ -66,21 +100,22 @@ def show_matrix():
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
 
-    gene_p_qs = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
+    gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
     gene_p_qs_for_this_page = {}
-    orig_length = -1
+    max_length = -1
     for pair_name in gene_p_qs:
         orig_length_result = gene_p_qs[pair_name]
-        if orig_length <0:
-            orig_length = len(orig_length_result)   # get the length for pagination
+        if max_length < len(orig_length_result):
+            max_length = len(orig_length_result)   # get the max length for pagination
         gene_p_qs_for_this_page[pair_name] = orig_length_result[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]       
- 
-    pagination = Pagination(page=page, total=orig_length, per_page=GENE_P_Q_PER_PAGE, record_name='genes for pairs')
-    
+         
+    pagination = Pagination(page=page, total=max_length, per_page=GENE_P_Q_PER_PAGE, record_name='genes for pairs')
+   
     #end pagination
     gene_p_qs_json_obj = json.dumps(gene_p_qs_for_this_page)
-     
-    return render_template('show_matrix.html',pagination=pagination, page=page,gene_p_qs_json_obj = gene_p_qs_json_obj)
+    filtered_gene_names_for_this_page = filtered_gene_names[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]
+    filtered_gene_names_json_obj = json.dumps(filtered_gene_names_for_this_page) 
+    return render_template('show_matrix.html',pagination=pagination, page=page,gene_p_qs_json_obj = gene_p_qs_json_obj,filtered_gene_names_json_obj=filtered_gene_names_json_obj)
  
 @app.route('/draw', methods=['POST'])
 def draw():

@@ -73,7 +73,9 @@ function createGraph() {
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; })
-        .on("click", function(d,i) {sortAlongRow(i);});
+        .on("click", function(d,i){ 
+            d3.json("/sortAlongPair?sortAlongPairName="+pairNames[i],detailcallback);
+        });
 
     svg2.selectAll(".column").data([]).exit().remove();
     var column =svg2.selectAll(".column")
@@ -120,7 +122,7 @@ function createGraph() {
              if (parseFloat(d[2]) < 0){
                 return '';   
              }else{
-                return "GWAS pval:" + d[2] ;
+                return "GWAS pval: " + d[2] + "\neSNP name: " + d[1] ;
                 //return "GWAS pval :" + d[2] + "\nGWAS_SNP:" + d[0] + "\neQTL_SNP :" + d[1] ;
              }
             });  
@@ -187,17 +189,12 @@ function createGraph() {
        t.selectAll(".pair2")
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
   }  
-
-
-
-
-
   }
 
-  var draw_pair = function(data){
+  var draw_pair = function(data,filtered_gene_names){
     var matrix = [];
     var pairNames = [];
-    var geneNames = [];
+    var geneNames = filtered_gene_names;
     var size = 15; 
     for (var pairName in data) {
         if (data.hasOwnProperty(pairName)) {
@@ -207,9 +204,6 @@ function createGraph() {
             curr_pair = []
             genes.forEach(function(gene){
                 curr_pair.push(gene);
-                if (geneNames.length < n){
-                    geneNames.push(gene[2]);
-                }
             });          
             matrix.push(curr_pair)
         }
@@ -223,7 +217,7 @@ function createGraph() {
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
 
-     var margin = 120;
+    var margin = 120;
   
     var w = 900 - 2 * margin, h = 500 - 2 * margin;
     var svg = d3.select("#chart")
@@ -299,7 +293,9 @@ function createGraph() {
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; })
-        .on("click", function(d,i) {sortAlongRow(i);});
+        .on("click", function(d,i) {
+            d3.json("/sortAlongPair?sortAlongPairName="+pairNames[i],draw_pair);
+          });
 
     svg.selectAll(".column").data([]).exit().remove();
     var column =svg.selectAll(".column")
@@ -395,6 +391,8 @@ function createGraph() {
 
   var gene_p_qs_json_text = document.getElementById("gene_p_qs_json_obj").value;
   var gene_p_qs_json_obj = JSON.parse(gene_p_qs_json_text);
-  draw_pair(gene_p_qs_json_obj);
+  var filtered_gene_names_json_text = document.getElementById("filtered_gene_names_json_obj").value;
+  var filtered_gene_names_json_obj = JSON.parse(filtered_gene_names_json_text);
+  draw_pair(gene_p_qs_json_obj,filtered_gene_names_json_obj);
     // Code goes here
 }
