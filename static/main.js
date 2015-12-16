@@ -316,7 +316,12 @@ function createGraph() {
       for(index=0; index<matrix.length; index++){
            genes=matrix[index];
            if(genes.length>i){
-                negLog10.push(-Math.log10(parseFloat(genes[i][3])));
+                columnINumber = parseFloat(genes[i][3]);
+                if (columnINumber < 0){
+                    negLog10.push(0);
+                }else{
+                    negLog10.push(-Math.log10(columnINumber));
+                }
            }else{
                 negLog10.push(0);
            }
