@@ -74,7 +74,7 @@ function createGraph() {
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; })
         .on("click", function(d,i){ 
-            d3.json("/sortAlongPair?sortAlongPairName="+pairNames[i],detailcallback);
+            sortAlongRow(i);
         });
 
     svg2.selectAll(".column").data([]).exit().remove();
@@ -191,22 +191,24 @@ function createGraph() {
   }  
   }
 
-  var draw_pair = function(data,filtered_gene_names){
+  var draw_pair = function(draw_pair_json_obj){
     var matrix = [];
     var pairNames = [];
-    var geneNames = filtered_gene_names;
-    var size = 15; 
-    for (var pairName in data) {
-        if (data.hasOwnProperty(pairName)) {
-            pairNames.push(pairName);
-            var genes= data[pairName]
-            var n = genes.length
-            curr_pair = []
-            genes.forEach(function(gene){
-                curr_pair.push(gene);
-            });          
-            matrix.push(curr_pair)
-        }
+    var geneNames = [];
+    var size = 15;
+    var geneNames = draw_pair_json_obj.filtered_gene_names_for_this_page; 
+    var gene_p_qs_for_this_page = draw_pair_json_obj.gene_p_qs_for_this_page; 
+    var pairNames = draw_pair_json_obj.sorted_pair_names; 
+    for (var i = 0; i<pairNames.length;i++) {
+        pairName = pairNames[i];
+        var genes= gene_p_qs_for_this_page[pairName]
+        var n = genes.length
+        curr_pair = []
+        genes.forEach(function(gene){
+            curr_pair.push(gene);
+        });          
+        matrix.push(curr_pair)
+    
     }   
     var max_pval = 5;
     var min_pval = 0;
@@ -220,10 +222,10 @@ function createGraph() {
     var margin = 120;
   
     var w = 900 - 2 * margin, h = 500 - 2 * margin;
+    var svg = d3.select("#chart");
+    svg.selectAll("svg").remove(); 
     var svg = d3.select("#chart")
-              //.style("border-color","#000")
-              //.style("border-style","solid")
-                  .append("svg")
+                   .append("svg")
                     .attr("width", w + 2 * margin)
                     .attr("height",height_pair + 2 * margin)
                   .append("svg:g")
@@ -389,10 +391,11 @@ function createGraph() {
     console.log('you called callback! you know how to get data!');
   };
 
-  var gene_p_qs_json_text = document.getElementById("gene_p_qs_json_obj").value;
-  var gene_p_qs_json_obj = JSON.parse(gene_p_qs_json_text);
-  var filtered_gene_names_json_text = document.getElementById("filtered_gene_names_json_obj").value;
-  var filtered_gene_names_json_obj = JSON.parse(filtered_gene_names_json_text);
-  draw_pair(gene_p_qs_json_obj,filtered_gene_names_json_obj);
+  var draw_pair_json_text = document.getElementById("draw_pair_json_obj").value;
+  var draw_pair_json_obj = JSON.parse(draw_pair_json_text);
+  //var filtered_gene_names_json_text = document.getElementById("filtered_gene_names_json_obj").value;
+  //var filtered_gene_names_json_obj = JSON.parse(filtered_gene_names_json_text);
+  //draw_pair(gene_p_qs_json_obj,filtered_gene_names_json_obj);
+  draw_pair(draw_pair_json_obj);
     // Code goes here
 }
