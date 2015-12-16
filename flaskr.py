@@ -50,10 +50,61 @@ def detail():
     ret['all_SNPs_list'] = all_SNPs_list
     return jsonify(ret)
 
+def fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName ):
+    web_GWAS_list = session['web_GWAS_list']
+    web_eQTL_list = session['web_eQTL_list']
+    dao = getattr(g, 'dao', None)
+    gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
+   
+    if not not sortAlongPairName:
+        sortAlongPairList = gene_p_qs[sortAlongPairName]
+        #change every dummy value to 1.1
+        sortAlongPairListPvals = []
+        for i in range(len(sortAlongPairList)):
+            curr_gene_tuple = sortAlongPairList[i]
+            if 'dummy' in curr_gene_tuple[0]:
+                sortAlongPairListPvals.append(1.1)    # if empty, append a large value so it's moved back, real pval never exceed 1  
+            else:
+                sortAlongPairListPvals.append(float(curr_gene_tuple[3]))
+
+        sort_idx = sorted(range(len(sortAlongPairListPvals)),key=lambda x:sortAlongPairListPvals[x])
+        filtered_gene_names = [filtered_gene_names[i] for i in sort_idx]
+         
+        for pair_name in gene_p_qs:
+            orig_order_list = gene_p_qs[pair_name]
+            sort_order_list = [orig_order_list[i] for i in sort_idx]   
+            gene_p_qs[pair_name] = sort_order_list
+     
+    gene_p_qs_for_this_page = {}
+    page = session['page']
+    max_length = -1
+    for pair_name in gene_p_qs:
+        orig_length_result = gene_p_qs[pair_name]
+        if max_length < len(orig_length_result):
+            max_length = len(orig_length_result)   # get the length for pagination
+        gene_p_qs_for_this_page[pair_name] = orig_length_result[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]       
+ 
+    pagination = Pagination(page=page, total=max_length, per_page=GENE_P_Q_PER_PAGE, record_name='genes for pairs')
+    filtered_gene_names_for_this_page = filtered_gene_names[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]
+ 
+    return gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page
+
+
+
+
+
+
+
 @app.route('/sortAlongPair')
 @app.route("/sortAlongPair/<string:sortAlongPairName>")
 def sortAlongPair():
     sortAlongPairName = request.args.get('sortAlongPairName','empty')
+    
+    if sortAlongPairName == 'empty': # code goes here by selecting a sortAlongPairName and go to another page. it's called from show_matrix() method
+        sortAlongPairName = session['sortAlongPairName']
+    else:                            # code goes here by choosing another sortAlongPairName
+        session['sortAlongPairName'] = sortAlongPairName
+    
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
@@ -78,7 +129,7 @@ def sortAlongPair():
         gene_p_qs[pair_name] = sort_order_list
  
     gene_p_qs_for_this_page = {}
-    page = 1
+    page = session['page']
     max_length = -1
     for pair_name in gene_p_qs:
         orig_length_result = gene_p_qs[pair_name]
@@ -98,18 +149,22 @@ def sortAlongPair():
 
 @app.route('/')
 def show_matrix():
-    dao = getattr(g, 'dao', None)
-    #begin pagination 
+
     try:
         page = int(request.args.get('page', 1))
     except ValueError:
         page = 1
     
     session['page'] = page
+
+    dao = getattr(g, 'dao', None)
+    #begin pagination 
     GENE_P_Q_PER_PAGE= app.config['GENE_P_Q_PER_PAGE'] 
     if 'web_GWAS_list' not in session or 'web_eQTL_list' not in session:
         return render_template('show_matrix.html')
 
+
+    '''
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
 
@@ -126,6 +181,12 @@ def show_matrix():
    
     #end pagination
     filtered_gene_names_for_this_page = filtered_gene_names[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]
+    '''
+    sortAlongPairName = None 
+    if 'sortAlongPairName' in session:
+        sortAlongPairName = session['sortAlongPairName']
+
+    gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page = fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName) 
     ret = {}
     ret['filtered_gene_names_for_this_page'] = filtered_gene_names_for_this_page
     ret['gene_p_qs_for_this_page'] = gene_p_qs_for_this_page
@@ -135,7 +196,8 @@ def show_matrix():
 
 @app.route('/draw', methods=['POST'])
 def draw():
- 
+
+    del session['sortAlongPairName'] 
     if not session.get('logged_in'):
         abort(401)
     
