@@ -11,10 +11,16 @@
         <dt>Please choose GWAS and eQTL of your interest:
         <dd>
         <br>GWAS list<dd><input type=text size=30 name=GWAS_list>
-        <br>eQTL list<dd><input type=text size=30 name=eQTL_list>
+        <br>eQTK list<ul id="eQTL_names">
+        {% for eQTL_name in eQTL_names%}
+            <li><input name={{ eQTL_name }} type="checkbox" />{{ eQTL_name }}</li>
+        {% endfor %}
+        </ul>
+       {# <br>eQTL list<dd><input type=text size=30 name=eQTL_list>#}
         <dd><input type=submit value=Draw>
       </dl>
     </form>
+
 
     {% if pagination %}
         {{ pagination.info }}

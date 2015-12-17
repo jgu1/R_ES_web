@@ -63,4 +63,10 @@ h2              { font-size: 1.2em; }
     background:#6aa6ed;
     color:white
 }
-
+#eQTL_names{
+    padding: 0;
+}
+#eQTL_names li{
+    padding-right: 1px;
+    display:inline-block;
+}

@@ -16,6 +16,7 @@ import json
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME_PASSWORD_DICT={'hao':'genome','jiashun':'genome','erxin':'genome','jun':'genome','yanqiu':'genome','jialiang':'genome'}
+eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
 GENE_P_Q_PER_PAGE=30
 page=1
 
@@ -123,17 +124,24 @@ def show_matrix():
     ret['gene_p_qs_for_this_page'] = gene_p_qs_for_this_page
     ret['sorted_pair_names'] = sorted(gene_p_qs_for_this_page.keys())
     draw_pair_json_obj = json.dumps(ret)
-    return render_template('show_matrix.html',pagination=pagination, page=page,draw_pair_json_obj=draw_pair_json_obj)
+    return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, draw_pair_json_obj=draw_pair_json_obj)
 
 @app.route('/draw', methods=['POST'])
 def draw():
-
-    del session['sortAlongPairName'] 
+    if 'sortAlongPairName' in session:
+        del session['sortAlongPairName'] #no sort upon a new search
+    
+    web_eQTL_list = ''
+    for eQTL_name in eQTL_names:
+        eQTL_name_selected_list = request.form.getlist(eQTL_name)
+        if len(eQTL_name_selected_list) > 0:
+            web_eQTL_list = web_eQTL_list + eQTL_name + ' ' 
+    
     if not session.get('logged_in'):
         abort(401)
     
     web_GWAS_list = request.form['GWAS_list']
-    web_eQTL_list  = request.form['eQTL_list']
+    #web_eQTL_list  = request.form['eQTL_list']
 
     session['web_GWAS_list'] = web_GWAS_list
     session['web_eQTL_list'] = web_eQTL_list
