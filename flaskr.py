@@ -12,10 +12,12 @@ import socket
 from datetime import datetime,timedelta
 from db_classes import DAO
 import json
+import pickle
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME_PASSWORD_DICT={'hao':'genome','jiashun':'genome','erxin':'genome','jun':'genome','yanqiu':'genome','jialiang':'genome'}
+GWAS_pickle_name = 'disease_GWAS_tuples_list.pickle'
 eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
 GENE_P_Q_PER_PAGE=30
 page=1

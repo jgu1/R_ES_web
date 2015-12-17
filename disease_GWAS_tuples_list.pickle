@@ -1,0 +1,347 @@
+(lp0
+(S'Age-Related Macular Degeneration'
+p1
+S'AMDGene2013_Advanced'
+p2
+tp3
+a(S'Breast Cancer (women only), adjusted for age, parity, BMI at entry (GEE)'
+p4
+S'BreastCancer_pha001338'
+p5
+tp6
+a(S"Crohn's Disease"
+p7
+S'Barrett_08'
+p8
+tp9
+a(S'Age-Related Macular Degeneration'
+p10
+S'AMDGene2013_GeographicAtropy'
+p11
+tp12
+a(S'Age-Related Macular Degeneration'
+p13
+S'AMDGene2013_Neovascular'
+p14
+tp15
+a(S'Breast Cancer (women only), age-adjusted(FBAT)'
+p16
+S'BreastCancer_pha001335'
+p17
+tp18
+a(S'Sporadic Postmenopausal Breast Cancer'
+p19
+S'BreastCancer_pha002853'
+p20
+tp21
+a(S'Alcoholism'
+p22
+S'Alcoholism_pha002892'
+p23
+tp24
+a(S'Breast Cancer (women only), age-adjusted(GEE)'
+p25
+S'BreastCancer_pha001336'
+p26
+tp27
+a(S'Alzheimer'
+p28
+S'Alzheimer_pha002879'
+p29
+tp30
+a(S'Type 2 diabetes'
+p31
+S'DIAGRAM_Metabochip'
+p32
+tp33
+a(S'Breast Cancer (women only), adjusted for age, parity, BMI at entry (FBAT)'
+p34
+S'BreastCancer_pha001337'
+p35
+tp36
+a(S'Bipolar Disorder'
+p37
+S'BipolarDisorder_pha002858'
+p38
+tp39
+a(S'Type 2 Diabetes'
+p40
+S'Diagram_08'
+p41
+tp42
+a(S'Chronic Kidney Disease'
+p43
+S'ChronicKidneyDisease_CKD_meta'
+p44
+tp45
+a(S'Chronic Kidney Disease'
+p46
+S'ChronicKidneyDisease_MA_meta'
+p47
+tp48
+a(S'Coronary Artery Disease'
+p49
+S'Coronary_Artery_Disease_Euro_meta'
+p50
+tp51
+a(S'Asthma'
+p52
+S'EVE_12_Asthma'
+p53
+tp54
+a(S'Chronic Kidney Disease'
+p55
+S'ChronicKidneyDisease_UACR_meta'
+p56
+tp57
+a(S'Chronic Kidney Disease'
+p58
+S'ChronicKidneyDisease_eGFRcrea_meta'
+p59
+tp60
+a(S'Chronic Kidney Disease'
+p61
+S'ChronicKidneyDisease_eGFRcyse_meta'
+p62
+tp63
+a(S'Type 2 diabetes'
+p64
+S'DIAGRAM_Trans-ethnic_meta'
+p65
+tp66
+a(S'Coronary Artery Disease'
+p67
+S'Coronary_Artery_Disease_C4D_meta'
+p68
+tp69
+a(S"Crohn's Disease"
+p70
+S'Franke_10'
+p71
+tp72
+a(S'Coronary Artery Disease'
+p73
+S'Coronary_Artery_Disease_C4D_metabochip'
+p74
+tp75
+a(S'Type 2 diabetes'
+p76
+S'DIAGRAMv3_2012DEC17_summary'
+p77
+tp78
+a(S'Asthma'
+p79
+S'GALA2_12_Asthma'
+p80
+tp81
+a(S'Asthma'
+p82
+S'GALA2_12_Asthma_HM'
+p83
+tp84
+a(S'diabetes'
+p85
+S'Kathy_Metformin'
+p86
+tp87
+a(S'Longevity'
+p88
+S'Longevity_2014_Age85'
+p89
+tp90
+a(S'Glioma'
+p91
+S'Glioma_pha003836'
+p92
+tp93
+a(S'Longevity'
+p94
+S'Longevity_2014_Age90'
+p95
+tp96
+a(S'Inflammatory Bowel Disease'
+p97
+S'IBD_pha002847'
+p98
+tp99
+a(S'Lung Cancer'
+p100
+S'LungCancer_pha003851'
+p101
+tp102
+a(S'Schizophrenia'
+p103
+S'McCarroll_12_SCZ'
+p104
+tp105
+a(S'Lung Cancer'
+p106
+S'LungCancer_pha003852'
+p107
+tp108
+a(S'Diastolic Blood Pressure'
+p109
+S'ICBP_11_DBP'
+p110
+tp111
+a(S'Lung Cancer'
+p112
+S'LungCancer_pha003853'
+p113
+tp114
+a(S'Systolic Blood Pressure'
+p115
+S'ICBP_11_SBP'
+p116
+tp117
+a(S'Lung Cancer'
+p118
+S'LungCancer_pha003854'
+p119
+tp120
+a(S'HIV Control'
+p121
+S'IHIVCS_10_HIV'
+p122
+tp123
+a(S'Lung Cancer'
+p124
+S'LungCancer_pha003855'
+p125
+tp126
+a(S'Lung Cancer'
+p127
+S'LungCancer_pha003856'
+p128
+tp129
+a(S'Lung Cancer'
+p130
+S'LungCancer_pha003857'
+p131
+tp132
+a(S'Schizophrenia'
+p133
+S'McCarroll_12_SCZ_HM'
+p134
+tp135
+a(S'Acute Myleoid Leukemia'
+p136
+S'TCGA_AML'
+p137
+tp138
+a(S'Multiple Sclerosis'
+p139
+S'MultipleSclerosis_pha002861'
+p140
+tp141
+a(S'Parkinson'
+p142
+S'Parkinson_pha002840'
+p143
+tp144
+a(S'Neuroblastoma'
+p145
+S'Neuroblastoma_pha002895'
+p146
+tp147
+a(S'Juvenile Arthritis'
+p148
+S'Ombrello_14'
+p149
+tp150
+a(S'Parkinson'
+p151
+S'Parkinson_pha002868'
+p152
+tp153
+a(S'Pancreatic Cancer'
+p154
+S'PancreaticCancer_pha002874'
+p155
+tp156
+a(S'Longevity'
+p157
+S'Perls_12_snp135_maf'
+p158
+tp159
+a(S'Pancreatic Cancer'
+p160
+S'PancreaticCancer_pha002889'
+p161
+tp162
+a(S'Longevity'
+p163
+S'Perls_12'
+p164
+tp165
+a(S'Prostate Cancer'
+p166
+S'ProstateCancer_pha001339'
+p167
+tp168
+a(S'Prostate Cancer'
+p169
+S'ProstateCancer_pha001340'
+p170
+tp171
+a(S'Type 2 Diabetes'
+p172
+S'WTCCC_T2D_07'
+p173
+tp174
+a(S'Prostate Cancer'
+p175
+S'ProstateCancer_pha002877'
+p176
+tp177
+a(S'Metformin Response'
+p178
+S'Yee_14'
+p179
+tp180
+a(S'Prostate Cancer'
+p181
+S'ProstateCancer_pha002878'
+p182
+tp183
+a(S'Acute Lymphoblastoid Leukemia'
+p184
+S'Walsh_12_ALL'
+p185
+tp186
+a(S'Prostate Cancer'
+p187
+S'ProstateCancer_pha003863'
+p188
+tp189
+a(S'Rheumatoid arthritis'
+p190
+S'RA_GWASmeta_European_v2'
+p191
+tp192
+a(S'Glioma'
+p193
+S'Walsh_12_Glioma'
+p194
+tp195
+a(S'Schizophrenia'
+p196
+S'Schizophrenia_pha002859'
+p197
+tp198
+a(S'Acute Myleoid Leukemia'
+p199
+S'UCSF_AML'
+p200
+tp201
+a(S'Acute Myleoid Leukemia'
+p202
+S'UCSF_AML_PGx'
+p203
+tp204
+a(S'Upper Gastrointestinal Cancers'
+p205
+S'UpperGastrointestinalCancerAsian_pha003106'
+p206
+tp207
+a.

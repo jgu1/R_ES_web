@@ -1,6 +1,7 @@
 import pdb
 import MySQLdb
 import math
+import pickle
 class DAO(object):
     db = None
     def __init__(self):
@@ -155,10 +156,26 @@ class DAO(object):
         '''
         return filtered_dict,filtered_gene_names
 
-    def fetch_pair_gene(self,GWAS_list,eQTL_list):
-        GWASs = GWAS_list.strip().split()
-        eQTLs = eQTL_list.strip().split()
+    def gen_term_relatives(self,terms):
+        term_relatives = []
+        for term in terms:
+            term_relatives += [term,term.title(),term.lower(),term.upper()]
+            term_relatives += [term + "'s", term + "'" ]
+            term_relatives += [term + 's', term + 'es']
+        return term_relatives
 
+    def fetch_pair_gene(self,GWAS_list,eQTL_list):
+        GWASs_disease_term = GWAS_list.strip().split()
+        GWASs_disease_term = self.gen_term_relatives(GWASs_disease_term) 
+        disease_GWAS_tuples_list = pickle.load(open(os.getcwd() + '/disease_GWAS_tuples_list.pickle','r'))
+        GWASs = []
+        # for each search_term, go over all disease_gwas tuple
+        for disease in GWASs_disease_term:
+            for disease_GWAS_tuple in disease_GWAS_tuples_list:
+                if disease in disease_GWAS_tuple[0]:
+                    GWASs.append(disease_GWAS_tuple[1]) 
+
+        eQTLs = eQTL_list.strip().split()
         result_dict = {}
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
