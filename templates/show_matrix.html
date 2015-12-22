@@ -10,8 +10,8 @@
       <dl>
         <dt>Please choose GWAS and eQTL of your interest:
         <dd>
-        <br>GWAS list<dd><input type=text size=30 name=GWAS_list>
-        <br>eQTK list<ul id="eQTL_names">
+        <br>please input disease keywords for GWAS<dd><input type=text size=100 name=GWAS_list>
+        <br>check eQTLs of interest<ul id="eQTL_names">
         {% for eQTL_name in eQTL_names%}
             <li><input name={{ eQTL_name }} type="checkbox" />{{ eQTL_name }}</li>
         {% endfor %}
@@ -27,15 +27,14 @@
         {{ pagination.links }}    
     {% endif %}
 
-    <div id="chart" style="overflow:scroll; margin-top:10px;"></div>
+    <div id="chart" ></div>
     {% if pagination %}
         {{ pagination.links }}
     {% endif %}
 
 
-    <div id = "detail" style="overflow:scroll; margin-top: 10px;" >
+    <div id = "detail" >
     <div id = "gene_of_interest"></div>    
-
     </div>
 
     <input type="hidden" id='draw_pair_json_obj' value="{{draw_pair_json_obj}}" />

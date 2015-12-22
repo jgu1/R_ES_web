@@ -58,7 +58,8 @@ def fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName ):
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
     gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
-   
+    if gene_p_qs is None:
+        return None,None,None 
     if not not sortAlongPairName:
         sortAlongPairList = gene_p_qs[sortAlongPairName]
         #change every dummy value to 1.1
@@ -98,6 +99,8 @@ def sortAlongPair():
     sortAlongPairName = request.args.get('sortAlongPairName','empty')
     session['sortAlongPairName'] = sortAlongPairName
     gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page = fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName) 
+    if gene_p_qs_for_this_page is None:
+        print 'error!'  #FIXME
     ret = {}
     ret['filtered_gene_names_for_this_page'] = filtered_gene_names_for_this_page
     ret['gene_p_qs_for_this_page'] = gene_p_qs_for_this_page
@@ -106,9 +109,9 @@ def sortAlongPair():
 
 @app.route('/')
 def show_matrix():
-    
+   
     if 'web_GWAS_list' not in session or 'web_eQTL_list' not in session:
-        return render_template('show_matrix.html')
+        return render_template('show_matrix.html',eQTL_names = eQTL_names)
     
     try:
         page = int(request.args.get('page', 1))
@@ -120,7 +123,8 @@ def show_matrix():
     if 'sortAlongPairName' in session:
         sortAlongPairName = session['sortAlongPairName']
     gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page = fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName) 
-    
+    if gene_p_qs_for_this_page is None:
+        return render_template('show_matrix.html',eQTL_names = eQTL_names) 
     ret = {}
     ret['filtered_gene_names_for_this_page'] = filtered_gene_names_for_this_page
     ret['gene_p_qs_for_this_page'] = gene_p_qs_for_this_page

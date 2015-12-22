@@ -2,6 +2,7 @@ import pdb
 import MySQLdb
 import math
 import pickle
+import os
 class DAO(object):
     db = None
     def __init__(self):
@@ -115,7 +116,7 @@ class DAO(object):
         ' where Geg.id = gene_p_q.Geg_id'
         ' and Geg.GWAS="' + GWAS +'"'
         ' and Geg.eQTL="' + eQTL + '";' )
-        cur = self.db.cursor()
+	cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
         return list(rows) 
@@ -127,7 +128,7 @@ class DAO(object):
             rows_with_lowest_30_pval = result[:30]
             curr_gene = [x[2] for x in rows_with_lowest_30_pval] 
             individual_genes.append(set(curr_gene))
-        comm_genes = set.union(*individual_genes)
+	comm_genes = set.union(*individual_genes)
         comm_gene_names = list(comm_genes)
         comm_gene_names.sort() 
         return comm_gene_names
@@ -164,7 +165,20 @@ class DAO(object):
             term_relatives += [term + 's', term + 'es']
         return term_relatives
 
-    def fetch_pair_gene(self,GWAS_list,eQTL_list):
+    def gen_GWASs_from_web_GWAS_lsit(self,web_GWAS_list):
+        GWASs_disease_term = web_GWAS_list.strip().split()
+        GWASs_disease_term = self.gen_term_relatives(GWASs_disease_term) 
+        disease_GWAS_tuples_list = pickle.load(open(os.getcwd() + '/disease_GWAS_tuples_list.pickle','r'))
+        GWASs = []
+        # for each search_term, go over all disease_gwas tuple
+        for disease in GWASs_disease_term:
+            for disease_GWAS_tuple in disease_GWAS_tuples_list:
+                if disease in disease_GWAS_tuple[0]:
+                    GWASs.append(disease_GWAS_tuple[1])  
+        return GWASs
+
+    def fetch_pair_gene(self,web_GWAS_list,web_eQTL_list):
+        '''
         GWASs_disease_term = GWAS_list.strip().split()
         GWASs_disease_term = self.gen_term_relatives(GWASs_disease_term) 
         disease_GWAS_tuples_list = pickle.load(open(os.getcwd() + '/disease_GWAS_tuples_list.pickle','r'))
@@ -174,8 +188,12 @@ class DAO(object):
             for disease_GWAS_tuple in disease_GWAS_tuples_list:
                 if disease in disease_GWAS_tuple[0]:
                     GWASs.append(disease_GWAS_tuple[1]) 
+        '''
+        GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
+        eQTLs = web_eQTL_list.strip().split()
+        if len(GWASs) == 0 or len(eQTLs) == 0:
+            return None,None
 
-        eQTLs = eQTL_list.strip().split()
         result_dict = {}
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
@@ -184,7 +202,9 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     result_dict[GWAS + '---' + eQTL] = result
-        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
+	if len(result_dict) == 0:
+	    return None,None
+	filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
         return filtered_dict,filtered_gene_names
 
 #pair manipulation   
@@ -196,7 +216,7 @@ class DAO(object):
                         ' and Geg.gene = "' + gene + '"'
                         ' and GSNP_eSNP_Gpval.Geg_id = Geg.id;'  
                         )
-        list_detail = self.exec_fetch_SQL(sql_template)
+	list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail        
 
     def get_comm_SNPs(self,result_lists):
@@ -253,9 +273,10 @@ class DAO(object):
         return patched_dict,all_SNPs_list
 
 
-    def fetch_pair_SNP(self,GWAS_list,eQTL_list,gene):
-        GWASs = GWAS_list.strip().split()
-        eQTLs = eQTL_list.strip().split()
+    def fetch_pair_SNP(self,web_GWAS_list,web_eQTL_list,gene):
+        #GWASs = GWAS_list.strip().split()
+        GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
+        eQTLs = web_eQTL_list.strip().split()
 
         result_dict = {}
         for i in range(len(GWASs)):

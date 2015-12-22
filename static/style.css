@@ -70,3 +70,13 @@ h2              { font-size: 1.2em; }
     padding-right: 1px;
     display:inline-block;
 }
+#chart{
+    width:1200px;
+    height:300px;
+    margin-top:10px;
+    overflow:scroll;
+}
+#detail{
+    margin-top: 10px;
+    overflow:scroll;
+}
