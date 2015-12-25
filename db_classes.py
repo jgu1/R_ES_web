@@ -116,7 +116,7 @@ class DAO(object):
         ' where Geg.id = gene_p_q.Geg_id'
         ' and Geg.GWAS="' + GWAS +'"'
         ' and Geg.eQTL="' + eQTL + '";' )
-	cur = self.db.cursor()
+        cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
         return list(rows) 
@@ -202,9 +202,10 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     result_dict[GWAS + '---' + eQTL] = result
-	if len(result_dict) == 0:
-	    return None,None
-	filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
+        if len(result_dict) == 0:
+            return None,None
+        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
+        pdb.set_trace()
         return filtered_dict,filtered_gene_names
 
 #pair manipulation   
