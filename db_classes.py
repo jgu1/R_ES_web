@@ -205,7 +205,6 @@ class DAO(object):
         if len(result_dict) == 0:
             return None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
-        pdb.set_trace()
         return filtered_dict,filtered_gene_names
 
 #pair manipulation   

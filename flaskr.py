@@ -57,7 +57,6 @@ def fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName ):
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    pdb.set_trace()
     gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
     if gene_p_qs is None:
         return None,None,None 
@@ -79,7 +78,7 @@ def fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName ):
             orig_order_list = gene_p_qs[pair_name]
             sort_order_list = [orig_order_list[i] for i in sort_idx]   
             gene_p_qs[pair_name] = sort_order_list
-     
+    '''     
     gene_p_qs_for_this_page = {}
     page = session['page']
     max_length = -1
@@ -88,12 +87,12 @@ def fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName ):
         if max_length < len(orig_length_result):
             max_length = len(orig_length_result)   # get the length for pagination
         gene_p_qs_for_this_page[pair_name] = orig_length_result[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]       
- 
     pagination = Pagination(page=page, total=max_length, per_page=GENE_P_Q_PER_PAGE, record_name='genes for pairs')
     filtered_gene_names_for_this_page = filtered_gene_names[(page-1)*GENE_P_Q_PER_PAGE:page*GENE_P_Q_PER_PAGE]
  
-    return gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page
-
+    '''
+    #return gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page
+    return gene_p_qs,None,filtered_gene_names
 @app.route('/sortAlongPair')
 @app.route("/sortAlongPair/<string:sortAlongPairName>")
 def sortAlongPair():

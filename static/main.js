@@ -221,13 +221,14 @@ function createGraph() {
 
     var margin = 120;
   
-    var w = 900 - 2 * margin, h = 500 - 2 * margin;
+    var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
     var svg = d3.select("#chart");
     svg.selectAll("svg").remove(); 
     var svg = d3.select("#chart")
                    .append("svg")
                     .attr("width", w + 2 * margin)
                     .attr("height",height_pair + 2 * margin)
+                    .style("overflow","scroll")
                   .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
 
