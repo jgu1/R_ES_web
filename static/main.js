@@ -1,18 +1,9 @@
 $(function() {
-  console.log('jquery is working!Jacot');
   createGraph();
 });
 
 function createGraph() {
-   var margin = {top: 120, right: 200, bottom: 10, left: 360};
-   var canvas2=d3.select("#detail").append("svg")
-           .attr("width", 1200)
-           .attr("height", 1000)
-   
-   var svg2=canvas2
-       .append("g")
-       .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
-
+  
   //var x_axis_scale = d3.scale.ordinal().rangeBands([0, w])
  
   //var xscale = d3.scale.linear().range([0, w]);
@@ -25,11 +16,7 @@ function createGraph() {
     var gene = data.gene;
     var all_SNPs_list = data.all_SNPs_list
     var pair_SNP_dict = data.pair_SNP_dict;
-    var curr_pair = []
-    
-    d3.select("#gene_of_interest")
-        .text("Gene of Interest: " + gene)
-        .style("margin-left",margin.left +"px");
+    var curr_pair = [];
 
     for (var pairName in pair_SNP_dict) {
         pairNames.push(pairName);
@@ -41,6 +28,27 @@ function createGraph() {
         });  
         matrix.push(curr_pair); 
     }
+    var detail_height = matrix.length * size;
+    var detail_width = matrix[0].length * size; // should not be null, because at least one gene has SNPs
+    var margin = {top: 120, right: 200, bottom: 10, left: 360};
+    
+    d3.select("#detail").html("");
+    d3.select("#detail").append("div") 
+        .attr("id","gene_of_interest")
+        .text("Gene of Interest: " + gene)
+        .style("margin-left",margin.left +"px");
+
+    var canvas2=d3.select("#detail").append("svg")
+           .attr("width", detail_width + margin.left)
+           .attr("height", detail_height + margin.top)
+   
+    //d3.select("#gene_of_interest")
+    
+    //canvas2.html("");// clear canvas2 before drawing a new one
+    var svg2=canvas2
+       .append("g")
+       .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
+
     var max_pval = 5;
     var min_pval = 0;
     var color_scale=d3.scale.linear()
@@ -50,7 +58,6 @@ function createGraph() {
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
 
-    svg2.html("");// clear canvas2 before drawing a new one
     svg2.append("rect")
       .attr("class", "background")
       .attr("width", width_pair)

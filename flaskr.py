@@ -16,8 +16,6 @@ import pickle
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
-USERNAME_PASSWORD_DICT={'hao':'genome','jiashun':'genome','erxin':'genome','jun':'genome','yanqiu':'genome','jialiang':'genome'}
-GWAS_pickle_name = 'disease_GWAS_tuples_list.pickle'
 eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
 GENE_P_Q_PER_PAGE=30
 page=1
@@ -102,24 +100,6 @@ def draw():
 
     session['web_GWAS_list'] = web_GWAS_list
     session['web_eQTL_list'] = web_eQTL_list
-    return redirect(url_for('show_matrix'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] not in app.config['USERNAME_PASSWORD_DICT']:
-            error = 'Invalid username'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            return redirect(url_for('show_matrix'))
-    return render_template('login.html', error=error)
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    flash('You were logged out')
     return redirect(url_for('show_matrix'))
 
 if __name__ == '__main__':
