@@ -93,6 +93,7 @@ def fetch_and_build_matrix_by_sortAlongPairName(sortAlongPairName ):
     '''
     #return gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page
     return gene_p_qs,None,filtered_gene_names
+
 @app.route('/sortAlongPair')
 @app.route("/sortAlongPair/<string:sortAlongPairName>")
 def sortAlongPair():
