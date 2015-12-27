@@ -55,13 +55,13 @@ function createGraph() {
                         .domain([min_pval,max_pval])
                         .range(['#ffeda0','#f03b20']);
 
-    var height_pair = matrix.length * size;
-    var width_pair= matrix[0].length * size;
+    var height_detail = matrix.length * size;
+    var width_detail= matrix[0].length * size;
 
     svg2.append("rect")
       .attr("class", "background")
-      .attr("width", width_pair)
-      .attr("height", height_pair);
+      .attr("width", width_detail)
+      .attr("height", height_detail);
 
     var pair = svg2.selectAll(".pair2")
       .data(matrix)
@@ -71,7 +71,7 @@ function createGraph() {
       .each(pair2);
 
      pair.append("line")
-        .attr("x2",width_pair)
+        .attr("x2",width_detail)
         .style("stroke","#fff");
 
      pair.append("text")
@@ -96,7 +96,7 @@ function createGraph() {
  
 
     column.append("line")
-        .attr("x1",-height_pair)
+        .attr("x1",-height_detail)
         .style("stroke","#fff");
 
 
@@ -223,10 +223,19 @@ function createGraph() {
                         .domain([min_pval,max_pval])
                         .range(['#ffeda0','#f03b20']);
 
+
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
-
     var margin = 120;
+    
+    var chart = d3.select("#chart");
+    //var chartHeight = chart.style("height");
+    //var chartHeight = parseInt(chartHeight.substring(0,chartHeight.length-2));
+    if (height_pair +  margin > 500){
+        chart.attr("height",500);
+    }else{
+        chart.attr("height", height_pair + margin);
+    }
   
     //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
     var w = width_pair, h = height_pair;
@@ -235,7 +244,7 @@ function createGraph() {
     var svg = d3.select("#chart")
                    .append("svg")
                     .attr("width", w + 3 * margin)
-                    .attr("height",height_pair + 2 * margin)
+                    .attr("height",height_pair + margin)
                     .style("overflow","scroll")
                   .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
