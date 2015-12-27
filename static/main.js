@@ -221,12 +221,13 @@ function createGraph() {
 
     var margin = 120;
   
-    var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
+    //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
+    var w = width_pair, h = height_pair;
     var svg = d3.select("#chart");
     svg.selectAll("svg").remove(); 
     var svg = d3.select("#chart")
                    .append("svg")
-                    .attr("width", w + 2 * margin)
+                    .attr("width", w + 3 * margin)
                     .attr("height",height_pair + 2 * margin)
                     .style("overflow","scroll")
                   .append("svg:g")
@@ -255,7 +256,12 @@ function createGraph() {
       var rowIRaw = matrix[i];
       for (var i=0; i<rowIRaw.length; i++){
         gene = rowIRaw[i];
-        negLog10.push(-Math.log10(parseFloat(gene[3])));  
+        pval=parseFloat(gene[3]);
+        if (pval < 0){
+            negLog10.push(-1);
+        }else{
+            negLog10.push(-Math.log10(pval));  
+        }  
       }
       return negLog10;
     }
@@ -296,10 +302,14 @@ function createGraph() {
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d,i) { return pairNames[i]; })
+        .on("click", function(d,i){ 
+            sortAlongRow(i);
+        });
+        /*
         .on("click", function(d,i) {
             d3.json("/sortAlongPair?sortAlongPairName="+pairNames[i],draw_pair);
           });
-
+        */
     svg.selectAll(".column").data([]).exit().remove();
     var column =svg.selectAll(".column")
               .data(geneNames)
