@@ -13,6 +13,7 @@ from datetime import datetime,timedelta
 from db_classes import DAO
 import json
 import pickle
+from inspect_matrix import discover_sub_clusters
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
@@ -76,6 +77,8 @@ def show_matrix():
     gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page = fetch_and_build_matrix() 
     if gene_p_qs_for_this_page is None:
         return render_template('show_matrix.html',eQTL_names = eQTL_names) 
+    sub_clusters = discover_sub_clusters(gene_p_qs_for_this_page)
+    
     ret = {}
     ret['filtered_gene_names_for_this_page'] = filtered_gene_names_for_this_page
     ret['gene_p_qs_for_this_page'] = gene_p_qs_for_this_page
@@ -105,7 +108,7 @@ def draw():
 if __name__ == '__main__':
     ip_for_current_machine = socket.gethostbyname(socket.gethostname())
     #app.run(host=ip_for_current_machine,port=55555,threaded=True)
-#    app.run(host='localhost',port=55555,threaded=True)
-    app.run(host='169.230.81.176',port=55555,threaded=True)
+    app.run(host='localhost',port=55555,threaded=True)
+#    app.run(host='169.230.81.176',port=55555,threaded=True)
 
 

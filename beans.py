@@ -65,7 +65,14 @@ class Gene_SNPs(object):
         self.gene = gene
         self.GSNP_eSNP_Gpvals = GSNP_eSNP_Gpvals
                 
-
+class Cluster(object):
+    row_comb = None
+    cols = None
+    excluded = False 
+    def __init__(self,row_comb,cols):
+        self.row_comb = row_comb
+        self.cols = cols
+        self.excluded = False
 
 
 
