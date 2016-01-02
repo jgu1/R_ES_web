@@ -19,10 +19,14 @@ function createGraph() {
         var row_comb = curr_rowcomb_cols[0];
         var cols = curr_rowcomb_cols[1];
         
-        var cluster = {};
+        var sub_cluster_gene_p_qs = {};
+        var sub_cluster_sorted_pair_names = new Array();
+        var sub_cluster_filtered_gene_names = new Array(cols.length);
+
         // loop through all rows
         for (var i_pairname = 0; i_pairname < row_comb.length; i_pairname++){
             var curr_pairname = row_comb[i_pairname];
+            sub_cluster_sorted_pair_names.push(curr_pairname)
             var curr_all_genes = gene_p_qs[curr_pairname];
             curr_pair_genes_arr = new Array();
             // loop though all columns
@@ -30,28 +34,40 @@ function createGraph() {
                 var curr_pass_idx = cols[i_pass_idx];
                 var curr_pass_gene = curr_all_genes[curr_pass_idx];
                 curr_pair_genes_arr.push(curr_pass_gene);
+                // populate gene names in the first row
+                if (curr_pass_gene[2] != "dummy_gene"){
+                    sub_cluster_filtered_gene_names[i_pass_idx] = curr_pass_gene[2];
+                }
             }
-            cluster[curr_pairname] = curr_pair_genes_arr;
-        }   
-        
-        var a = 1;
+            sub_cluster_gene_p_qs[curr_pairname] = curr_pair_genes_arr;
+        }
+          
+        draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names); 
     }
     
-    function 
-
-
- 
-    pairname_idx.forEach(function (row_comb_cols,i){
-        var cluster = new Array();
-        var row_comb = row_comb_cols[0];
-        var cols = row_comb_cols[1];
-        
-
-    });
-    
-
     var a = 1
   }
+  
+  function draw_subcluster(gene_p_qs,geneNames,pairNames){
+    var matrix = [];
+    var size = 15;
+    //var geneNames = draw_pair_json_obj.filtered_gene_names; 
+    //var gene_p_qs = draw_pair_json_obj.gene_p_qs; 
+    //var pairNames = draw_pair_json_obj.sorted_pair_names; 
+    for (var i = 0; i<pairNames.length;i++) {
+        pairName = pairNames[i];
+        var genes= gene_p_qs[pairName]
+        var n = genes.length
+        curr_pair = []
+        genes.forEach(function(gene){
+            curr_pair.push(gene);
+        });          
+        matrix.push(curr_pair)
+    
+    }
+    var a = 1;  
+  }
+
 
   var detailcallback = function(data){
     var matrix = [];
