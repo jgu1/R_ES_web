@@ -10,9 +10,48 @@ function createGraph() {
   //var yscale = d3.scale.linear().range([h, 0]);
 
 
+  var sub_clusterscallback = function(data){
+    var gene_p_qs = data.gene_p_qs
+    var pairname_idx = data.pairname_idx
+   
+    for (var i = 0; i < pairname_idx.length; i++){
+        var curr_rowcomb_cols = pairname_idx[i];
+        var row_comb = curr_rowcomb_cols[0];
+        var cols = curr_rowcomb_cols[1];
+        
+        var cluster = {};
+        // loop through all rows
+        for (var i_pairname = 0; i_pairname < row_comb.length; i_pairname++){
+            var curr_pairname = row_comb[i_pairname];
+            var curr_all_genes = gene_p_qs[curr_pairname];
+            curr_pair_genes_arr = new Array();
+            // loop though all columns
+            for (var i_pass_idx = 0; i_pass_idx < cols.length; i_pass_idx++){
+                var curr_pass_idx = cols[i_pass_idx];
+                var curr_pass_gene = curr_all_genes[curr_pass_idx];
+                curr_pair_genes_arr.push(curr_pass_gene);
+            }
+            cluster[curr_pairname] = curr_pair_genes_arr;
+        }   
+        
+        var a = 1;
+    }
+    
+    function 
 
 
+ 
+    pairname_idx.forEach(function (row_comb_cols,i){
+        var cluster = new Array();
+        var row_comb = row_comb_cols[0];
+        var cols = row_comb_cols[1];
+        
 
+    });
+    
+
+    var a = 1
+  }
 
   var detailcallback = function(data){
     var matrix = [];
@@ -264,6 +303,7 @@ function createGraph() {
     chart.append("input")
          .attr("type","button")
          .attr("value","Discover sub_clusters")
+         .style("margin-left",3*margin +"px")
          .on("click",function(d){
             d3.json("/sub_clusters",sub_clusterscallback);
             });
