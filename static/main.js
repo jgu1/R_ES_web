@@ -65,6 +65,99 @@ function createGraph() {
         matrix.push(curr_pair)
     
     }
+    var max_pval = 5;
+    var min_pval = 0;
+    var color_scale=d3.scale.linear()
+                        .domain([min_pval,max_pval])
+                        .range(['#ffeda0','#f03b20']);
+
+
+    var height_pair = matrix.length * size;
+    var width_pair= matrix[0].length * size;
+    var margin = 120;
+ 
+    var sub_clusters = d3.select("#sub_clusters");
+    //var chartHeight = chart.style("height");
+    //var chartHeight = parseInt(chartHeight.substring(0,chartHeight.length-2));
+    if (height_pair +  margin > 500){
+        sub_clusters.attr("height",500);
+    }else{
+        sub_clusters.attr("height", height_pair + margin);
+    }
+  
+    //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
+    var w = width_pair, h = height_pair;
+    //var svg = d3.select("#chart")
+    var svg = sub_clusters.append("svg")
+                    .attr("width", w + 3 * margin)
+                    .attr("height",height_pair + margin)
+                    .style("overflow","scroll")
+                  .append("svg:g")
+                        .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
+
+
+
+    svg.append("rect")
+      .attr("class", "background")
+      .attr("width", width_pair)
+      .attr("height", height_pair);
+
+    var pair = svg.selectAll(".pair")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "pair")
+      .attr("transform", function(d, i) { return "translate(0," + i*size + ")"; })
+      .each(pair);
+
+    pair.append("line")
+        .attr("x2",w)
+        .style("stroke","#fff");
+ 
+ 
+    pair.append("text")
+        .attr("x",-6)
+        .attr("y",7)
+        .attr("dy", ".32em")
+        .attr("text-anchor", "end")
+        .text(function(d,i) { return pairNames[i]; })
+        .on("click", function(d,i){ 
+            sortAlongRow(i);
+        });
+
+    svg.selectAll(".column").data([]).exit().remove();
+    var column =svg.selectAll(".column")
+              .data(geneNames)
+              .enter().append("g")
+              .attr("class","column")
+              .attr("transform", function(d, i) { return "translate(" + i*size + ")rotate(-90)"; });
+               
+    column.append("line")
+          .style("stroke","#fff");
+ 
+  function pair(pair) {
+    var cell = d3.select(this).selectAll(".gene")
+        .data(pair)
+      .enter().append("rect")
+        .attr("class", "gene")
+        .attr("x", function(d,i) { return i*size; })
+        .attr("width", size)
+        .attr("height", size)
+        .attr("title",function(d){return d[3]})
+        .style("fill", 
+            function(d) { 
+                if(parseFloat(d[3]) < 0){
+                    return '#000'
+                }else{
+                    return color_scale(-Math.log10(parseFloat(d[3]))) 
+                }
+            })
+        .append("title")
+            .text(function(d){
+                return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[2];
+            });
+ 
+  }
+
     var a = 1;  
   }
 
