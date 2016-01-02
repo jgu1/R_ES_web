@@ -244,20 +244,30 @@ function createGraph() {
   
     //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
     var w = width_pair, h = height_pair;
-    var svg = d3.select("#chart");
-    svg.selectAll("svg").remove(); 
-    var svg = d3.select("#chart")
-                   .append("svg")
+    var chart = d3.select("#chart");
+    chart.selectAll("svg").remove(); 
+    //var svg = d3.select("#chart")
+    var svg = chart.append("svg")
                     .attr("width", w + 3 * margin)
                     .attr("height",height_pair + margin)
                     .style("overflow","scroll")
                   .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
 
+
+
     svg.append("rect")
       .attr("class", "background")
       .attr("width", width_pair)
       .attr("height", height_pair);
+
+    chart.append("input")
+         .attr("type","button")
+         .attr("value","Discover sub_clusters")
+         .on("click",function(d){
+            d3.json("/sub_clusters",sub_clusterscallback);
+            });
+
 
     var pair = svg.selectAll(".pair")
       .data(matrix)
@@ -418,7 +428,8 @@ function createGraph() {
             .text(function(d){
                 return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[2];
                 
-            });  
+            });
+     
   }
 
   function plotDetail(name){
