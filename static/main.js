@@ -9,6 +9,11 @@ function createGraph() {
   //var xscale = d3.scale.linear().range([0, w]);
   //var yscale = d3.scale.linear().range([h, 0]);
 
+
+
+
+
+
   var detailcallback = function(data){
     var matrix = [];
     var pairNames = [];
@@ -203,12 +208,12 @@ function createGraph() {
     var pairNames = [];
     var geneNames = [];
     var size = 15;
-    var geneNames = draw_pair_json_obj.filtered_gene_names_for_this_page; 
-    var gene_p_qs_for_this_page = draw_pair_json_obj.gene_p_qs_for_this_page; 
+    var geneNames = draw_pair_json_obj.filtered_gene_names; 
+    var gene_p_qs = draw_pair_json_obj.gene_p_qs; 
     var pairNames = draw_pair_json_obj.sorted_pair_names; 
     for (var i = 0; i<pairNames.length;i++) {
         pairName = pairNames[i];
-        var genes= gene_p_qs_for_this_page[pairName]
+        var genes= gene_p_qs[pairName]
         var n = genes.length
         curr_pair = []
         genes.forEach(function(gene){
@@ -258,7 +263,6 @@ function createGraph() {
       .data(matrix)
     .enter().append("g")
       .attr("class", "pair")
-      //.attr("transform", function(d, i) { return "translate(0," + x_axis_scale(i) + ")"; })
       .attr("transform", function(d, i) { return "translate(0," + i*size + ")"; })
       .each(pair);
 

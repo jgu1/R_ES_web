@@ -3,7 +3,7 @@ import os
 import numpy
 import pdb
 import itertools
-from cluster import Cluster
+from beans import Cluster
 def Main(pickle_filename):
     matrix = pickle.load(open(pickle_filename))
     pdb.set_trace()

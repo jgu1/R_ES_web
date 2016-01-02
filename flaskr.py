@@ -74,15 +74,16 @@ def show_matrix():
         page = 1
     session['page'] = page
 
-    gene_p_qs_for_this_page,pagination,filtered_gene_names_for_this_page = fetch_and_build_matrix() 
-    if gene_p_qs_for_this_page is None:
+    gene_p_qs,pagination,filtered_gene_names = fetch_and_build_matrix() 
+    if gene_p_qs is None:
         return render_template('show_matrix.html',eQTL_names = eQTL_names) 
-    sub_clusters = discover_sub_clusters(gene_p_qs_for_this_page)
+#    pdb.set_trace()
+#    sub_clusters = discover_sub_clusters(gene_p_qs_for_this_page)
     
     ret = {}
-    ret['filtered_gene_names_for_this_page'] = filtered_gene_names_for_this_page
-    ret['gene_p_qs_for_this_page'] = gene_p_qs_for_this_page
-    ret['sorted_pair_names'] = sorted(gene_p_qs_for_this_page.keys())
+    ret['filtered_gene_names'] = filtered_gene_names
+    ret['gene_p_qs'] = gene_p_qs
+    ret['sorted_pair_names'] = sorted(gene_p_qs.keys())
     draw_pair_json_obj = json.dumps(ret)
     return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, draw_pair_json_obj=draw_pair_json_obj)
 
@@ -108,7 +109,7 @@ def draw():
 if __name__ == '__main__':
     ip_for_current_machine = socket.gethostbyname(socket.gethostname())
     #app.run(host=ip_for_current_machine,port=55555,threaded=True)
-    app.run(host='localhost',port=55555,threaded=True)
-#    app.run(host='169.230.81.176',port=55555,threaded=True)
+#    app.run(host='localhost',port=55555,threaded=True)
+    app.run(host='169.230.81.176',port=55555,threaded=True)
 
 

@@ -128,7 +128,7 @@ class DAO(object):
             rows_with_lowest_30_pval = result[:30]
             curr_gene = [x[2] for x in rows_with_lowest_30_pval] 
             individual_genes.append(set(curr_gene))
-	comm_genes = set.union(*individual_genes)
+	    comm_genes = set.union(*individual_genes)
         comm_gene_names = list(comm_genes)
         comm_gene_names.sort() 
         return comm_gene_names
