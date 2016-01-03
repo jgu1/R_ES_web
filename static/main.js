@@ -44,8 +44,8 @@ function createGraph() {
           
         draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names); 
     }
-    
-    var a = 1
+    // hide the discover_sub_clusters button  
+    d3.select("#sub_clusters_button").style("display","none");
   }
   
   function draw_subcluster(gene_p_qs,geneNames,pairNames){
@@ -420,6 +420,7 @@ function createGraph() {
     chart.append("input")
          .attr("type","button")
          .attr("value","Discover sub_clusters")
+         .attr("id","sub_clusters_button")
          .style("margin-left",3*margin +"px")
          .on("click",function(d){
             d3.json("/sub_clusters",sub_clusterscallback);
