@@ -3,7 +3,7 @@
 import pdb
 import MySQLdb
 from flask import Flask, request, session, g, redirect, url_for, \
-     abort, render_template, flash, jsonify
+     abort, render_template, flash, jsonify, Response
 from contextlib import closing
 from time import sleep
 from flask.ext.paginate import Pagination
@@ -37,6 +37,27 @@ def teardown_request(exception):
     dao = getattr(g, 'dao', None)
     if dao is not None:
         dao.db.close()
+
+@app.route('/sub_clusters')
+def sub_clusters():
+    gene_p_qs,pagination,filtered_gene_names = fetch_and_build_matrix()
+    sub_clusters = discover_sub_clusters(gene_p_qs)
+    
+    serisables = []
+    for sub_cluster in sub_clusters:
+        row_comb = sub_cluster.row_comb
+        cols = list(sub_cluster.cols)
+        cols.sort()
+        curr_serisable = [row_comb,cols]
+        serisables.append(curr_serisable)
+
+    ret = {}
+    ret['gene_p_qs'] = gene_p_qs
+    ret['pairname_idx'] = serisables
+
+    resp = Response(json.dumps(ret), status=200, mimetype='application/json')
+    return resp   
+ 
 
 @app.route('/detail')
 @app.route("/data/<string:gene>")
@@ -77,8 +98,6 @@ def show_matrix():
     gene_p_qs,pagination,filtered_gene_names = fetch_and_build_matrix() 
     if gene_p_qs is None:
         return render_template('show_matrix.html',eQTL_names = eQTL_names) 
-#    pdb.set_trace()
-#    sub_clusters = discover_sub_clusters(gene_p_qs_for_this_page)
     
     ret = {}
     ret['filtered_gene_names'] = filtered_gene_names

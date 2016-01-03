@@ -51,9 +51,6 @@ function createGraph() {
   function draw_subcluster(gene_p_qs,geneNames,pairNames){
     var matrix = [];
     var size = 15;
-    //var geneNames = draw_pair_json_obj.filtered_gene_names; 
-    //var gene_p_qs = draw_pair_json_obj.gene_p_qs; 
-    //var pairNames = draw_pair_json_obj.sorted_pair_names; 
     for (var i = 0; i<pairNames.length;i++) {
         pairName = pairNames[i];
         var genes= gene_p_qs[pairName]
@@ -70,7 +67,6 @@ function createGraph() {
     var color_scale=d3.scale.linear()
                         .domain([min_pval,max_pval])
                         .range(['#ffeda0','#f03b20']);
-
 
     var height_pair = matrix.length * size;
     var width_pair= matrix[0].length * size;
@@ -95,8 +91,6 @@ function createGraph() {
                   .append("svg:g")
                         .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
 
-
-
     svg.append("rect")
       .attr("class", "background")
       .attr("width", width_pair)
@@ -112,7 +106,6 @@ function createGraph() {
     pair.append("line")
         .attr("x2",w)
         .style("stroke","#fff");
- 
  
     pair.append("text")
         .attr("x",-6)
@@ -134,7 +127,6 @@ function createGraph() {
     column.append("line")
         .attr("x1",-height_pair)
         .style("stroke","#fff");
-   
 
     column.append("text")
       .attr("x", 6)
@@ -200,8 +192,11 @@ function createGraph() {
         .attr("id","gene_of_interest")
         .text("Gene of Interest: " + gene)
         .style("margin-left",margin.left +"px");
+   
+    var detail = d3.select("#detail");
 
-    var canvas2=d3.select("#detail").append("svg")
+    var canvas2=detail
+           .append("svg")
            .attr("width", detail_width + margin.left)
            .attr("height", detail_height + margin.top)
    
@@ -220,6 +215,12 @@ function createGraph() {
 
     var height_detail = matrix.length * size;
     var width_detail= matrix[0].length * size;
+
+    if (height_detail +  margin.top > 500){
+        detail.attr("height",500);
+    }else{
+        detail.attr("height", height_detail + margin.top);
+    }
 
     svg2.append("rect")
       .attr("class", "background")
