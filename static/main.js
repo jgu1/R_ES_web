@@ -132,7 +132,17 @@ function createGraph() {
               .attr("transform", function(d, i) { return "translate(" + i*size + ")rotate(-90)"; });
                
     column.append("line")
-          .style("stroke","#fff");
+        .attr("x1",-height_pair)
+        .style("stroke","#fff");
+   
+
+    column.append("text")
+      .attr("x", 6)
+      .attr("y", 7)
+      .attr("width",size)
+      .attr("height",size)
+      .attr("dy", ".32em")
+      .text(function(d, i) { return geneNames[i]; }); 
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
@@ -243,15 +253,12 @@ function createGraph() {
               .enter().append("g")
               .attr("class","column")
               .attr("transform", function(d, i) { return "translate(" + i*size + ")rotate(-90)"; });
-               
-    column.append("line")
-          .style("stroke","#fff");
- 
-
+    
+      
     column.append("line")
         .attr("x1",-height_detail)
         .style("stroke","#fff");
-
+    
 
     column.append("text")
       .attr("x", 6)
