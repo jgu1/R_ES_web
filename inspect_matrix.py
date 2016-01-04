@@ -19,10 +19,32 @@ def Main(pickle_filename):
 def discover_sub_clusters(matrix):
     pass_dict = build_pass_dict(matrix)
     row_combs = build_row_combinations(matrix)
-    sub_clusters = detect_sub_clusters(row_combs,pass_dict)
+    sub_clusters = detect_sub_clusters(row_combs,pass_dict,matrix)
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-    return filtered_sub_clusters
+    pdb.set_trace()
+    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+    return merged_sub_clusters
 
+def merge_sub_clusters_with_same_cols(sub_clusters):
+    dict_cols_2_row_combs={}
+    for sub_cluster in sub_clusters:
+        cols_tuple = tuple(sub_cluster.cols)
+        curr_row_comb_set = set(sub_cluster.row_comb)
+        if cols_tuple in dict_cols_2_row_combs:
+            dict_cols_2_row_combs[cols_tuple] = dict_cols_2_row_combs[cols_tuple].union(curr_row_comb_set)
+        else:
+            dict_cols_2_row_combs[cols_tuple] = curr_row_comb_set
+   
+    merged_sub_clusters = []
+
+    for key, value in dict_cols_2_row_combs.iteritems():
+        cols = set(key)
+        row_comb = list(value)
+        row_comb.sort()
+        cluster = Cluster(row_comb, cols)
+        merged_sub_clusters.append(cluster)
+    
+    return merged_sub_clusters
 
 def filter_out_child_sub_clusters(sub_clusters):
     sub_clusters = sorted(sub_clusters, key=lambda x: len(x.row_comb), reverse=True)
@@ -45,13 +67,11 @@ def filter_out_child_sub_clusters(sub_clusters):
             filtered_sub_clusters.append(cluster)
     return filtered_sub_clusters
 
-def detect_sub_clusters(row_combs,pass_dict):
+def detect_sub_clusters(row_combs,pass_dict,matrix):
     sub_clusters = []
     # scan through all row combinations
     for row_comb in row_combs:
         # for a column to be included, it must have over 60% percent of rows pass the threshold of pval 0.001
-        if set(row_comb) == set(['Longevity_2014_Age90---Liang_2012','Longevity_2014_Age90---Dixon_07','Longevity_2014_Age85---Liang_2012','Longevity_2014_Age85---Dixon_07']):
-            pdb.set_trace()
         cols = find_majority_cols(row_comb,pass_dict)
         if not not cols :
             
