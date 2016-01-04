@@ -49,12 +49,33 @@ def detect_sub_clusters(row_combs,pass_dict):
     sub_clusters = []
     # scan through all row combinations
     for row_comb in row_combs:
+        # for a column to be included, it must have over 60% percent of rows pass the threshold of pval 0.001
+        if set(row_comb) == set(['Longevity_2014_Age90---Liang_2012','Longevity_2014_Age90---Dixon_07','Longevity_2014_Age85---Liang_2012','Longevity_2014_Age85---Dixon_07']):
+            pdb.set_trace()
         cols = find_majority_cols(row_comb,pass_dict)
         if not not cols :
-            cluster = Cluster(row_comb,cols)
+            
+            row_comb_containing_at_least_one_pass_col = screen_rows_given_cols(row_comb, cols, pass_dict)
+            cluster = Cluster(row_comb_containing_at_least_one_pass_col,cols) # there can be duplicating clusters, but that's fine because duplication will be removed by filter_out_child_sub_clusters
+            '''
+            cluster = Cluster(row_comb, cols) # if not screening rows, many similar cluster will be spawn because every row can become 'drive-by' row along with 'all-red' rows
+            '''
             sub_clusters.append(cluster)
     return sub_clusters
-    
+   
+def screen_rows_given_cols(row_comb, cols, pass_dict):
+    row_comb_containing_at_least_one_pass_col = []
+    for row in row_comb:
+        pass_cols_for_curr_row = pass_dict[row]
+        if len(pass_cols_for_curr_row.intersection(cols)) > 0:
+            row_comb_containing_at_least_one_pass_col.append(row)
+        '''
+        else:
+            pdb.set_trace()
+            a = 1
+        '''
+    return row_comb_containing_at_least_one_pass_col
+ 
 def find_comm_cols(row_comb,pass_dict):
     all_sets = pass_dict.values()
     comm_cols = set().union(*all_sets)
