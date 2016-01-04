@@ -10,9 +10,10 @@ def Main(pickle_filename):
     pass_dict = build_pass_dict(matrix)
     row_combs = build_row_combinations(matrix)
     sub_clusters = detect_sub_clusters(row_combs,pass_dict)
-    pdb.set_trace()
   
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
+    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+
     pdb.set_trace()
     a = 1
 
@@ -21,9 +22,9 @@ def discover_sub_clusters(matrix):
     row_combs = build_row_combinations(matrix)
     sub_clusters = detect_sub_clusters(row_combs,pass_dict,matrix)
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-    pdb.set_trace()
     merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
-    return merged_sub_clusters
+    sub_clusters = filter_out_child_sub_clusters(merged_sub_clusters)  
+    return sub_clusters
 
 def merge_sub_clusters_with_same_cols(sub_clusters):
     dict_cols_2_row_combs={}

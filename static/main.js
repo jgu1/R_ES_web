@@ -85,11 +85,11 @@ function createGraph() {
     var w = width_pair, h = height_pair;
     //var svg = d3.select("#chart")
     var svg = sub_clusters.append("svg")
-                    .attr("width", w + 3 * margin)
+                    .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
                     .style("overflow","scroll")
                   .append("svg:g")
-                        .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
+                        .attr("transform", "translate(" + 5 * margin + ", " + margin + ")");
 
     svg.append("rect")
       .attr("class", "background")
@@ -404,11 +404,11 @@ function createGraph() {
     chart.selectAll("svg").remove(); 
     //var svg = d3.select("#chart")
     var svg = chart.append("svg")
-                    .attr("width", w + 3 * margin)
+                    .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
                     .style("overflow","scroll")
                   .append("svg:g")
-                        .attr("transform", "translate(" + 3*margin + ", " + margin + ")");
+                        .attr("transform", "translate(" + 5 * margin + ", " + margin + ")");
 
 
 
@@ -421,7 +421,7 @@ function createGraph() {
          .attr("type","button")
          .attr("value","Discover sub_clusters")
          .attr("id","sub_clusters_button")
-         .style("margin-left",3*margin +"px")
+         .style("margin-left",5 * margin +"px")
          .on("click",function(d){
             d3.json("/sub_clusters",sub_clusterscallback);
             });

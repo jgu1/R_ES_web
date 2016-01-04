@@ -178,19 +178,12 @@ class DAO(object):
         return GWASs
 
     def fetch_pair_gene(self,web_GWAS_list,web_eQTL_list):
-        '''
-        GWASs_disease_term = GWAS_list.strip().split()
-        GWASs_disease_term = self.gen_term_relatives(GWASs_disease_term) 
-        disease_GWAS_tuples_list = pickle.load(open(os.getcwd() + '/disease_GWAS_tuples_list.pickle','r'))
-        GWASs = []
-        # for each search_term, go over all disease_gwas tuple
-        for disease in GWASs_disease_term:
-            for disease_GWAS_tuple in disease_GWAS_tuples_list:
-                if disease in disease_GWAS_tuple[0]:
-                    GWASs.append(disease_GWAS_tuple[1]) 
-        '''
         GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
         eQTLs = web_eQTL_list.strip().split()
+        if 'merged_pickle' in eQTLs:
+            eQTLs.append('Merged_08212015_pruned_LD02')
+            eQTLs.append('Merged_08212015_pruned_LD85')
+            eQTLs.remove('merged_pickle')
         if len(GWASs) == 0 or len(eQTLs) == 0:
             return None,None
 

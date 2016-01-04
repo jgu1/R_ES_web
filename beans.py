@@ -70,8 +70,8 @@ class Cluster(object):
     cols = None
     excluded = False 
     def __init__(self,row_comb,cols):
-        self.row_comb = row_comb
-        self.cols = cols
+        self.row_comb = list(row_comb)
+        self.cols = set(cols)
         self.excluded = False
 
 
