@@ -159,7 +159,7 @@ function createGraph() {
             d3.select("#detail").remove();
             wrapper_div.append("div")
                .attr("id","detail")
-            d3.json("/detail?gene="+d[2],detailcallback);
+            d3.json("/detail?gene="+d[2]+"&pairNames="+pairNames,detailcallback);
             //plotDetail(d);
             }
            ) 
@@ -589,6 +589,9 @@ function createGraph() {
             })
         .on("click",function(d){
             //d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
+            d3.select("#detail").remove();
+            chart.append("div")
+                 .attr("id","detail");
             d3.json("/detail?gene="+d[2],detailcallback);
             //plotDetail(d);
             }

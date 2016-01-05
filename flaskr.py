@@ -61,12 +61,21 @@ def sub_clusters():
 
 @app.route('/detail')
 @app.route("/data/<string:gene>")
+@app.route("/data/<string:gene><string:pairNames>")
 def detail():
     gene = request.args.get('gene', 'empty')
+    pairNames = request.args.get('pairNames','empty')
     web_GWAS_list = session['web_GWAS_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    pair_SNP_dict,all_SNPs_list = dao.fetch_pair_SNP(web_GWAS_list,web_eQTL_list,gene)
+    pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_GWAS_list,web_eQTL_list,gene)
+
+    pair_SNP_dict = {}
+    if pairNames != 'empty':
+        for pair in pairNames.split(','):
+            pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+    else:
+        pair_SNP_dict = pair_SNP_dict_all
     ret = {}
     ret['gene'] = gene
     ret['pair_SNP_dict'] = pair_SNP_dict
