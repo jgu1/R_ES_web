@@ -5,12 +5,19 @@ import pickle
 import os
 class DAO(object):
     db = None
+    SNP_db = None
+
     def __init__(self):
         #self.db = sqlite3.connect(DATABASE)
         self.db = MySQLdb.connect(host="localhost", # your host, usually localhost
                     user="root", # your username
                     passwd="genome", # your password
                     db="ES_OUTPUT") # name of the data base
+        
+        self.SNP_db = MySQLdb.connect(host="localhost",
+                    user="root",
+                    passwd="genome",
+                    db="hg19")
 
     def exec_fetch_SQL(self,sql_template):
         cur = self.db.cursor()
@@ -182,7 +189,6 @@ class DAO(object):
         eQTLs = web_eQTL_list.strip().split()
         if 'merged_pickle' in eQTLs:
             eQTLs.append('Merged_08212015_pruned_LD02')
-            eQTLs.append('Merged_08212015_pruned_LD85')
             eQTLs.remove('merged_pickle')
         if len(GWASs) == 0 or len(eQTLs) == 0:
             return None,None
@@ -243,8 +249,46 @@ class DAO(object):
             individual_SNPs.append(set(curr_SNP))
         all_SNPs = set.union(*individual_SNPs)
         all_SNPs_list = list(all_SNPs)
-        all_SNPs_list.sort()
+        #all_SNPs_list.sort()
+        all_SNPs_list = self.sort_SNP_by_chrom_pos(all_SNPs_list)
         return all_SNPs_list
+
+    def fetch_chrom_chromStart_for_SNP_as_float(self,SNP):
+        sql_template = ('select chrom,chromStart from snp138'
+                        ' where name = "' + SNP + '";')
+        cur = self.SNP_db.cursor() 
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        if len(rows) !=  1:   # there is an unique constraint on (Geg_id,SNP_Name)
+            print 'multiple pos found for single SNP'
+            #exit(-1)
+ 
+        chrom = rows[0][0]
+        chromStart = rows[0][1]
+
+        chrom_integer_str = chrom[3:]
+        try:
+            chrom_integer = float(chrom_integer_str)
+        except ValueError:
+            if chrom_integer_str =='X' or chrom_integer_str == 'Y':
+                chrom_integer_str = '23'
+            else:
+                chrom_integer_str = '24' # map all the other odd values to 24
+        
+        SNP_float = float(chrom_integer_str + '.' + str(chromStart))
+        return SNP_float
+        
+    def sort_SNP_by_chrom_pos(self,all_SNPs_list):
+        pdb.set_trace()
+        pos_lst = [0.1] * len(all_SNPs_list)
+        for i in range(len(all_SNPs_list)):
+            pos_lst[i] = self.fetch_chrom_chromStart_for_SNP_as_float(all_SNPs_list[i])
+        pos_rank = sorted(range(len(pos_lst)), key=lambda i: pos_lst[i])
+        sorted_by_chrom_pos = [all_SNPs_list[i] for i in pos_rank]
+    
+        return sorted_by_chrom_pos       
+         
+
 
     def patch_result_dict_by_all_SNPs(self,result_dict):
         all_SNPs_list = self.get_all_SNPs(result_dict.values())
@@ -270,6 +314,11 @@ class DAO(object):
         #GWASs = GWAS_list.strip().split()
         GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
         eQTLs = web_eQTL_list.strip().split()
+
+        if 'merged_pickle' in eQTLs:
+            eQTLs.append('Merged_08212015_pruned_LD02')
+            eQTLs.remove('merged_pickle')
+
 
         result_dict = {}
         for i in range(len(GWASs)):
