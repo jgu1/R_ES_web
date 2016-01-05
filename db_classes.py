@@ -279,7 +279,6 @@ class DAO(object):
         return SNP_float
         
     def sort_SNP_by_chrom_pos(self,all_SNPs_list):
-        pdb.set_trace()
         pos_lst = [0.1] * len(all_SNPs_list)
         for i in range(len(all_SNPs_list)):
             pos_lst[i] = self.fetch_chrom_chromStart_for_SNP_as_float(all_SNPs_list[i])
