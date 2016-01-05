@@ -84,7 +84,8 @@ function createGraph() {
     //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
     var w = width_pair, h = height_pair;
     //var svg = d3.select("#chart")
-    var svg = sub_clusters.append("svg")
+    var wrapper_div = sub_clusters.append("div");
+    var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
                     .style("overflow","scroll")
@@ -153,10 +154,20 @@ function createGraph() {
                     return color_scale(-Math.log10(parseFloat(d[3]))) 
                 }
             })
-        .append("title")
+     .on("click",function(d){
+            //d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
+            d3.select("#detail").remove();
+            wrapper_div.append("div")
+               .attr("id","detail")
+            d3.json("/detail?gene="+d[2],detailcallback);
+            //plotDetail(d);
+            }
+           ) 
+      .append("title")
             .text(function(d){
                 return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[2];
             });
+       
  
   }
 
@@ -185,7 +196,7 @@ function createGraph() {
     }
     var detail_height = matrix.length * size;
     var detail_width = matrix[0].length * size; // should not be null, because at least one gene has SNPs
-    var margin = {top: 120, right: 200, bottom: 10, left: 360};
+    var margin = {top: 120, right: 200, bottom: 10, left: 600};
     
     d3.select("#detail").html("");
     d3.select("#detail").append("div") 
