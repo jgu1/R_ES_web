@@ -18,6 +18,7 @@ from inspect_matrix import discover_sub_clusters
 DEBUG = True
 SECRET_KEY = 'development key'
 eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
+disease_GWAS_dict = pickle.load(open("disease_GWAS_dict.pickle","rb"))
 GENE_P_Q_PER_PAGE=30
 page=1
 
@@ -94,9 +95,11 @@ def fetch_and_build_matrix():
 
 @app.route('/')
 def show_matrix():
-   
+    disease_names = sorted(disease_GWAS_dict.keys())
+     
+ 
     if 'web_GWAS_list' not in session or 'web_eQTL_list' not in session:
-        return render_template('show_matrix.html',eQTL_names = eQTL_names)
+        return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names)
     
     try:
         page = int(request.args.get('page', 1))
@@ -106,14 +109,14 @@ def show_matrix():
 
     gene_p_qs,pagination,filtered_gene_names = fetch_and_build_matrix() 
     if gene_p_qs is None:
-        return render_template('show_matrix.html',eQTL_names = eQTL_names) 
+        return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names) 
     
     ret = {}
     ret['filtered_gene_names'] = filtered_gene_names
     ret['gene_p_qs'] = gene_p_qs
     ret['sorted_pair_names'] = sorted(gene_p_qs.keys())
     draw_pair_json_obj = json.dumps(ret)
-    return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, draw_pair_json_obj=draw_pair_json_obj)
+    return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj)
 
 @app.route('/draw', methods=['POST'])
 def draw():
@@ -123,11 +126,8 @@ def draw():
         eQTL_name_selected_list = request.form.getlist(eQTL_name)
         if len(eQTL_name_selected_list) > 0:
             web_eQTL_list = web_eQTL_list + eQTL_name + ' ' 
-    
-    if not session.get('logged_in'):
-        abort(401)
-    
-    web_GWAS_list = request.form['GWAS_list']
+       
+    web_GWAS_list = request.form['disease_list']
     #web_eQTL_list  = request.form['eQTL_list']
 
     session['web_GWAS_list'] = web_GWAS_list

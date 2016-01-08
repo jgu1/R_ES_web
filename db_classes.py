@@ -205,7 +205,6 @@ class DAO(object):
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
         #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
         #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
-        
         return filtered_dict,filtered_gene_names
 
 #pair manipulation   
