@@ -173,16 +173,15 @@ class DAO(object):
         return term_relatives
 
     def gen_GWASs_from_web_GWAS_lsit(self,web_GWAS_list):
-        GWASs_disease_term = web_GWAS_list.strip().split()
-        GWASs_disease_term = self.gen_term_relatives(GWASs_disease_term) 
-        disease_GWAS_tuples_list = pickle.load(open(os.getcwd() + '/disease_GWAS_tuples_list.pickle','r'))
-        GWASs = []
+        web_diseases_term = web_GWAS_list.strip().split()
+        web_diseases_term = self.gen_term_relatives(web_diseases_term)
+        disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
+        GWASs = set([])
         # for each search_term, go over all disease_gwas tuple
-        for disease in GWASs_disease_term:
-            for disease_GWAS_tuple in disease_GWAS_tuples_list:
-                if disease in disease_GWAS_tuple[0]:
-                    GWASs.append(disease_GWAS_tuple[1])  
-        return GWASs
+        for disease in web_diseases_term:
+            if disease in disease_GWAS_dict:
+                GWASs = GWASs.union(disease_GWAS_dict[disease])
+        return list(GWASs)
 
     def fetch_pair_gene(self,web_GWAS_list,web_eQTL_list):
         GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
@@ -204,6 +203,9 @@ class DAO(object):
         if len(result_dict) == 0:
             return None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
+        #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
+        #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
+        
         return filtered_dict,filtered_gene_names
 
 #pair manipulation   
