@@ -618,3 +618,14 @@ function createGraph() {
   draw_pair(draw_pair_json_obj);
     // Code goes here
 }
+
+function addDisease(e){
+    selected_value = e.value;
+    var disease_input_text = document.getElementById("disease_input_text");
+    curr_text = disease_input_text.value
+    if (curr_text.trim() == ""){
+        disease_input_text.value = selected_value;    
+    }else if( curr_text.indexOf(selected_value) < 0){
+        disease_input_text.value =  disease_input_text.value + ",    " + selected_value;
+    } 
+}

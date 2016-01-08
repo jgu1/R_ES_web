@@ -9,8 +9,15 @@
       <dl>
         <dt>Please choose GWAS and eQTL of your interest:
         <dd>
-        <br>please input disease keywords for GWAS<dd><input type=text size=100 name=GWAS_list>
-        <br>check eQTLs of interest<ul id="eQTL_names">
+        <br>please select disease names
+        <br><select name="disease" multiple onchange="addDisease(this);" id="disease_dropdown">
+        {% for disease_name in disease_names%}
+            <option value={{disease_name}}>{{disease_name}}</option>
+        {% endfor %}
+        </select>
+        <dd><input type=text size=100 name=GWAS_list id="disease_input_text">
+        <br>
+        <br>please select eQTLs of interest<ul id="eQTL_names">
         {% for eQTL_name in eQTL_names%}
             <li><input name={{ eQTL_name }} type="checkbox" />{{ eQTL_name }}</li>
         {% endfor %}
