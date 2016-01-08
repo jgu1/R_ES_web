@@ -172,8 +172,8 @@ class DAO(object):
             term_relatives += [term + 's', term + 'es']
         return term_relatives
 
-    def gen_GWASs_from_web_GWAS_lsit(self,web_GWAS_list):
-        web_diseases_term = web_GWAS_list.strip().split()
+    def gen_GWASs_from_web_disease_list(self,web_disease_list):
+        web_diseases_term = web_disease_list.strip().split()
         web_diseases_term = self.gen_term_relatives(web_diseases_term)
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         GWASs = set([])
@@ -183,8 +183,8 @@ class DAO(object):
                 GWASs = GWASs.union(disease_GWAS_dict[disease])
         return list(GWASs)
 
-    def fetch_pair_gene(self,web_GWAS_list,web_eQTL_list):
-        GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
+    def fetch_pair_gene(self,web_disease_list,web_eQTL_list):
+        GWASs = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
         if 'merged_pickle' in eQTLs:
             eQTLs.append('Merged_08212015_pruned_LD02')
@@ -310,9 +310,9 @@ class DAO(object):
         return patched_dict,all_SNPs_list
 
 
-    def fetch_pair_SNP(self,web_GWAS_list,web_eQTL_list,gene):
+    def fetch_pair_SNP(self,web_disease_list,web_eQTL_list,gene):
         #GWASs = GWAS_list.strip().split()
-        GWASs = self.gen_GWASs_from_web_GWAS_lsit(web_GWAS_list) 
+        GWASs = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
 
         if 'merged_pickle' in eQTLs:

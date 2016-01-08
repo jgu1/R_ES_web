@@ -66,10 +66,10 @@ def sub_clusters():
 def detail():
     gene = request.args.get('gene', 'empty')
     pairNames = request.args.get('pairNames','empty')
-    web_GWAS_list = session['web_GWAS_list']
+    web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_GWAS_list,web_eQTL_list,gene)
+    pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
 
     pair_SNP_dict = {}
     if pairNames != 'empty':
@@ -84,10 +84,10 @@ def detail():
     return jsonify(ret)
 
 def fetch_and_build_matrix():
-    web_GWAS_list = session['web_GWAS_list']
+    web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_GWAS_list,web_eQTL_list)
+    gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_disease_list,web_eQTL_list)
     if gene_p_qs is None:
         return None,None,None 
      
@@ -98,7 +98,7 @@ def show_matrix():
     disease_names = sorted(disease_GWAS_dict.keys())
      
  
-    if 'web_GWAS_list' not in session or 'web_eQTL_list' not in session:
+    if 'web_disease_list' not in session or 'web_eQTL_list' not in session:
         return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names)
     
     try:
@@ -127,10 +127,10 @@ def draw():
         if len(eQTL_name_selected_list) > 0:
             web_eQTL_list = web_eQTL_list + eQTL_name + ' ' 
        
-    web_GWAS_list = request.form['disease_list']
+    web_disease_list = request.form['disease_list']
     #web_eQTL_list  = request.form['eQTL_list']
 
-    session['web_GWAS_list'] = web_GWAS_list
+    session['web_disease_list'] = web_disease_list
     session['web_eQTL_list'] = web_eQTL_list
     return redirect(url_for('show_matrix'))
 
