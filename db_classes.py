@@ -174,13 +174,28 @@ class DAO(object):
 
     def gen_GWASs_from_web_disease_list(self,web_disease_list):
         web_diseases_term = web_disease_list.strip().split()
-        web_diseases_term = self.gen_term_relatives(web_diseases_term)
+        web_diseases_term_found_dict = {} 
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         GWASs = set([])
         # for each search_term, go over all disease_gwas tuple
         for disease in web_diseases_term:
             if disease in disease_GWAS_dict:
                 GWASs = GWASs.union(disease_GWAS_dict[disease])
+                web_diseases_term_found_dict[disease] = True 
+        
+        # for any disease term not found a matching GWAS fwith exact match,
+        # do fuzzy match
+        for disease in web_diseases_term:
+            # if not found in exact match
+            if disease not in web_diseases_term_found_dict:
+                disease_relatives = self.gen_term_relatives([disease])
+                for relative in disease_relatives:
+                    # for each relative, go over all keys
+                    for full_disease_name in disease_GWAS_dict.keys():
+                        if relative in full_disease_name:
+                             GWASs = GWASs.union(disease_GWAS_dict[full_disease_name])
+                             web_diseases_term_found_dict[disease] = True 
+            
         return list(GWASs)
 
     def fetch_pair_gene(self,web_disease_list,web_eQTL_list):
