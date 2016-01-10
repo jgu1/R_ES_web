@@ -82,8 +82,8 @@ class DAO(object):
         else:   # len(rows) == 0
             return self.do_insert_gene_p_q(gene_p_q.pval,gene_p_q.qval,Geg_id),Geg_id  
 ####################################
-    def do_insert_single_GSNP_eSNP_Gpval(self,GSNP,eSNP,Gpval,Geg_id):
-        sql_template= ('insert into GSNP_eSNP_Gpval (GSNP,eSNP,Gpval,Geg_id) values(%s,%s,%s,%s)')
+    def do_insert_single_SNP_fields(self,GSNP,eSNP,Gpval,Geg_id):
+        sql_template= ('insert into SNP_fields (GSNP,eSNP,Gpval,Geg_id) values(%s,%s,%s,%s)')
         cur = self.db.cursor()
         try:
             cur.execute(sql_template,(GSNP,eSNP,Gpval,Geg_id))
@@ -92,8 +92,8 @@ class DAO(object):
             a = 1        
         self.db.commit()
 
-    def insert_single_GSNP_eSNP_Gpval(self,GSNP,eSNP,Gpval,Geg_id):
-        sql_template = (' select id, Gpval from GSNP_eSNP_Gpval where Geg_id=' + str(Geg_id) + 
+    def insert_single_SNP_fields(self,GSNP,eSNP,Gpval,Geg_id):
+        sql_template = (' select id, Gpval from SNP_fields where Geg_id=' + str(Geg_id) + 
                         ' and GSNP="' + GSNP + '"' +
                         ' and eSNP="' + eSNP + '"' +
                         ';')   
@@ -101,20 +101,20 @@ class DAO(object):
         cur.execute(sql_template)
         rows = cur.fetchall()
         if len(rows) >  1:   # there is an unique constraint on (Geg_id,SNP_Name)
-            print 'GSNP_eSNP_Gpval is contaminated'
+            print 'SNP_fields is contaminated'
             exit(-1)
         elif len(rows) == 1 and rows[0][1] == Gpval:
             return rows[0][0]
         else: #len(rows) == 0
-            return self.do_insert_single_GSNP_eSNP_Gpval(GSNP,eSNP,Gpval,Geg_id)
+            return self.do_insert_single_SNP_fields(GSNP,eSNP,Gpval,Geg_id)
 
     def insert_gene_SNPs(self,gene_SNPs,Geg_id):
         #Geg_id = self.fetch_or_insert_Geg(gene_SNPs.GWAS,gene_SNPs.eQTL,gene_SNPs.gene)
-        for t in gene_SNPs.GSNP_eSNP_Gpvals:
+        for t in gene_SNPs.SNP_fields:
             GSNP = t[0]
             eSNP = t[1]
             Gpval= t[2]
-            self.insert_single_GSNP_eSNP_Gpval(GSNP,eSNP,Gpval,Geg_id)
+            self.insert_single_SNP_fields(GSNP,eSNP,Gpval,Geg_id)
 
 
 #pair manipulation   
@@ -226,11 +226,11 @@ class DAO(object):
 #pair manipulation   
 #detail manipulation
     def fetch_SNP_list_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
-        sql_template = ('select GSNP,eSNP,Gpval from Geg, GSNP_eSNP_Gpval'
+        sql_template = ('select GSNP,eSNP,Gpval from Geg, SNP_fields'
                         ' where Geg.GWAS = "' + GWAS + '"'
                         ' and Geg.eQTL = "' + eQTL + '"'
                         ' and Geg.gene = "' + gene + '"'
-                        ' and GSNP_eSNP_Gpval.Geg_id = Geg.id;'  
+                        ' and SNP_fields.Geg_id = Geg.id;'  
                         )
 	list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail        
@@ -352,11 +352,11 @@ class DAO(object):
 
 #detail manipulation
     def fetch_detail(self,GWAS,eQTL,gene):
-        sql_template = ('select GSNP,eSNP,Gpval from Geg, GSNP_eSNP_Gpval'
+        sql_template = ('select GSNP,eSNP,Gpval from Geg, SNP_fields'
                         ' where Geg.GWAS = "' + GWAS + '"'
                         ' and Geg.eQTL = "' + eQTL + '"'
                         ' and Geg.gene = "' + gene + '"'
-                        ' and GSNP_eSNP_Gpval.Geg_id = Geg.id;'  
+                        ' and SNP_fields.Geg_id = Geg.id;'  
                         )
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail 
