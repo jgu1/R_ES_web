@@ -199,6 +199,7 @@ class DAO(object):
         return list(GWASs)
 
     def fetch_pair_gene(self,web_disease_list,web_eQTL_list):
+        #pdb.set_trace()
         GWASs = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
         if 'merged_pickle' in eQTLs:
