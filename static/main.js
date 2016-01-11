@@ -140,7 +140,7 @@ function createGraph() {
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; })
       .append("title")
-        .text(function(d,i){return geneDescriptions[i]; });
+        .text(function(d,i){return geneNames[i] +": " + geneDescriptions[i]; });
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
@@ -571,7 +571,7 @@ function createGraph() {
       .text(function(d, i) { return geneNames[i]; }) 
       .on("click", function(d,i) {sortAlongColumn(i);})
       .append("title")
-          .text(function(d,i){ return geneDescriptions[i];});
+          .text(function(d,i){ return geneNames[i] +": "+ geneDescriptions[i];});
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
