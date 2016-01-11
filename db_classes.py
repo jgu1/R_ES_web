@@ -226,7 +226,7 @@ class DAO(object):
 #pair manipulation   
 #detail manipulation
     def fetch_SNP_list_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
-        sql_template = ('select GSNP,eSNP,Gpval from Geg, SNP_fields'
+        sql_template = ('select GSNP,eSNP,Gpval,epval from Geg, SNP_fields'
                         ' where Geg.GWAS = "' + GWAS + '"'
                         ' and Geg.eQTL = "' + eQTL + '"'
                         ' and Geg.gene = "' + gene + '"'
@@ -320,7 +320,7 @@ class DAO(object):
                 if SNP in curr_result_dict:
                     curr_patched_list.append(curr_result_dict[SNP])
                 else:
-                    curr_patched_list.append(('dummy','dummy','-1'))  
+                    curr_patched_list.append(('dummy','dummy','-1','-1'))  
             patched_dict[pair_name] = curr_patched_list
 
         return patched_dict,all_SNPs_list

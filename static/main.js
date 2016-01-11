@@ -301,7 +301,7 @@ function createGraph() {
              if (parseFloat(d[2]) < 0){
                 return '';   
              }else{
-                return "GWAS pval: " + d[2] + "\neSNP name: " + d[1] ;
+                return "GWAS pval: " + d[2] + "\neQTL pval: " + d[3] + "\nGWAS name: " + d[0] + "\neSNP name: " + d[1] ;
                 //return "GWAS pval :" + d[2] + "\nGWAS_SNP:" + d[0] + "\neQTL_SNP :" + d[1] ;
              }
             });  
