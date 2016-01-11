@@ -54,6 +54,7 @@ def sub_clusters():
 
     ret = {}
     ret['gene_p_qs'] = gene_p_qs
+    ret['gene_descriptions'] = gene_descriptions
     ret['pairname_idx'] = serisables
 
     resp = Response(json.dumps(ret), status=200, mimetype='application/json')

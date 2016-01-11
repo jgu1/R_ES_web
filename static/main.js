@@ -13,7 +13,8 @@ function createGraph() {
   var sub_clusterscallback = function(data){
     var gene_p_qs = data.gene_p_qs
     var pairname_idx = data.pairname_idx
-   
+    var gene_descriptions = data.gene_descriptions;  
+ 
     for (var i = 0; i < pairname_idx.length; i++){
         var curr_rowcomb_cols = pairname_idx[i];
         var row_comb = curr_rowcomb_cols[0];
@@ -22,6 +23,7 @@ function createGraph() {
         var sub_cluster_gene_p_qs = {};
         var sub_cluster_sorted_pair_names = new Array();
         var sub_cluster_filtered_gene_names = new Array(cols.length);
+        var sub_cluster_gene_descriptions = new Array(cols.length);
 
         // loop through all rows
         for (var i_pairname = 0; i_pairname < row_comb.length; i_pairname++){
@@ -38,17 +40,18 @@ function createGraph() {
                 if (curr_pass_gene[2] != "dummy_gene"){
                     sub_cluster_filtered_gene_names[i_pass_idx] = curr_pass_gene[2];
                 }
+                sub_cluster_gene_descriptions[i_pass_idx] = gene_descriptions[curr_pass_idx]; 
             }
             sub_cluster_gene_p_qs[curr_pairname] = curr_pair_genes_arr;
         }
           
-        draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names); 
+        draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names,sub_cluster_gene_descriptions); 
     }
     // hide the discover_sub_clusters button  
     d3.select("#sub_clusters_button").style("display","none");
   }
   
-  function draw_subcluster(gene_p_qs,geneNames,pairNames){
+  function draw_subcluster(gene_p_qs,geneNames,pairNames,geneDescriptions){
     var matrix = [];
     var size = 15;
     for (var i = 0; i<pairNames.length;i++) {
@@ -135,7 +138,9 @@ function createGraph() {
       .attr("width",size)
       .attr("height",size)
       .attr("dy", ".32em")
-      .text(function(d, i) { return geneNames[i]; }); 
+      .text(function(d, i) { return geneNames[i]; })
+      .append("title")
+        .text(function(d,i){return geneDescriptions[i]; });
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")
