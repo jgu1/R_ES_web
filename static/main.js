@@ -434,15 +434,18 @@ function createGraph() {
       .attr("width", width_pair)
       .attr("height", height_pair);
 
-    chart.append("input")
-         .attr("type","button")
-         .attr("value","Discover sub_clusters")
-         .attr("id","sub_clusters_button")
-         .style("margin-left",5 * margin +"px")
-         .on("click",function(d){
-            d3.json("/sub_clusters",sub_clusterscallback);
-            });
+    show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
 
+    if (show_sub_clusters_button == 'True'){
+        chart.append("input")
+             .attr("type","button")
+             .attr("value","Discover sub_clusters")
+             .attr("id","sub_clusters_button")
+             .style("margin-left",5 * margin +"px")
+             .on("click",function(d){
+                d3.json("/sub_clusters",sub_clusterscallback);
+                });
+    }
 
     var pair = svg.selectAll(".pair")
       .data(matrix)

@@ -89,9 +89,10 @@ def fetch_and_build_matrix():
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
+    #pdb.set_trace()
     gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list)
     if gene_p_qs is None:
-        return None,None,None 
+        return None,None,None,None 
      
     return gene_p_qs,None,filtered_gene_names,gene_descriptions
 
@@ -121,7 +122,12 @@ def show_matrix():
     ret['gene_p_qs'] = gene_p_qs
     ret['sorted_pair_names'] = sorted(gene_p_qs.keys())
     draw_pair_json_obj = json.dumps(ret)
-    return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj)
+
+    show_discover_sub_clusters_button = False
+    if len(gene_p_qs) < 12:
+        show_discover_sub_clusters_button = True   
+
+    return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj,show_discover_sub_clusters_button = show_discover_sub_clusters_button)
 
 @app.route('/draw', methods=['POST'])
 def draw():
