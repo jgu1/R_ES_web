@@ -17,6 +17,7 @@ from inspect_matrix import discover_sub_clusters
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
+eQTL_name_all = 'all'
 eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
 disease_GWAS_dict = pickle.load(open("disease_GWAS_dict.pickle","rb"))
 GENE_P_Q_PER_PAGE=30
@@ -98,6 +99,8 @@ def fetch_and_build_matrix():
 def show_matrix():
     disease_names = sorted(disease_GWAS_dict.keys())
      
+    if eQTL_name_all not in eQTL_names:
+        eQTL_names.append(eQTL_name_all)
  
     if 'web_disease_list' not in session or 'web_eQTL_list' not in session:
         return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names)
@@ -123,11 +126,15 @@ def show_matrix():
 @app.route('/draw', methods=['POST'])
 def draw():
     web_eQTL_list = ''
-    for eQTL_name in eQTL_names:
-        eQTL_name_selected_list = request.form.getlist(eQTL_name)
-        if len(eQTL_name_selected_list) > 0:
-            web_eQTL_list = web_eQTL_list + eQTL_name + ' ' 
-       
+
+    if len(request.form.getlist(eQTL_name_all)) > 0:
+        web_eQTL_list = ' '.join(eQTL_names) 
+    else:
+        for eQTL_name in eQTL_names:
+            eQTL_name_selected_list = request.form.getlist(eQTL_name)
+            if len(eQTL_name_selected_list) > 0:
+                web_eQTL_list = web_eQTL_list + eQTL_name + ' ' 
+           
     web_disease_list = request.form['disease_list']
     #web_eQTL_list  = request.form['eQTL_list']
 
