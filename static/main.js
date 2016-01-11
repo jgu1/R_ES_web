@@ -376,6 +376,7 @@ function createGraph() {
     var geneNames = [];
     var size = 15;
     var geneNames = draw_pair_json_obj.filtered_gene_names; 
+    var geneDescriptions = draw_pair_json_obj.gene_descriptions;
     var gene_p_qs = draw_pair_json_obj.gene_p_qs; 
     var pairNames = draw_pair_json_obj.sorted_pair_names; 
     for (var i = 0; i<pairNames.length;i++) {
@@ -563,7 +564,9 @@ function createGraph() {
       .attr("height",size)
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; }) 
-      .on("click", function(d,i) {sortAlongColumn(i);}) ;
+      .on("click", function(d,i) {sortAlongColumn(i);})
+      .append("title")
+          .text(function(d,i){ return geneDescriptions[i];});
  
   function pair(pair) {
     var cell = d3.select(this).selectAll(".gene")

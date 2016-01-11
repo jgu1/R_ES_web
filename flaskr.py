@@ -41,7 +41,7 @@ def teardown_request(exception):
 
 @app.route('/sub_clusters')
 def sub_clusters():
-    gene_p_qs,pagination,filtered_gene_names = fetch_and_build_matrix()
+    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix()
     sub_clusters = discover_sub_clusters(gene_p_qs)
     
     serisables = []
@@ -70,7 +70,7 @@ def detail():
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
     pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
-
+    
     pair_SNP_dict = {}
     if pairNames != 'empty':
         for pair in pairNames.split(','):
@@ -87,11 +87,11 @@ def fetch_and_build_matrix():
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
     dao = getattr(g, 'dao', None)
-    gene_p_qs,filtered_gene_names = dao.fetch_pair_gene(web_disease_list,web_eQTL_list)
+    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list)
     if gene_p_qs is None:
         return None,None,None 
      
-    return gene_p_qs,None,filtered_gene_names
+    return gene_p_qs,None,filtered_gene_names,gene_descriptions
 
 @app.route('/')
 def show_matrix():
@@ -107,12 +107,13 @@ def show_matrix():
         page = 1
     session['page'] = page
 
-    gene_p_qs,pagination,filtered_gene_names = fetch_and_build_matrix() 
+    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix() 
     if gene_p_qs is None:
         return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names) 
     
     ret = {}
     ret['filtered_gene_names'] = filtered_gene_names
+    ret['gene_descriptions'] = gene_descriptions
     ret['gene_p_qs'] = gene_p_qs
     ret['sorted_pair_names'] = sorted(gene_p_qs.keys())
     draw_pair_json_obj = json.dumps(ret)
@@ -120,7 +121,6 @@ def show_matrix():
 
 @app.route('/draw', methods=['POST'])
 def draw():
-   
     web_eQTL_list = ''
     for eQTL_name in eQTL_names:
         eQTL_name_selected_list = request.form.getlist(eQTL_name)

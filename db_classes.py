@@ -5,7 +5,7 @@ import pickle
 import os
 class DAO(object):
     db = None
-    SNP_db = None
+    db_hg19 = None
 
     def __init__(self):
         #self.db = sqlite3.connect(DATABASE)
@@ -14,7 +14,7 @@ class DAO(object):
                     passwd="genome", # your password
                     db="ES_OUTPUT") # name of the data base
         
-        self.SNP_db = MySQLdb.connect(host="localhost",
+        self.db_hg19 = MySQLdb.connect(host="localhost",
                     user="root",
                     passwd="genome",
                     db="hg19")
@@ -221,8 +221,29 @@ class DAO(object):
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
         #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
         #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
-        return filtered_dict,filtered_gene_names
+        gene_descriptions = self.fetch_gene_descriptions_by_gene_names(filtered_gene_names)
+        return filtered_dict,filtered_gene_names,gene_descriptions
+ 
+    def fetch_gene_descriptions_by_gene_names(self,gene_names):
+        gene_descriptions = [];
+        for i_gene in range(len(gene_names)):
+            gene_name = gene_names[i_gene]
+            cur = self.db_hg19.cursor() 
+            sql_template = 'select gd_app_name from HUGO where gd_app_sym="' + gene_name + '";'  
+            cur.execute(sql_template)
+            rows = cur.fetchall()
+            if len(rows) !=  1:   # there is an unique constraint on (Geg_id,SNP_Name)
+                print 'multiple gene position is found for single gene'
+                #exit(-1)
+                if len(rows) < 1:
+                    gene_descriptions.append('no description found in hg19 database')
+                    continue
+ 
+            gene_description = rows[0][0]
+            gene_descriptions.append(gene_description)
+        return gene_descriptions
 
+      
 #pair manipulation   
 #detail manipulation
     def fetch_SNP_list_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
@@ -273,7 +294,7 @@ class DAO(object):
     def fetch_chrom_chromStart_for_SNP_as_float(self,SNP):
         sql_template = ('select chrom,chromStart from snp138'
                         ' where name = "' + SNP + '";')
-        cur = self.SNP_db.cursor() 
+        cur = self.db_hg19.cursor() 
         cur.execute(sql_template)
         rows = cur.fetchall()
         if len(rows) !=  1:   # there is an unique constraint on (Geg_id,SNP_Name)
