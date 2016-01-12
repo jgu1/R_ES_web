@@ -139,6 +139,7 @@ function createGraph() {
       .attr("height",size)
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; })
+      .on("click", function(d,i) {sortAlongColumn(i);}) 
       .append("title")
         .text(function(d,i){return geneNames[i] +": " + geneDescriptions[i]; });
  
@@ -176,6 +177,35 @@ function createGraph() {
  
   }
 
+    function getColumnINegLog10(i){
+      var index=0;
+      var negLog10=[];
+      var cd;
+      for(index=0; index<matrix.length; index++){
+           SNPs=matrix[index];
+           if(SNPs.length>i){
+                if (parseFloat(SNPs[i][3]) < 0){
+                    negLog10.push(-1);
+                }else{
+                     negLog10.push(-Math.log10(parseFloat(SNPs[i][3])));
+                }
+           }else{
+                negLog10.push(0);
+           }
+      }
+      return negLog10;
+    }
+
+    function sortAlongColumn(i){
+       var t = svg.transition().duration(3000);
+       var ColumnIData=getColumnINegLog10(i);
+       var sorted; // sorted is zero-based index
+       sorted=d3.range(matrix.length).sort(function(a,b){   //index array pointing to real data arra
+            return ColumnIData[b] - ColumnIData[a];
+       });
+       t.selectAll(".pair")
+        .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
+    }  
     var a = 1;  
   }
 
@@ -372,7 +402,7 @@ function createGraph() {
        });
        t.selectAll(".pair2")
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
-  }  
+    }  
   }
 
   var draw_pair = function(draw_pair_json_obj){
