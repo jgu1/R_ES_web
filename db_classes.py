@@ -206,7 +206,7 @@ class DAO(object):
             eQTLs.append('Merged_08212015_pruned_LD02')
             eQTLs.remove('merged_pickle')
         if len(GWASs) == 0 or len(eQTLs) == 0:
-            return None,None
+            return None,None,None
 
         result_dict = {}
         for i in range(len(GWASs)):
@@ -217,7 +217,7 @@ class DAO(object):
                 if len(result) > 0:
                     result_dict[GWAS + '---' + eQTL] = result
         if len(result_dict) == 0:
-            return None,None
+            return None,None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
         #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
         #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
