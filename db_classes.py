@@ -167,18 +167,19 @@ class DAO(object):
     def gen_term_relatives(self,terms):
         term_relatives = []
         for term in terms:
-            term_relatives += [term,term.title(),term.lower(),term.upper()]
+            term_relatives += [term,term.title(),term.lower(),term.upper(), term.title().replace("'S","'s")]
             term_relatives += [term + "'s", term + "'" ]
             term_relatives += [term + 's', term + 'es']
         return term_relatives
 
     def gen_GWASs_from_web_disease_list(self,web_disease_list):
-        web_diseases_term = web_disease_list.strip().split()
+        web_diseases_term = web_disease_list.strip().split(',')
         web_diseases_term_found_dict = {} 
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         GWASs = set([])
         # for each search_term, go over all disease_gwas tuple
         for disease in web_diseases_term:
+            disease = disease.strip()
             if disease in disease_GWAS_dict:
                 GWASs = GWASs.union(disease_GWAS_dict[disease])
                 web_diseases_term_found_dict[disease] = True 
@@ -199,7 +200,6 @@ class DAO(object):
         return list(GWASs)
 
     def fetch_pair_gene(self,web_disease_list,web_eQTL_list):
-        #pdb.set_trace()
         GWASs = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
         if 'merged_pickle' in eQTLs:
