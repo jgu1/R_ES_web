@@ -167,6 +167,7 @@ class DAO(object):
     def gen_term_relatives(self,terms):
         term_relatives = []
         for term in terms:
+            # term.title() will change chron's to Crohn'S, thus need to convert the 'S back to 's
             term_relatives += [term,term.title(),term.lower(),term.upper(), term.title().replace("'S","'s")]
             term_relatives += [term + "'s", term + "'" ]
             term_relatives += [term + 's', term + 'es']
