@@ -205,7 +205,47 @@ function createGraph() {
        });
        t.selectAll(".pair")
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
+    }
+
+ 
+    function getRowINegLog10(i){
+      var index=0;
+      var negLog10=[];
+      var rowIRaw = matrix[i];
+      for (var i=0; i<rowIRaw.length; i++){
+        gene = rowIRaw[i];
+        if (parseFloat(gene[3]) < 0){
+            negLog10.push(-1);    
+        }else{
+            negLog10.push(-Math.log10(parseFloat(gene[3])));  
+        }
+      }
+      return negLog10;
+    }
+
+
+    function sortAlongRow(i){
+       var t = svg.transition().duration(3000);
+       var rowIData=getRowINegLog10(i);
+       var sorted; // sorted is zero-based index
+       sorted=d3.range(rowIData.length).sort(function(a,b){   //index array pointing to real data array
+            return rowIData[b] - rowIData[a];
+       });
+       // sort column names
+       t.selectAll(".column")
+        .attr("transform", function(d,i) { return "translate(" + sorted.indexOf(i) * size+")rotate(-90)";});
+       // sort rects in each row 
+       var SNPs = t.selectAll(".pair")
+                    .selectAll(".gene")
+                    .attr("x", function(d,i) { return sorted.indexOf(i)*size; });
     }  
+
+
+
+
+
+
+  
     var a = 1;  
   }
 
