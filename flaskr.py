@@ -124,8 +124,9 @@ def show_matrix():
     draw_pair_json_obj = json.dumps(ret)
 
     show_discover_sub_clusters_button = False
-    if len(gene_p_qs) < 12:
+    if len(gene_p_qs) <= 15:
         show_discover_sub_clusters_button = True   
+
 
     return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj,show_discover_sub_clusters_button = show_discover_sub_clusters_button)
 

@@ -21,8 +21,11 @@ def discover_sub_clusters(matrix):
     pass_dict = build_pass_dict(matrix)
     row_combs = build_row_combinations(matrix)
     sub_clusters = detect_sub_clusters(row_combs,pass_dict,matrix)
+    #return sub_clusters
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
+    #return filtered_sub_clusters
     merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+    #return merged_sub_clusters
     sub_clusters = filter_out_child_sub_clusters(merged_sub_clusters)  
     return sub_clusters
 
@@ -48,7 +51,8 @@ def merge_sub_clusters_with_same_cols(sub_clusters):
     return merged_sub_clusters
 
 def filter_out_child_sub_clusters(sub_clusters):
-    sub_clusters = sorted(sub_clusters, key=lambda x: len(x.row_comb), reverse=True)
+    # sort by number of rows, if same number of rows, sort by number of cols
+    sub_clusters = sorted(sub_clusters, key=lambda x: (len(x.row_comb),len(x.cols)), reverse=True)
     for i in xrange(len(sub_clusters)-1):   # doesn't need to consider the last one as parent
         curr_parent = sub_clusters[i]
         if curr_parent.excluded == True:
