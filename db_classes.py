@@ -178,12 +178,17 @@ class DAO(object):
         web_diseases_term_found_dict = {} 
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         GWASs = set([])
+        # this dict is used to show which disease a certain GWAS belongs to
+        GWAS_disease_dict = dict()
         # for each search_term, go over all disease_gwas tuple
         for disease in web_diseases_term:
             disease = disease.strip()
             if disease in disease_GWAS_dict:
                 GWASs = GWASs.union(disease_GWAS_dict[disease])
                 web_diseases_term_found_dict[disease] = True 
+                matched_GWASs = disease_GWAS_dict[disease]
+                for GWAS in matched_GWASs:
+                    GWAS_disease_dict[GWAS] = disease
         
         # for any disease term not found a matching GWAS fwith exact match,
         # do fuzzy match
@@ -197,11 +202,14 @@ class DAO(object):
                         if relative in full_disease_name:
                              GWASs = GWASs.union(disease_GWAS_dict[full_disease_name])
                              web_diseases_term_found_dict[disease] = True 
-            
-        return list(GWASs)
+                             matched_GWASs = disease_GWAS_dict[full_disease_name]
+                             for GWAS in matched_GWASs:
+                                GWAS_disease_dict[GWAS] = disease
+
+        return list(GWASs), GWAS_disease_dict
 
     def fetch_pair_gene(self,web_disease_list,web_eQTL_list):
-        GWASs = self.gen_GWASs_from_web_disease_list(web_disease_list) 
+        GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
         if 'merged_pickle' in eQTLs:
             eQTLs.append('Merged_08212015_pruned_LD02')
@@ -209,6 +217,10 @@ class DAO(object):
         if len(GWASs) == 0 or len(eQTLs) == 0:
             return None,None,None
 
+
+
+        disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
+        pdb.set_trace()
         result_dict = {}
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
@@ -216,7 +228,7 @@ class DAO(object):
                 eQTL = eQTLs[j]
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
-                    result_dict[GWAS + '---' + eQTL] = result
+                    result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL] = result
         if len(result_dict) == 0:
             return None,None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        

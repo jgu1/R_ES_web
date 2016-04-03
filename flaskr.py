@@ -151,8 +151,8 @@ def draw():
 
 if __name__ == '__main__':
     ip_for_current_machine = socket.gethostbyname(socket.gethostname())
-    #app.run(host=ip_for_current_machine,port=55555,threaded=True)
-#    app.run(host='localhost',port=55555,threaded=True)
-    app.run(host='169.230.81.176',port=55555,threaded=True)
+    app.run(host=ip_for_current_machine,port=55555,threaded=True)
+    #app.run(host='localhost',port=15213,threaded=True)
+#    app.run(host='169.230.81.176',port=55555,threaded=True)
 
 
