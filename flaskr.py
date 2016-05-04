@@ -13,7 +13,7 @@ from datetime import datetime,timedelta
 from db_classes import DAO
 import json
 import pickle
-from inspect_matrix import discover_sub_clusters
+from inspect_matrix import R_discover_sub_clusters,discover_sub_clusters
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
@@ -43,7 +43,10 @@ def teardown_request(exception):
 @app.route('/sub_clusters')
 def sub_clusters():
     gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix()
-    sub_clusters = discover_sub_clusters(gene_p_qs)
+    sub_clusters = R_discover_sub_clusters(gene_p_qs)
+    #pdb.set_trace()
+    #sub_clusters = discover_sub_clusters(gene_p_qs)
+    #pickle.dump(gene_p_qs,open('python_2_R_input.pickle','w+')) 
     
     serisables = []
     for sub_cluster in sub_clusters:

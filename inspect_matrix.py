@@ -4,18 +4,25 @@ import numpy
 import pdb
 import itertools
 from beans import Cluster
-def Main(pickle_filename):
-    matrix = pickle.load(open(pickle_filename))
-    pdb.set_trace()
-    pass_dict = build_pass_dict(matrix)
-    row_combs = build_row_combinations(matrix)
-    sub_clusters = detect_sub_clusters(row_combs,pass_dict)
-  
-    filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+import pyRserve,math
 
+
+def Main(pickle_filename):
+#    matrix = pickle.load(open(pickle_filename))
+#    pdb.set_trace()
+#    pass_dict = build_pass_dict(matrix)
+#    row_combs = build_row_combinations(matrix)
+#    sub_clusters = detect_sub_clusters(row_combs,pass_dict)
+  
+#    filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
+#    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+
+    gene_p_qs = pickle.load(open(pickle_filename))
+    pdb.set_trace()
+    clusters = R_discover_sub_clusters(gene_p_qs)
     pdb.set_trace()
     a = 1
+
 
 def discover_sub_clusters(matrix):
     pass_dict = build_pass_dict(matrix)
@@ -177,6 +184,63 @@ def pass_sparse_check(row_comb,gene_idx_set,matrix):
         return True
     else:
         return False 
+
+def R_build_matrix(gene_p_qs):
+    disease_names = gene_p_qs.keys()
+    disease_names.sort() 
+    num_disease = len(gene_p_qs)
+    num_gene = -1
+    #loop one iteration to get number of genes
+    for key,value in gene_p_qs.iteritems():
+        num_gene = len(value)
+        break
+    matrix_dimension = (num_disease,num_gene)
+    p_m = numpy.zeros(matrix_dimension)
+    for i_disease, disease_name in enumerate(disease_names):
+        curr_genes = gene_p_qs[disease_name]
+        for i_gene,gene in enumerate(curr_genes):
+            curr_pval_str = gene[3]
+            curr_pval_float = 1e-8
+            try:
+                curr_pval_float = float(curr_pval_str)
+            except ValueError:
+                a = 1
+            p_m[i_disease,i_gene] = curr_pval_float
+    return p_m
+
+def R_parse_cluster_result(attr,disease_names):
+    rowCol = dict()
+    num_cluster = -1
+    clusters = []
+    for elem in attr:
+        if elem[0] == 'RowxNumber':
+            rowIndex = elem[1]
+            rowCol['Row'] = rowIndex
+        if elem[0] == 'NumberxCol':
+            colIndex = elem[1]
+            rowCol['Col'] = colIndex
+            num_cluster = len(colIndex)
+    for i in range(num_cluster):
+        curr_cluster_row = rowCol['Row'][:,i]
+        curr_cluster_col = rowCol['Col'][i]
+        curr_cluster_row_index = [i for i,x in enumerate(curr_cluster_row) if x]  # extract the index of true element
+        curr_cluster_row_name  = [disease_names[i] for i in curr_cluster_row_index]
+        curr_cluster_col = [i for i,x in enumerate(curr_cluster_col) if x]
+        
+        curr_cluster = Cluster(curr_cluster_row_name, curr_cluster_col)
+        clusters.append(curr_cluster) 
+        
+    return clusters
+
+def R_discover_sub_clusters(gene_p_qs):
+    p_m = R_build_matrix(gene_p_qs)
+    conn = pyRserve.connect()
+    conn.r('require("biclust")')
+    result = conn.r.biclust(p_m, method = "BCPlaid",cluster = 'b',background = False, shuffle = 19, verbose = True)
+    attr = result.lexeme.attr
+    disease_names = gene_p_qs.keys()
+    clusters = R_parse_cluster_result(attr,disease_names)     
+    return clusters
 
 if __name__=='__main__':
     pickle_filename='ES_Sherlock_dump.pickle'
