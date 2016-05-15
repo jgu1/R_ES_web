@@ -5,7 +5,7 @@ import pdb
 import itertools
 from beans import Cluster
 import pyRserve,math
-
+OF_TXT_NAME = os.getcwd() + '/search_matrix.txt'
 
 def Main(pickle_filename):
 #    matrix = pickle.load(open(pickle_filename))
@@ -236,11 +236,47 @@ def R_discover_sub_clusters(gene_p_qs):
     p_m = R_build_matrix(gene_p_qs)
     conn = pyRserve.connect()
     conn.r('require("biclust")')
+    if False:
+        R_args = {
+            'x':p_m,
+            'method':'BCPlaid',
+            'cluster':'b',
+            'background':False,
+            'row.release':0.7,
+            'col.release':0.7,
+            'shuffle':19,
+            'back.fit':0,
+            'max.layers':20,
+            'iter.startup':5,
+            'iter.layer':10,
+            'verbose':True,
+        }
+        result = conn.r.biclust(**R_args)
     result = conn.r.biclust(p_m, method = "BCPlaid",cluster = 'b',background = False, shuffle = 19, verbose = True)
     attr = result.lexeme.attr
     disease_names = gene_p_qs.keys()
     clusters = R_parse_cluster_result(attr,disease_names)     
     return clusters
+
+def output_matrix_to_txt(ret):
+    genes = ret['filtered_gene_names']
+    diseases = ret['sorted_pair_names']
+    gene_p_qs = ret['gene_p_qs']
+    OF = open(OF_TXT_NAME,'w+')
+    #write the header
+    OF.write('gwas')
+    for d in diseases:
+        OF.write('\t')
+        OF.write(d)
+    #write the header
+   
+    
+    for i_gene,gene in enumerate(genes):    #write each row
+        OF.write('\n')
+        OF.write(gene)
+        for i_d,disease in enumerate(diseases):  #write each column
+            OF.write('\t')
+            OF.write(gene_p_qs[disease][i_gene][3]) 
 
 if __name__=='__main__':
     pickle_filename='ES_Sherlock_dump.pickle'

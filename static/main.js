@@ -48,7 +48,7 @@ function createGraph() {
         draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names,sub_cluster_gene_descriptions); 
     }
     // hide the discover_sub_clusters button  
-    d3.select("#sub_clusters_button").style("display","none");
+    //d3.select("#sub_clusters_button").style("display","none");
   }
   
   function draw_subcluster(gene_p_qs,geneNames,pairNames,geneDescriptions){
@@ -76,6 +76,7 @@ function createGraph() {
     var margin = 120;
  
     var sub_clusters = d3.select("#sub_clusters");
+    sub_clusters.html(""); 
     //var chartHeight = chart.style("height");
     //var chartHeight = parseInt(chartHeight.substring(0,chartHeight.length-2));
     if (height_pair +  margin > 500){
@@ -504,9 +505,10 @@ function createGraph() {
       .attr("width", width_pair)
       .attr("height", height_pair);
 
-    show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
+   // show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
+    
 
-    if (show_sub_clusters_button == 'True'){
+    //if (show_sub_clusters_button == 'True'){
         chart.append("input")
              .attr("type","button")
              .attr("value","Discover sub_clusters")
@@ -515,7 +517,7 @@ function createGraph() {
              .on("click",function(d){
                 d3.json("/sub_clusters",sub_clusterscallback);
                 });
-    }
+   // }
 
     var pair = svg.selectAll(".pair")
       .data(matrix)

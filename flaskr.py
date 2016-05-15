@@ -13,7 +13,7 @@ from datetime import datetime,timedelta
 from db_classes import DAO
 import json
 import pickle
-from inspect_matrix import R_discover_sub_clusters,discover_sub_clusters
+from inspect_matrix import R_discover_sub_clusters,discover_sub_clusters,output_matrix_to_txt
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
@@ -46,7 +46,7 @@ def sub_clusters():
     sub_clusters = R_discover_sub_clusters(gene_p_qs)
     #pdb.set_trace()
     #sub_clusters = discover_sub_clusters(gene_p_qs)
-    #pickle.dump(gene_p_qs,open('python_2_R_input.pickle','w+')) 
+    pickle.dump(gene_p_qs,open('python_2_R_input_4diseases.pickle','w+')) 
     
     serisables = []
     for sub_cluster in sub_clusters:
@@ -126,10 +126,12 @@ def show_matrix():
     ret['sorted_pair_names'] = sorted(gene_p_qs.keys())
     draw_pair_json_obj = json.dumps(ret)
 
-    show_discover_sub_clusters_button = False
-    if len(gene_p_qs) <= 15:
-        show_discover_sub_clusters_button = True   
+    show_discover_sub_clusters_button = True
+    #show_discover_sub_clusters_button = False
+    #if len(gene_p_qs) <= 15:
+    #    show_discover_sub_clusters_button = True   
 
+    output_matrix_to_txt(ret)
 
     return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj,show_discover_sub_clusters_button = show_discover_sub_clusters_button)
 
@@ -153,9 +155,10 @@ def draw():
     return redirect(url_for('show_matrix'))
 
 if __name__ == '__main__':
-    ip_for_current_machine = socket.gethostbyname(socket.gethostname())
-    app.run(host=ip_for_current_machine,port=55555,threaded=True)
+    #ip_for_current_machine = socket.gethostbyname(socket.gethostname())
+    #app.run(host=ip_for_current_machine,port=55555,threaded=True)
     #app.run(host='localhost',port=15213,threaded=True)
 #    app.run(host='169.230.81.176',port=55555,threaded=True)
 
+    app.run(host='0.0.0.0',port=55556,threaded=True)
 
