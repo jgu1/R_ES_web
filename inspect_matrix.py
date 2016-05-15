@@ -208,6 +208,57 @@ def R_build_matrix(gene_p_qs):
             p_m[i_disease,i_gene] = curr_pval_float
     return p_m
 
+    
+def R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
+    new_clusters = []
+    for curr_cluster in clusters:
+        new_row_combs = []
+        for pair_name in curr_cluster.row_comb:
+            if R_filter_cluster_one_row(gene_p_qs,pair_name,curr_cluster.cols,row_percent,row_cutoff):
+                new_row_combs.append(pair_name)
+        
+        new_cols = R_filter_cluster_cols(gene_p_qs,new_row_combs, curr_cluster.cols, col_percent,col_cutoff)
+
+        curr_new_cluster = Cluster(new_row_combs,new_cols)
+        new_clusters.append(curr_new_cluster)
+    return new_clusters
+
+#for the given row, if row_cutoff % column pass threshold, keep this row
+def R_filter_cluster_one_row(gene_p_qs,pair_name, cols, row_percent, row_cutoff):
+    all_genes = gene_p_qs[pair_name]
+    num_cols = len(cols)
+    num_pass = 0
+    for i_gene in cols:
+        curr_gene = all_genes[i_gene]
+        curr_pval = float(curr_gene[3])
+        if curr_pval < 0 or curr_pval > row_cutoff:
+            continue
+        else:
+            num_pass = num_pass + 1
+    if num_pass >= num_cols * row_percent:
+        return True
+    else:
+        return False
+
+def R_filter_cluster_cols(gene_p_qs,new_row_combs, cols, col_percent,col_cutoff):
+    new_cols = []
+    num_rows = len(new_row_combs)
+    for i_gene in cols:
+        num_pass = 0
+        for pair_name in new_row_combs: 
+            curr_row = gene_p_qs[pair_name]
+            curr_gene = curr_row[i_gene]
+            #if (curr_gene[2] == 'ABCA8'):
+            #    pdb.set_trace()
+            curr_pval = float(curr_gene[3])
+            if curr_pval < 0 or curr_pval > col_cutoff:
+                continue
+            else:
+                num_pass = num_pass + 1
+        if num_pass >= num_rows * col_percent:            
+            new_cols.append(i_gene)
+    return new_cols
+
 def R_parse_cluster_result(attr,disease_names):
     rowCol = dict()
     num_cluster = -1
@@ -255,7 +306,13 @@ def R_discover_sub_clusters(gene_p_qs):
     result = conn.r.biclust(p_m, method = "BCPlaid",cluster = 'b',background = False, shuffle = 19, verbose = True)
     attr = result.lexeme.attr
     disease_names = gene_p_qs.keys()
-    clusters = R_parse_cluster_result(attr,disease_names)     
+    clusters = R_parse_cluster_result(attr,disease_names)    
+    
+    row_percent = 0.1
+    row_cutoff = 1E-1
+    col_percent = 0.3
+    col_cutoff = 1E-2 
+    clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
     return clusters
 
 def output_matrix_to_txt(ret):
