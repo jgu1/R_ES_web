@@ -509,15 +509,53 @@ function createGraph() {
     
 
     //if (show_sub_clusters_button == 'True'){
-        chart.append("input")
-             .attr("type","button")
-             .attr("value","Discover sub_clusters")
-             .attr("id","sub_clusters_button")
-             .style("margin-left",5 * margin +"px")
-             .on("click",function(d){
-                d3.json("/sub_clusters",sub_clusterscallback);
-                });
-   // }
+    // }
+
+    chart.append("text")
+         .text("row_percent")
+         .style("margin-left",5 * margin +"px");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","row_percent");
+     
+    chart.append("text")
+         .text("row_cutoff ");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","row_cutoff");  
+ 
+    chart.append("text")
+         .text("col_percent")
+         .style("margin-left",5 * margin +"px");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","col_percent");
+
+    chart.append("text")
+         .text("col_cutoff ");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","col_cutoff");
+
+    chart.append("input")
+         .attr("type","button")
+         .attr("value","Discover sub_clusters")
+         .attr("id","sub_clusters_button")
+         .style("margin-left",5 * margin +"px")
+         .on("click",function(d){
+            var row_percent = document.getElementById("row_percent").value; 
+            var row_cutoff  = document.getElementById("row_cutoff").value;
+            var col_percent = document.getElementById("col_percent").value; 
+            var col_cutoff  = document.getElementById("col_cutoff").value;
+
+
+            //d3.json("/detail?gene="+d[2]+"&pairNames="+pairNames,detailcallback);
+            d3.json("/sub_clusters?row_percent="+row_percent+"&row_cutoff="+row_cutoff+"&col_percent="+col_percent+"&col_cutoff="+col_cutoff,sub_clusterscallback);
+            });
 
     var pair = svg.selectAll(".pair")
       .data(matrix)
