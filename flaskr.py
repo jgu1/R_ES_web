@@ -41,9 +41,23 @@ def teardown_request(exception):
         dao.db.close()
 
 @app.route('/sub_clusters')
+@app.route("/sub_clusters/<string:row_percent><string:row_cutoff><string:col_percent><string:col_cutoff>")
 def sub_clusters():
+    row_percent = request.args.get('row_percent', '')
+    row_cutoff  = request.args.get('row_cutoff','')
+    col_percent = request.args.get('col_percent','')
+    col_cutoff  = request.args.get('col_cutoff','')
+    if row_percent == '':
+        row_percent = 0.1
+    if row_cutoff == '':
+        row_cutoff  = 1E-1
+    if col_percent == '':
+        col_percent = 0.3
+    if col_cutoff == '':
+        col_cutoff  = 1E-2
+
     gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix()
-    sub_clusters = R_discover_sub_clusters(gene_p_qs)
+    sub_clusters = R_discover_sub_clusters(gene_p_qs,float(row_percent),float(row_cutoff),float(col_percent),float(col_cutoff))
     #pdb.set_trace()
     #sub_clusters = discover_sub_clusters(gene_p_qs)
     pickle.dump(gene_p_qs,open('python_2_R_input_4diseases.pickle','w+')) 

@@ -283,7 +283,7 @@ def R_parse_cluster_result(attr,disease_names):
         
     return clusters
 
-def R_discover_sub_clusters(gene_p_qs):
+def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
     p_m = R_build_matrix(gene_p_qs)
     conn = pyRserve.connect()
     conn.r('require("biclust")')
@@ -308,10 +308,10 @@ def R_discover_sub_clusters(gene_p_qs):
     disease_names = gene_p_qs.keys()
     clusters = R_parse_cluster_result(attr,disease_names)    
     
-    row_percent = 0.1
-    row_cutoff = 1E-1
-    col_percent = 0.3
-    col_cutoff = 1E-2 
+    #row_percent = 0.1
+    #row_cutoff = 1E-1
+    #col_percent = 0.3
+    #col_cutoff = 1E-2 
     clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
     return clusters
 
