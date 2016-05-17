@@ -307,7 +307,7 @@ def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cut
     attr = result.lexeme.attr
     disease_names = gene_p_qs.keys()
     clusters = R_parse_cluster_result(attr,disease_names)    
-    
+   
     #row_percent = 0.1
     #row_cutoff = 1E-1
     #col_percent = 0.3

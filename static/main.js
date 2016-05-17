@@ -88,7 +88,9 @@ function createGraph() {
     //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
     var w = width_pair, h = height_pair;
     //var svg = d3.select("#chart")
-    var wrapper_div = sub_clusters.append("div");
+    var wrapper_div = sub_clusters.append("div")
+                      .attr("width",1000)
+                      .style("overflow","scroll");
     var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
