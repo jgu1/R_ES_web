@@ -128,20 +128,20 @@ class DAO(object):
         rows = cur.fetchall()
         return list(rows) 
 
-    def get_lowest_30_genes_for_all_pairs(self,result_lists):
+    def get_lowest_n_genes_for_all_pairs(self,result_lists,num_genes_per_pair):
         individual_genes = []
         for result in result_lists:
             result.sort(key=lambda x:float(x[3]))    
-            rows_with_lowest_30_pval = result[:30]
-            curr_gene = [x[2] for x in rows_with_lowest_30_pval] 
+            rows_with_lowest_n_pval = result[:num_genes_per_pair]
+            curr_gene = [x[2] for x in rows_with_lowest_n_pval] 
             individual_genes.append(set(curr_gene))
 	    comm_genes = set.union(*individual_genes)
         comm_gene_names = list(comm_genes)
         comm_gene_names.sort() 
         return comm_gene_names
 
-    def filter_result_dict_by_lowest_30_genes_for_each_pair(self,result_dict):
-        filtered_gene_names = self.get_lowest_30_genes_for_all_pairs(result_dict.values())
+    def filter_result_dict_by_lowest_n_genes_for_each_pair(self,result_dict,num_genes_per_pair):
+        filtered_gene_names = self.get_lowest_n_genes_for_all_pairs(result_dict.values(),num_genes_per_pair)
         filtered_dict = {}
         for pair_name in result_dict:
             result = result_dict[pair_name]
@@ -208,7 +208,7 @@ class DAO(object):
 
         return list(GWASs), GWAS_disease_dict
 
-    def fetch_pair_gene(self,web_disease_list,web_eQTL_list):
+    def fetch_pair_gene(self,web_disease_list,web_eQTL_list,web_num_genes_per_pair):
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
         if 'merged_pickle' in eQTLs:
@@ -217,6 +217,11 @@ class DAO(object):
         if len(GWASs) == 0 or len(eQTLs) == 0:
             return None,None,None
 
+        num_genes_per_pair = 30
+        try:
+            num_genes_per_pair = int(web_num_genes_per_pair)
+        except ValueError:
+            print 'web_num_genes_per_pair is not an integer, use default value 30'
 
 
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
@@ -233,7 +238,7 @@ class DAO(object):
                     result_dict[display_name] = result
         if len(result_dict) == 0:
             return None,None,None
-        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_30_genes_for_each_pair(result_dict)        
+        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_n_genes_for_each_pair(result_dict,num_genes_per_pair)        
         #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
         #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
         gene_descriptions = self.fetch_gene_descriptions_by_gene_names(filtered_gene_names)
