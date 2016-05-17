@@ -76,7 +76,7 @@ function createGraph() {
     var margin = 120;
  
     var sub_clusters = d3.select("#sub_clusters");
-    sub_clusters.html(""); 
+    //sub_clusters.html(""); 
     //var chartHeight = chart.style("height");
     //var chartHeight = parseInt(chartHeight.substring(0,chartHeight.length-2));
     if (height_pair +  margin > 500){
@@ -515,6 +515,10 @@ function createGraph() {
              .attr("id","sub_clusters_button")
              .style("margin-left",5 * margin +"px")
              .on("click",function(d){
+
+                var sub_clusters = d3.select("#sub_clusters");
+                sub_clusters.html("");
+
                 d3.json("/sub_clusters",sub_clusterscallback);
                 });
    // }
