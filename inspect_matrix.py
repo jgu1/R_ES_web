@@ -1,5 +1,5 @@
 import pickle
-import os
+import os,re
 import numpy
 import pdb
 import itertools
@@ -271,47 +271,84 @@ def R_parse_cluster_result(attr,disease_names):
             colIndex = elem[1]
             rowCol['Col'] = colIndex
             num_cluster = len(colIndex)
-    for i in range(num_cluster):
-        curr_cluster_row = rowCol['Row'][:,i]
-        curr_cluster_col = rowCol['Col'][i]
-        curr_cluster_row_index = [i for i,x in enumerate(curr_cluster_row) if x]  # extract the index of true element
-        curr_cluster_row_name  = [disease_names[i] for i in curr_cluster_row_index]
-        curr_cluster_col = [i for i,x in enumerate(curr_cluster_col) if x]
+    for i_cluster in range(num_cluster):
+        pdb.set_trace()
+        curr_cluster_row = rowCol['Row'][:,i_cluster]
+        curr_cluster_col = rowCol['Col'][i_cluster]
+        curr_cluster_row_index = [i_row for i_row ,x in enumerate(curr_cluster_row) if x]  # extract the index of true element
+        #curr_cluster_row_name  = [disease_names[i_row] for i_row in curr_cluster_row_index]
+        curr_cluster_col = [i_col for i_col,x in enumerate(curr_cluster_col) if x]
         
-        curr_cluster = Cluster(curr_cluster_row_name, curr_cluster_col)
+        curr_cluster_disease_names = [disease_names[i_col] for i_col in curr_cluster_col]
+        curr_cluster = Cluster(curr_cluster_disease_names, curr_cluster_col)
         clusters.append(curr_cluster) 
         
     return clusters
 
+def build_p_m_from_File():
+    #IF_name = os.getcwd() + '/' + 'cluster_input_q0.5_log10p.txt' 
+    IF_name = os.getcwd() + '/' + 'search_matrix.txt' 
+    IF = open(IF_name,'r')
+    diseases = IF.readline()
+    diseases = re.split(r'\t',diseases)
+    diseases = diseases[1:]
+    num_disease = len(diseases)
+    gene_pvals_d = dict()
+    for line in IF:
+        fields = re.split(r'\t',line)
+        gene = fields[0]
+        gene_pvals_d[gene] = fields[1:]
+    num_gene = len(gene_pvals_d)
+    matrix_dimension = (num_gene,num_disease)
+    p_m = numpy.zeros(matrix_dimension)
+    i_row = 0
+
+    for gene, pvals_str in gene_pvals_d.iteritems():
+        pvals_float = []
+        for pval in pvals_str:
+            curr_pval_float = 1e-8
+            try:
+                curr_pval_float = float(pval)
+            except ValueError:
+                a = 1
+                #pdb.set_trace()    
+            pvals_float.append(curr_pval_float)
+        p_m[i_row,:] = pvals_float
+        i_row = i_row + 1
+
+    return p_m,diseases
+ 
 def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
-    p_m = R_build_matrix(gene_p_qs)
+    #pdb.set_trace()
+    
+    #p_m = R_build_matrix(gene_p_qs)
+    p_m,disease_names = build_p_m_from_File()
+
     conn = pyRserve.connect()
     conn.r('require("biclust")')
-    if False:
-        R_args = {
-            'x':p_m,
-            'method':'BCPlaid',
-            'cluster':'b',
-            'background':False,
-            'row.release':0.7,
-            'col.release':0.7,
-            'shuffle':19,
-            'back.fit':0,
-            'max.layers':20,
-            'iter.startup':5,
-            'iter.layer':10,
-            'verbose':True,
-        }
-        result = conn.r.biclust(**R_args)
-    result = conn.r.biclust(p_m, method = "BCPlaid",cluster = 'b',background = False, shuffle = 19, verbose = True)
+    R_args = {
+        'x':p_m,
+        'method':'BCPlaid',
+        'cluster':'b',
+        #'fit.model':'y~m+a+b',
+        'background':False,
+        'row.release':0.7,
+        'col.release':0.7,
+        #'shuffle':3,
+        'shuffle':3,
+        'back.fit':0,
+        'max.layers':20,
+        'iter.startup':5,
+        'iter.layer':10,
+        'verbose':True,
+    }
+    result = conn.r.biclust(**R_args)
     attr = result.lexeme.attr
-    disease_names = gene_p_qs.keys()
+    pdb.set_trace()
+    disease_names = gene_p_qs.keys() #FIXME temporarily comment off for testing p_m
     clusters = R_parse_cluster_result(attr,disease_names)    
-    
-    #row_percent = 0.1
-    #row_cutoff = 1E-1
-    #col_percent = 0.3
-    #col_cutoff = 1E-2 
+
+    print 'found ' + str(len(clusters)) + ' clusters\n'    
     clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
     return clusters
 

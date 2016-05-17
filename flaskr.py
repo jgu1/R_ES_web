@@ -60,7 +60,6 @@ def sub_clusters():
     sub_clusters = R_discover_sub_clusters(gene_p_qs,float(row_percent),float(row_cutoff),float(col_percent),float(col_cutoff))
     #pdb.set_trace()
     #sub_clusters = discover_sub_clusters(gene_p_qs)
-    pickle.dump(gene_p_qs,open('python_2_R_input_4diseases.pickle','w+')) 
     
     serisables = []
     for sub_cluster in sub_clusters:
@@ -105,9 +104,10 @@ def detail():
 def fetch_and_build_matrix():
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
+    web_num_genes_per_pair = session['web_num_genes_per_pair']
     dao = getattr(g, 'dao', None)
     #pdb.set_trace()
-    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list)
+    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair)
     if gene_p_qs is None:
         return None,None,None,None 
      
@@ -163,9 +163,11 @@ def draw():
            
     web_disease_list = request.form['disease_list']
     #web_eQTL_list  = request.form['eQTL_list']
+    web_num_genes_per_pair = request.form['num_genes_per_pair']
 
     session['web_disease_list'] = web_disease_list
     session['web_eQTL_list'] = web_eQTL_list
+    session['web_num_genes_per_pair'] = web_num_genes_per_pair
     return redirect(url_for('show_matrix'))
 
 if __name__ == '__main__':
