@@ -3,6 +3,7 @@ import MySQLdb
 import math
 import pickle
 import os
+import time
 class DAO(object):
     db = None
     db_hg19 = None
@@ -119,6 +120,7 @@ class DAO(object):
 
 #pair manipulation   
     def fetch_gene_p_q_by_GWAS_eQTL(self,GWAS,eQTL):
+        #start_time = time.time()
         sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
         ' where Geg.id = gene_p_q.Geg_id'
         ' and Geg.GWAS="' + GWAS +'"'
@@ -126,6 +128,7 @@ class DAO(object):
         cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
+        #print('### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
         return list(rows) 
 
     def get_lowest_n_genes_for_all_pairs(self,result_lists,num_genes_per_pair):
@@ -226,6 +229,7 @@ class DAO(object):
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
         result_dict = {}
+        start_time = time.time() 
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
                 GWAS = GWASs[i]
@@ -236,34 +240,41 @@ class DAO(object):
                     display_name = GWAS + "---" + eQTL
                     #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
                     result_dict[display_name] = result
+        print("fetching all pairs takes %s seconds" % (time.time() - start_time))
         if len(result_dict) == 0:
             return None,None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_n_genes_for_each_pair(result_dict,num_genes_per_pair)        
         #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
         #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
-        gene_descriptions = self.fetch_gene_descriptions_by_gene_names(filtered_gene_names)
+        start_time = time.time()
+        gene_descriptions = self.fetch_gene_descriptions_by_gene_names_in_memory(filtered_gene_names)
+        #self.fetch_gene_descriptions_by_gene_names_in_memory(filtered_gene_names)
+        print("get_gene_description takes {} seconds".format(time.time() - start_time))
         return filtered_dict,filtered_gene_names,gene_descriptions
  
-    def fetch_gene_descriptions_by_gene_names(self,gene_names):
-        gene_descriptions = [];
-        for i_gene in range(len(gene_names)):
-            gene_name = gene_names[i_gene]
-            cur = self.db_hg19.cursor() 
-            sql_template = 'select gd_app_name from HUGO where gd_app_sym="' + gene_name + '";'  
-            cur.execute(sql_template)
-            rows = cur.fetchall()
-            if len(rows) !=  1:   # there is an unique constraint on (Geg_id,SNP_Name)
-                print 'multiple gene position is found for single gene'
-                #exit(-1)
-                if len(rows) < 1:
-                    gene_descriptions.append('no description found in hg19 database')
-                    continue
- 
-            gene_description = rows[0][0]
-            gene_descriptions.append(gene_description)
-        return gene_descriptions
+    # fetch the entire table into memory and do matchup for genes in meory
+    # tried fetching description one at a time, but the overhead is too significant from python to MySQL
+    def fetch_gene_descriptions_by_gene_names_in_memory(self,gene_names):
+        descriptions = []
+        gene_description_dict = {}
+        sql_template = 'select gd_app_sym, gd_app_name from HUGO;'
+        cur = self.db_hg19.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        for row in rows:
+            gene = row[0]
+            description = row[1]
+            gene_description_dict[gene] = description
 
-      
+        for i_gene in range(len(gene_names)):
+            gene = gene_names[i_gene]
+            if gene in gene_description_dict:
+                descriptions.append(gene_description_dict[gene])
+            else:
+                descriptions.append('no description found in hg19 database')
+
+        return descriptions
+
 #pair manipulation   
 #detail manipulation
     def fetch_SNP_list_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
