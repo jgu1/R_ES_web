@@ -48,13 +48,13 @@ def sub_clusters():
     col_percent = request.args.get('col_percent','')
     col_cutoff  = request.args.get('col_cutoff','')
     if row_percent == '':
-        row_percent = 0.1  
+        row_percent = 0.1
     if row_cutoff == '':
-        row_cutoff  = 1E-1 
+        row_cutoff  = 1E-1
     if col_percent == '':
-        col_percent = 0.3 
+        col_percent = 0.3
     if col_cutoff == '':
-        col_cutoff  = 1E-2 
+        col_cutoff  = 1E-2
 
     gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix()
     sub_clusters = R_discover_sub_clusters(gene_p_qs,float(row_percent),float(row_cutoff),float(col_percent),float(col_cutoff))

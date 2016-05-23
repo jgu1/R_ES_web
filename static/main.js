@@ -76,7 +76,7 @@ function createGraph() {
     var margin = 120;
  
     var sub_clusters = d3.select("#sub_clusters");
-    sub_clusters.html(""); 
+    //sub_clusters.html(""); 
     //var chartHeight = chart.style("height");
     //var chartHeight = parseInt(chartHeight.substring(0,chartHeight.length-2));
     if (height_pair +  margin > 500){
@@ -88,7 +88,9 @@ function createGraph() {
     //var w = width_pair - 2 * margin, h = height_pair - 2 * margin;
     var w = width_pair, h = height_pair;
     //var svg = d3.select("#chart")
-    var wrapper_div = sub_clusters.append("div");
+    var wrapper_div = sub_clusters.append("div")
+                      .attr("width",1000)
+                      .style("overflow","scroll");
     var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
@@ -508,6 +510,38 @@ function createGraph() {
    // show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
     
 
+
+    chart.append("text")
+         .text("row_percent")
+         .style("margin-left",5 * margin +"px");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","row_percent");
+
+    chart.append("text")
+         .text("row_cutoff ");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","row_cutoff");
+
+    chart.append("text")
+         .text("col_percent")
+         .style("margin-left",5 * margin +"px");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","col_percent");
+
+
+    chart.append("text")
+         .text("col_cutoff ");
+    chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","col_cutoff");
+
     //if (show_sub_clusters_button == 'True'){
     // }
 
@@ -541,21 +575,26 @@ function createGraph() {
          .attr("size","10")
          .attr("id","col_cutoff");
 
-    chart.append("input")
-         .attr("type","button")
-         .attr("value","Discover sub_clusters")
-         .attr("id","sub_clusters_button")
-         .style("margin-left",5 * margin +"px")
-         .on("click",function(d){
-            var row_percent = document.getElementById("row_percent").value; 
-            var row_cutoff  = document.getElementById("row_cutoff").value;
-            var col_percent = document.getElementById("col_percent").value; 
-            var col_cutoff  = document.getElementById("col_cutoff").value;
+        chart.append("input")
+             .attr("type","button")
+             .attr("value","Discover sub_clusters")
+             .attr("id","sub_clusters_button")
+             .style("margin-left",5 * margin +"px")
+             .on("click",function(d){
+
+                var sub_clusters = d3.select("#sub_clusters");
+                sub_clusters.html("");
 
 
-            //d3.json("/detail?gene="+d[2]+"&pairNames="+pairNames,detailcallback);
-            d3.json("/sub_clusters?row_percent="+row_percent+"&row_cutoff="+row_cutoff+"&col_percent="+col_percent+"&col_cutoff="+col_cutoff,sub_clusterscallback);
+                var row_percent = document.getElementById("row_percent").value;
+                var row_cutoff  = document.getElementById("row_cutoff").value;
+                var col_percent = document.getElementById("col_percent").value;
+                var col_cutoff  = document.getElementById("col_cutoff").value;
+
+
+                d3.json("/sub_clusters?row_percent="+row_percent+"&row_cutoff="+row_cutoff+"&col_percent="+col_percent+"&col_cutoff="+col_cutoff,sub_clusterscallback);
             });
+   // }
 
     var pair = svg.selectAll(".pair")
       .data(matrix)

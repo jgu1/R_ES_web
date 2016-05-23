@@ -1,5 +1,5 @@
 import pickle
-import os,re
+import os,re,time
 import numpy
 import pdb
 import itertools
@@ -319,11 +319,8 @@ def build_p_m_from_File():
     return p_m,diseases
  
 def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
-    #pdb.set_trace()
-    
-    #p_m = R_build_matrix(gene_p_qs)
-    p_m,disease_names = build_p_m_from_File()
-
+    start_time = time.time() 
+    p_m = R_build_matrix(gene_p_qs)
     conn = pyRserve.connect()
     conn.r('require("biclust")')
     R_args = {
@@ -350,6 +347,7 @@ def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cut
 
     print 'found ' + str(len(clusters)) + ' clusters\n'    
     clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
+    print("sub_clustering took --- %s seconds ---" % (time.time() - start_time))
     return clusters
 
 def output_matrix_to_txt(ret):
@@ -370,7 +368,14 @@ def output_matrix_to_txt(ret):
         OF.write(gene)
         for i_d,disease in enumerate(diseases):  #write each column
             OF.write('\t')
-            OF.write(gene_p_qs[disease][i_gene][3]) 
+            p_val_str = gene_p_qs[disease][i_gene][3]
+            p_val = -1
+            try:
+                pval = float(p_val_str)
+                pval =  -numpy.log10(pval)
+            except ValueError:
+                pval = 1e-8
+            OF.write(str(pval)) 
 
 if __name__=='__main__':
     pickle_filename='ES_Sherlock_dump.pickle'

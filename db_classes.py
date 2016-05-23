@@ -216,12 +216,12 @@ class DAO(object):
             eQTLs.remove('merged_pickle')
         if len(GWASs) == 0 or len(eQTLs) == 0:
             return None,None,None
-
-        num_genes_per_pair = -1
+        num_genes_per_pair = 30
         try:
             num_genes_per_pair = int(web_num_genes_per_pair)
-        except:
-            num_genes_per_pair = 30 # by default, show 30 genes for this pair
+        except ValueError:
+            print 'web_num_genes_per_pair is not an integer, use default value 30'
+
 
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
@@ -233,6 +233,7 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + "  (" + GWAS + "---" +eQTL + ")"
+                    display_name = GWAS + "---" + eQTL
                     #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
                     result_dict[display_name] = result
         if len(result_dict) == 0:
