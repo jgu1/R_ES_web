@@ -4,6 +4,39 @@ import math
 import pickle
 import os
 import time
+import multiprocessing
+import copy_reg,types
+import psutil
+
+#def _reduce_method(m):
+#    if m.im_self is None:
+#        return getattr, (m.im_class, m.im_func.func_name)
+#    else:
+#        return getattr, (m.im_self, m.im_func.func_name)
+#copy_reg.pickle(types.InstanceType, _reduce_method)
+def independent_pool_worker_fetch_gene_p_q_by_GWAS_eQTL(pair):
+    start_time = time.time()
+    global_db = MySQLdb.connect(host="localhost", # your host, usually localhost
+        user="root", # your username
+        passwd="genome", # your password
+        db="ES_OUTPUT") # name of the data base
+
+
+    computation_start_time = time.time() 
+    #print '$$$$$$$$$$$ inside of pool_worker'
+    GWAS = pair[0]
+    eQTL = pair[1]
+    sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
+    ' where Geg.id = gene_p_q.Geg_id'
+    ' and Geg.GWAS="' + GWAS +'"'
+    ' and Geg.eQTL="' + eQTL + '";' )
+    cur = global_db.cursor()
+    cur.execute(sql_template)
+    rows = cur.fetchall()
+    computation_time = time.time() - computation_start_time
+    print('$$$ fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,computation_time))
+    return GWAS,eQTL,list(rows),computation_time,time.time() - start_time 
+
 class DAO(object):
     db = None
     db_hg19 = None
@@ -120,7 +153,22 @@ class DAO(object):
 
 #pair manipulation   
     def fetch_gene_p_q_by_GWAS_eQTL(self,GWAS,eQTL):
+        start_time = time.time()
+        sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
+        ' where Geg.id = gene_p_q.Geg_id'
+        ' and Geg.GWAS="' + GWAS +'"'
+        ' and Geg.eQTL="' + eQTL + '";' )
+        cur = self.db.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        print('#### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
+        return list(rows) 
+
+    def pool_worker_fetch_gene_p_q_by_GWAS_eQTL(self,pair):
         #start_time = time.time()
+        print '$$$$$$$$$$$inside of pool_worker'
+        GWAS = pair[0]
+        eQTL = pair[1]
         sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
         ' where Geg.id = gene_p_q.Geg_id'
         ' and Geg.GWAS="' + GWAS +'"'
@@ -130,6 +178,10 @@ class DAO(object):
         rows = cur.fetchall()
         #print('### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
         return list(rows) 
+
+
+    def f(self,x):
+        return x*x
 
     def get_lowest_n_genes_for_all_pairs(self,result_lists,num_genes_per_pair):
         individual_genes = []
@@ -229,6 +281,8 @@ class DAO(object):
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
         result_dict = {}
+             
+
         start_time = time.time() 
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
@@ -240,7 +294,43 @@ class DAO(object):
                     display_name = GWAS + "---" + eQTL
                     #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
                     result_dict[display_name] = result
-        print("fetching all pairs takes %s seconds" % (time.time() - start_time))
+        print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
+    
+
+        if False:
+            start_time = time.time() 
+            pool_inputs = []
+            for GWAS in GWASs:
+                for eQTL in eQTLs:
+                    curr_pair = (GWAS,eQTL)
+                    pool_inputs.append(curr_pair)
+
+            p = multiprocessing.Pool(20)
+            #pool_result = p.map(self.pool_worker_toy,l)
+            #pool_result = p.map(self.f,l);
+            #pool_result = p.map(unwrap_self_f, zip([self]*len(l), l))
+     
+            pool_result = p.map(independent_pool_worker_fetch_gene_p_q_by_GWAS_eQTL, pool_inputs)
+            computation_time = 0
+            all_sub_time = 0
+            for GWAS_eQTL_result in pool_result:
+                GWAS = GWAS_eQTL_result[0]
+                eQTL = GWAS_eQTL_result[1]
+                result = GWAS_eQTL_result[2]
+                computation_time = computation_time + GWAS_eQTL_result[3]
+                all_sub_time = all_sub_time + GWAS_eQTL_result[4] 
+                if len(result) > 0:
+                    display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + "  (" + GWAS + "---" +eQTL + ")"
+                    display_name = GWAS + "---" + eQTL
+                    #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
+                    result_dict[display_name] = result
+
+            print (psutil.cpu_percent())
+     
+            print("fetching all pairs using Pool takes %s seconds" % (time.time() - start_time))
+            print("of which  %s seconds is spent for computation" % computation_time)
+            print("of which  %s seconds is spent for computation and establish db connection" % all_sub_time)
+
         if len(result_dict) == 0:
             return None,None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_n_genes_for_each_pair(result_dict,num_genes_per_pair)        
@@ -411,4 +501,12 @@ class DAO(object):
                         ' and SNP_fields.Geg_id = Geg.id;'  
                         )
         list_detail = self.exec_fetch_SQL(sql_template)
-        return list_detail 
+        return list_detail
+
+    def pool(self):
+        pool = multiprocessing.Pool(1)
+        pool_result = pool.map(self.square,range(10))
+        print pool_result
+
+    def square(self,x):
+        return x*x 

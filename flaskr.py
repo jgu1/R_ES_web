@@ -14,6 +14,7 @@ from db_classes import DAO
 import json
 import pickle
 from inspect_matrix import R_discover_sub_clusters,discover_sub_clusters,output_matrix_to_txt
+import copy_reg,types
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
@@ -26,6 +27,12 @@ page=1
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+def _reduce_method(m):
+    if m.im_self is None:
+        return getattr, (m.im_class, m.im_func.func_name)
+    else:
+        return getattr, (m.im_self, m.im_func.func_name)
+copy_reg.pickle(types.MethodType, _reduce_method)
 
 def connect_db():
     return DAO()
@@ -106,7 +113,6 @@ def fetch_and_build_matrix():
     web_eQTL_list = session['web_eQTL_list']
     web_num_genes_per_pair = session['web_num_genes_per_pair']
     dao = getattr(g, 'dao', None)
-    #pdb.set_trace()
     gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair)
     if gene_p_qs is None:
         return None,None,None,None 
