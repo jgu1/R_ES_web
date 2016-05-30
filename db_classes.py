@@ -161,12 +161,12 @@ class DAO(object):
         cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
-        print('#### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
+        #print('#### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
         return list(rows) 
 
     def pool_worker_fetch_gene_p_q_by_GWAS_eQTL(self,pair):
         #start_time = time.time()
-        print '$$$$$$$$$$$inside of pool_worker'
+        #print '$$$$$$$$$$$inside of pool_worker'
         GWAS = pair[0]
         eQTL = pair[1]
         sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
@@ -178,10 +178,6 @@ class DAO(object):
         rows = cur.fetchall()
         #print('### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
         return list(rows) 
-
-
-    def f(self,x):
-        return x*x
 
     def get_lowest_n_genes_for_all_pairs(self,result_lists,num_genes_per_pair):
         individual_genes = []
@@ -503,10 +499,3 @@ class DAO(object):
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail
 
-    def pool(self):
-        pool = multiprocessing.Pool(1)
-        pool_result = pool.map(self.square,range(10))
-        print pool_result
-
-    def square(self,x):
-        return x*x 
