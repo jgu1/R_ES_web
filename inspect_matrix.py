@@ -317,8 +317,31 @@ def build_p_m_from_File():
         i_row = i_row + 1
 
     return p_m,diseases
+
+def R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,cutoff):
+    pdb.set_trace()
+    num_row = len(gene_p_qs)
+    keys = gene_p_qs.keys()
+    num_col = len(gene_p_qs[keys[0]])
+
+    ndarr = numpy.zeros((num_row,num_col))
+
+    for i_row in range(num_row):
+        curr_row = gene_p_qs[keys[i_row]]
+        for i_col in range(num_col):
+            curr_ele  = curr_row[i_col]
+            curr_pval = float(curr_ele[3]) 
+            if curr_pval>0 and curr_pval < cutoff:
+                ndarr[i_row,i_col] = 1 
+    
+    num_pass = len(numpy.nonzero(ndarr)[0])    
+    pass_rate = float(num_pass) /(num_row * num_col)
+    pdb.set_trace()
+    a = 1
+
  
 def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
+    R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
     start_time = time.time() 
     p_m = R_build_matrix(gene_p_qs)
     conn = pyRserve.connect()

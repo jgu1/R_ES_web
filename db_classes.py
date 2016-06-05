@@ -151,7 +151,51 @@ class DAO(object):
             self.insert_single_SNP_fields(GSNP,eSNP,Gpval,Geg_id)
 
 
-#pair manipulation   
+#pair manipulation 
+
+
+    def fetch_gene_p_q_by_GWAS_Merged(self,GWAS):
+        LD02 = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,'Merged_08212015_pruned_LD02')
+        
+        return LD02
+        # uncomment this will choose smaller p-val out of LD85 and LD02
+        if False: 
+            LD85 = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,'Merged_08212015_pruned_LD85')
+            #merge LD85 and LD02, keep the one with more significant p-value
+            all_key = set()
+            LD85_dict = {}
+            LD02_dict = {}
+            #populate dictionary for both 85 and 02
+            for pair in LD85:
+                gene_LD85 = pair[2]
+                all_key.add(gene_LD85)
+                LD85_dict[gene_LD85] = pair
+            for pair in LD02:
+                gene_LD02 = pair[2]
+                all_key.add(gene_LD02)
+                LD02_dict[gene_LD02] = pair
+            #pick the one not NULL or has a more significant p-value
+            Merged = [] 
+            for key in all_key:
+                if  key not in LD85_dict or float(LD85_dict[key][3]) < 0 : 
+                    Merged.append(LD02_dict[key]) 
+                    continue
+                elif key not in LD02_dict or float(LD02_dict[key][3]) < 0 :
+                    Merged.append(LD85_dict[key])
+                    continue
+                else:
+                    pair_LD85 = LD85_dict[key]
+                    pair_LD02 = LD02_dict[key]
+                    pval_LD85 = float(pair_LD85[3])
+                    pval_LD02 = float(pair_LD02[3])
+                    if pval_LD85 < pval_LD02:
+                        Merged.append(pair_LD85)
+                    else:
+                        Merged.append(pair_LD02)
+            pdb.set_trace() 
+            return Merged 
+
+  
     def fetch_gene_p_q_by_GWAS_eQTL(self,GWAS,eQTL):
         start_time = time.time()
         sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
@@ -262,10 +306,13 @@ class DAO(object):
     def fetch_pair_gene(self,web_disease_list,web_eQTL_list,web_num_genes_per_pair):
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
+
+        contain_merged = False
         if 'merged_pickle' in eQTLs:
-            eQTLs.append('Merged_08212015_pruned_LD02')
+            #eQTLs.append('Merged_08212015_pruned_LD85')
+            contain_merged = True
             eQTLs.remove('merged_pickle')
-        if len(GWASs) == 0 or len(eQTLs) == 0:
+        if (len(GWASs) == 0 or len(eQTLs) == 0) and (contain_merged == False):
             return None,None,None
         num_genes_per_pair = 30
         try:
@@ -290,6 +337,14 @@ class DAO(object):
                     display_name = GWAS + "---" + eQTL
                     #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
                     result_dict[display_name] = result
+       
+        if contain_merged: 
+            for GWAS in GWASs:
+                Merged = self.fetch_gene_p_q_by_GWAS_Merged(GWAS)
+                if len(Merged) >0 :
+                    display_name = GWAS + '---Merged'
+                    result_dict[display_name] = Merged
+
         print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
     
 
