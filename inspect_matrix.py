@@ -272,7 +272,7 @@ def R_parse_cluster_result(attr,disease_names):
             rowCol['Col'] = colIndex
             num_cluster = len(colIndex)
     for i_cluster in range(num_cluster):
-        pdb.set_trace()
+        #pdb.set_trace()
         curr_cluster_row = rowCol['Row'][:,i_cluster]
         curr_cluster_col = rowCol['Col'][i_cluster]
         curr_cluster_row_index = [i_row for i_row ,x in enumerate(curr_cluster_row) if x]  # extract the index of true element
@@ -319,14 +319,15 @@ def build_p_m_from_File():
     return p_m,diseases
 
 def R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,cutoff):
-    pdb.set_trace()
+    #pdb.set_trace()
     num_row = len(gene_p_qs)
     keys = gene_p_qs.keys()
     num_col = len(gene_p_qs[keys[0]])
 
     ndarr = numpy.zeros((num_row,num_col))
 
-    for i_row in range(num_row):
+    #convert original matrix into a binary matrix, setting all elements passing cutoff to 1, other to 0
+    for i_row in range(num_row):            
         curr_row = gene_p_qs[keys[i_row]]
         for i_col in range(num_col):
             curr_ele  = curr_row[i_col]
@@ -336,41 +337,153 @@ def R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,cutoff):
     
     num_pass = len(numpy.nonzero(ndarr)[0])    
     pass_rate = float(num_pass) /(num_row * num_col)
-    pdb.set_trace()
-    a = 1
+    return ndarr
 
- 
-def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
-    R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
-    start_time = time.time() 
-    p_m = R_build_matrix(gene_p_qs)
+#keep a row if it exceed per_cutoff std from mean or it contain more 1 than abs_cutoff
+#converge if diff between prev_cols and curr_cols smaller than converge_epsilon or have iterated more than converge_depth times
+def manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth):
+    num_row = binary_mat.shape[0]
+    num_col = binary_mat.shape[1]
     conn = pyRserve.connect()
-    conn.r('require("biclust")')
-    R_args = {
-        'x':p_m,
-        'method':'BCPlaid',
-        'cluster':'b',
-        #'fit.model':'y~m+a+b',
-        'background':False,
-        'row.release':0.7,
-        'col.release':0.7,
-        #'shuffle':3,
-        'shuffle':3,
-        'back.fit':0,
-        'max.layers':20,
-        'iter.startup':5,
-        'iter.layer':10,
-        'verbose':True,
-    }
-    result = conn.r.biclust(**R_args)
-    attr = result.lexeme.attr
-    pdb.set_trace()
-    disease_names = gene_p_qs.keys() #FIXME temporarily comment off for testing p_m
-    clusters = R_parse_cluster_result(attr,disease_names)    
+    conn.r('require("isa2")')
+    seeds = conn.r('generate.seeds('+ str(num_col)+',count = 1)')
+    num_seeds = seeds.shape[1]
+    len_each_seed = seeds.shape[0]
 
-    print 'found ' + str(len(clusters)) + ' clusters\n'    
-    clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
-    print("sub_clustering took --- %s seconds ---" % (time.time() - start_time))
+
+    seed0 = seeds[:,0]
+    prev_cols = seed0
+    curr_depth = 0
+    print 'seed0 = ' + str(numpy.nonzero(seed0))
+    while True:
+        curr_rows = manual_ISA_filter_row(binary_mat,prev_cols,abs_cutoff,per_cutoff)
+        curr_cols = manual_ISA_filter_col(binary_mat,curr_rows,abs_cutoff,per_cutoff)
+        if converge(curr_cols,prev_cols,converge_epsilon):
+            pdb.set_trace()
+            a = 1
+            break
+        elif curr_depth > converge_depth:
+            pdb.set_trace()
+            a = 1
+            break
+        else:
+            prev_cols = curr_cols   #iterate        
+            curr_depth = curr_depth + 1
+            
+    pdb.set_trace()
+    return curr_rows,curr_cols
+            
+     
+#converge if      
+def converge(curr_cols,prev_cols,converge_epsilon):
+    diff_length = numpy.linalg.norm(numpy.subtract(curr_cols,prev_cols))
+    sum_length  = numpy.linalg.norm(numpy.add(curr_cols,prev_cols))
+    curr_epsilon = float(diff_length) / sum_length
+    print '###'
+    print 'curr_cols = ' + str(numpy.nonzero(curr_cols))
+    print 'prev_cols = ' + str(numpy.nonzero(prev_cols))
+    print 'curr_epsilon = ' + str(curr_epsilon)
+    if curr_epsilon < converge_epsilon:
+        return True
+    else:
+        return False
+     
+def manual_ISA_filter_row(binary_mat,col_rake,abs_cutoff,per_cutoff):
+    num_row = binary_mat.shape[0]
+    row_proj_result = numpy.zeros(num_row)
+    for i_row in range(num_row):
+        curr_row  = binary_mat[i_row,:]
+        curr_proj = numpy.dot(curr_row,col_rake)
+        row_proj_result[i_row] = curr_proj
+    mean = numpy.mean(row_proj_result)
+    std = numpy.std(row_proj_result)
+
+    #keep a row if it exceed per_cutoff std from mean or it contain more 1 than abs_cutoff
+    debug_count = 0
+    filter_result = numpy.zeros(num_row)
+    for i_row in range(num_row):
+        curr_proj = row_proj_result[i_row]
+        if curr_proj > mean + per_cutoff * std or curr_proj > abs_cutoff:
+            filter_result[i_row] = 1
+            debug_count = debug_count + 1
+    return filter_result
+         
+def manual_ISA_filter_col(binary_mat,row_rake,abs_cutoff,per_cutoff):
+    num_col = binary_mat.shape[1]
+    col_proj_result = numpy.zeros(num_col)
+    for i_col in range(num_col):
+        curr_col  = binary_mat[:,i_col]
+        curr_proj = numpy.dot(curr_col,row_rake)
+        col_proj_result[i_col] = curr_proj
+    mean = numpy.mean(col_proj_result)
+    std = numpy.std(col_proj_result)
+
+    #keep a row if it exceed per_cutoff std from mean or it contain more 1 than abs_cutoff
+    debug_count = 0
+    filter_result = numpy.zeros(num_col)
+    for i_col in range(num_col):
+        curr_proj = col_proj_result[i_col]
+        if curr_proj > mean + per_cutoff * std or curr_proj > abs_cutoff:
+            filter_result[i_col] = 1
+            debug_count = debug_count + 1
+    return filter_result
+
+def manual_IRA_build_Cluster_objects(gene_p_qs,rows,cols):
+    pdb.set_trace()
+    Cluster_row_comb = []
+    disease_names = gene_p_qs.keys()
+    for i_row,bool_i_row in enumerate(rows):
+        if bool_i_row > 0:
+            Cluster_row_comb.append(disease_names[i_row])
+   
+    idx_ndarr = numpy.nonzero(cols)
+    Cluster_cols = idx_ndarr[0].tolist()
+    pdb.set_trace()
+    return Cluster(Cluster_row_comb,Cluster_cols) 
+        
+
+def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
+    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
+    abs_cutoff = 3
+    per_cutoff = 0.5
+    converge_epsilon = 0.1
+    converge_depth = 100
+
+    #pdb.set_trace()
+    rows,cols = manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth)
+    one_Cluster = manual_IRA_build_Cluster_objects(gene_p_qs,rows,cols) 
+    return [one_Cluster] 
+
+
+    if False:
+        start_time = time.time() 
+        p_m = R_build_matrix(gene_p_qs)
+        conn = pyRserve.connect()
+        conn.r('require("biclust")')
+        R_args = {
+            'x':p_m,
+            'method':'BCPlaid',
+            'cluster':'b',
+            #'fit.model':'y~m+a+b',
+            'background':False,
+            'row.release':0.7,
+            'col.release':0.7,
+            #'shuffle':3,
+            'shuffle':3,
+            'back.fit':0,
+            'max.layers':20,
+            'iter.startup':5,
+            'iter.layer':10,
+            'verbose':True,
+        }
+        result = conn.r.biclust(**R_args)
+        attr = result.lexeme.attr
+        disease_names = gene_p_qs.keys() #FIXME temporarily comment off for testing p_m
+        clusters = R_parse_cluster_result(attr,disease_names)    
+
+        print 'found ' + str(len(clusters)) + ' clusters\n'    
+        clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
+        print("sub_clustering took --- %s seconds ---" % (time.time() - start_time))
     return clusters
 
 def output_matrix_to_txt(ret):
