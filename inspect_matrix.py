@@ -350,7 +350,7 @@ def manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth
     num_seeds = seeds.shape[1]
     len_each_seed = seeds.shape[0]
 
-
+    #pdb.set_trace()
     seed0 = seeds[:,0]
     prev_cols = seed0
     curr_depth = 0
@@ -359,18 +359,20 @@ def manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth
         curr_rows = manual_ISA_filter_row(binary_mat,prev_cols,abs_cutoff,per_cutoff)
         curr_cols = manual_ISA_filter_col(binary_mat,curr_rows,abs_cutoff,per_cutoff)
         if converge(curr_cols,prev_cols,converge_epsilon):
-            pdb.set_trace()
+            print '$$$ REAL CONVERGE'
+            #pdb.set_trace()
             a = 1
             break
         elif curr_depth > converge_depth:
-            pdb.set_trace()
+            print 'xxx TIME CONVERGE'
+            #pdb.set_trace()
             a = 1
             break
         else:
             prev_cols = curr_cols   #iterate        
             curr_depth = curr_depth + 1
             
-    pdb.set_trace()
+    #pdb.set_trace()
     return curr_rows,curr_cols
             
      
@@ -429,7 +431,7 @@ def manual_ISA_filter_col(binary_mat,row_rake,abs_cutoff,per_cutoff):
     return filter_result
 
 def manual_IRA_build_Cluster_objects(gene_p_qs,rows,cols):
-    pdb.set_trace()
+    #pdb.set_trace()
     Cluster_row_comb = []
     disease_names = gene_p_qs.keys()
     for i_row,bool_i_row in enumerate(rows):
@@ -438,7 +440,7 @@ def manual_IRA_build_Cluster_objects(gene_p_qs,rows,cols):
    
     idx_ndarr = numpy.nonzero(cols)
     Cluster_cols = idx_ndarr[0].tolist()
-    pdb.set_trace()
+    #pdb.set_trace()
     return Cluster(Cluster_row_comb,Cluster_cols) 
         
 
