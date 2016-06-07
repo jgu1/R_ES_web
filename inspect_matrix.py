@@ -476,14 +476,13 @@ def manual_ISA_gen_seeds(binary_mat,num_seeds):
 
 
 
-def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff):
+def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth):
     binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
-    abs_cutoff = 3
-    per_cutoff = 0.5
-    converge_epsilon = 0.1
-    converge_depth = 100
+    #abs_cutoff = 3
+    #per_cutoff = 0.5
+    #converge_epsilon = 0.1
+    #converge_depth = 100
 
-    #pdb.set_trace()
     seeds = manual_ISA_gen_seeds(binary_mat,5)
     manual_ISA_args = []
     for seed in seeds:

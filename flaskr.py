@@ -40,23 +40,23 @@ def teardown_request(exception):
         dao.db.close()
 
 @app.route('/sub_clusters')
-@app.route("/sub_clusters/<string:row_percent><string:row_cutoff><string:col_percent><string:col_cutoff>")
+@app.route("/sub_clusters/<string:abs_cutoff><string:per_cutoff><string:converge_epsilon><string:converge_depth>")
 def sub_clusters():
-    row_percent = request.args.get('row_percent', '')
-    row_cutoff  = request.args.get('row_cutoff','')
-    col_percent = request.args.get('col_percent','')
-    col_cutoff  = request.args.get('col_cutoff','')
-    if row_percent == '':
-        row_percent = 0.1
-    if row_cutoff == '':
-        row_cutoff  = 1E-1
-    if col_percent == '':
-        col_percent = 0.3
-    if col_cutoff == '':
-        col_cutoff  = 1E-2
+    abs_cutoff = request.args.get('abs_cutoff', '')
+    per_cutoff  = request.args.get('per_cutoff','')
+    converge_epsilon = request.args.get('converge_epsilon','')
+    converge_depth   = request.args.get('converge_depth','')
+    if abs_cutoff == '':
+        abs_cutoff = 3
+    if per_cutoff == '':
+        per_cutoff  = 0.5
+    if converge_epsilon == '':
+        converge_epsilon = 0.1
+    if converge_depth == '':
+        converge_depth  = 100
 
     gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix()
-    sub_clusters = R_discover_sub_clusters(gene_p_qs,float(row_percent),float(row_cutoff),float(col_percent),float(col_cutoff))
+    sub_clusters = R_discover_sub_clusters(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth))
     #pdb.set_trace()
     #sub_clusters = discover_sub_clusters(gene_p_qs)
     

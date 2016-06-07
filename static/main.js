@@ -512,69 +512,38 @@ function createGraph() {
 
 
     chart.append("text")
-         .text("row_percent")
+         .text("abs_cutoff")
          .style("margin-left",5 * margin +"px");
     chart.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","row_percent");
+         .attr("id","abs_cutoff");
 
     chart.append("text")
-         .text("row_cutoff ");
+         .text("per_cutoff");
     chart.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","row_cutoff");
+         .attr("id","per_cutoff");
 
     chart.append("text")
-         .text("col_percent")
+         .text("converge_epsilon")
          .style("margin-left",5 * margin +"px");
     chart.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","col_percent");
+         .attr("id","converge_epsilon");
 
 
     chart.append("text")
-         .text("col_cutoff ");
+         .text("converge_depth");
     chart.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","col_cutoff");
+         .attr("id","converge_depth");
 
     //if (show_sub_clusters_button == 'True'){
     // }
-
-    chart.append("text")
-         .text("row_percent")
-         .style("margin-left",5 * margin +"px");
-    chart.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","row_percent");
-     
-    chart.append("text")
-         .text("row_cutoff ");
-    chart.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","row_cutoff");  
- 
-    chart.append("text")
-         .text("col_percent")
-         .style("margin-left",5 * margin +"px");
-    chart.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","col_percent");
-
-    chart.append("text")
-         .text("col_cutoff ");
-    chart.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","col_cutoff");
-
         chart.append("input")
              .attr("type","button")
              .attr("value","Discover sub_clusters")
@@ -586,13 +555,13 @@ function createGraph() {
                 sub_clusters.html("");
 
 
-                var row_percent = document.getElementById("row_percent").value;
-                var row_cutoff  = document.getElementById("row_cutoff").value;
-                var col_percent = document.getElementById("col_percent").value;
-                var col_cutoff  = document.getElementById("col_cutoff").value;
+                var abs_cutoff = document.getElementById("abs_cutoff").value;
+                var per_cutoff  = document.getElementById("per_cutoff").value;
+                var converge_epsilon = document.getElementById("converge_epsilon").value;
+                var converge_depth  = document.getElementById("converge_depth").value;
 
 
-                d3.json("/sub_clusters?row_percent="+row_percent+"&row_cutoff="+row_cutoff+"&col_percent="+col_percent+"&col_cutoff="+col_cutoff,sub_clusterscallback);
+                d3.json("/sub_clusters?abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth,sub_clusterscallback);
             });
    // }
 
