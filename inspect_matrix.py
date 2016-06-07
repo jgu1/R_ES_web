@@ -340,7 +340,11 @@ def R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,cutoff):
     pass_rate = float(num_pass) /(num_row * num_col)
     return ndarr
 
-def test_worker(args):
+#keep a row if it exceed per_cutoff std from mean or it contain more 1 than abs_cutoff
+#converge if diff between prev_cols and curr_cols smaller than converge_epsilon or have iterated more than converge_depth times
+#def manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth,seed0):
+def manual_ISA(args):
+    start_time = time.time()
     #pdb.set_trace()
     binary_mat       = args[0]
     abs_cutoff       = args[1]
@@ -348,23 +352,7 @@ def test_worker(args):
     converge_epsilon = args[3]
     converge_depth   = args[4]
     seed0            = args[5] 
-    #pdb.set_trace()
-    print'\n in test_worker'
-    #return seed0
-    return manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth,seed0)
-
-#keep a row if it exceed per_cutoff std from mean or it contain more 1 than abs_cutoff
-#converge if diff between prev_cols and curr_cols smaller than converge_epsilon or have iterated more than converge_depth times
-def manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth,seed0):
-#def manual_ISA(args):
-    #pdb.set_trace()
-#    binary_mat       = args[0]
-#    abs_cutoff       = args[1]
-#    per_cutoff       = args[2]
-#    converge_epsilon = args[3]
-#    converge_depth   = args[4]
-#    seed0            = args[5] 
-    print 'in manual_ISA, numpy.nonzero(seed0) = '+ str(numpy.nonzero(seed0))
+    print '\nthis thread seed0 = '+ str(numpy.nonzero(seed0))
 
     num_row = binary_mat.shape[0]
     num_col = binary_mat.shape[1]
@@ -397,6 +385,7 @@ def manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth
             curr_depth = curr_depth + 1
             
     #pdb.set_trace()
+    print 'this thread takes {} seconds'.format(time.time() - start_time)
     return curr_rows,curr_cols
             
      
@@ -405,10 +394,10 @@ def converge(curr_cols,prev_cols,converge_epsilon):
     diff_length = numpy.linalg.norm(numpy.subtract(curr_cols,prev_cols))
     sum_length  = numpy.linalg.norm(numpy.add(curr_cols,prev_cols))
     curr_epsilon = float(diff_length) / sum_length
-    print '###'
-    print 'curr_cols = ' + str(numpy.nonzero(curr_cols))
-    print 'prev_cols = ' + str(numpy.nonzero(prev_cols))
-    print 'curr_epsilon = ' + str(curr_epsilon)
+    #print '###'
+    #print 'curr_cols = ' + str(numpy.nonzero(curr_cols))
+    #print 'prev_cols = ' + str(numpy.nonzero(prev_cols))
+    #print 'curr_epsilon = ' + str(curr_epsilon)
     if curr_epsilon < converge_epsilon:
         return True
     else:
@@ -501,12 +490,12 @@ def R_discover_sub_clusters(gene_p_qs,row_percent,row_cutoff,col_percent,col_cut
         curr_arg = (binary_mat,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed)
         manual_ISA_args.append(curr_arg)
 
-    pdb.set_trace()
 
     threadPool = multiprocessing.Pool(5)
-    #sub_clusters_rows_cols = threadPool.map(manual_ISA,manual_ISA_args)        
-    sub_clusters_rows_cols = threadPool.map(test_worker,manual_ISA_args)        
-    pdb.set_trace()
+    start_time = time.time()
+    sub_clusters_rows_cols = threadPool.map(manual_ISA,manual_ISA_args)        
+    print 'all threads take {} seconds'.format(time.time() - start_time)
+    
     sub_clusters = []
     for rows_cols in sub_clusters_rows_cols:
         curr_sub_cluster = manual_ISA_build_Cluster_objects(gene_p_qs,rows_cols[0],rows_cols[1])
