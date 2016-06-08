@@ -324,6 +324,7 @@ def R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,cutoff):
     num_row = len(gene_p_qs)
     keys = gene_p_qs.keys()
     num_col = len(gene_p_qs[keys[0]])
+    print 'num_row = {} num_col = {}'.format(num_row,num_col)
 
     ndarr = numpy.zeros((num_row,num_col))
 
@@ -352,7 +353,7 @@ def manual_ISA(args):
     converge_epsilon = args[3]
     converge_depth   = args[4]
     seed0            = args[5] 
-    print '\nthis thread seed0 = '+ str(numpy.nonzero(seed0))
+    #print '\nthis thread seed0 = '+ str(numpy.nonzero(seed0))
 
     num_row = binary_mat.shape[0]
     num_col = binary_mat.shape[1]
@@ -366,10 +367,13 @@ def manual_ISA(args):
 
     prev_cols = seed0
     curr_depth = 0
-    print 'seed0 = ' + str(numpy.nonzero(seed0))
+    #print 'seed0 = ' + str(numpy.nonzero(seed0))
     while True:
         curr_rows = manual_ISA_filter_row(binary_mat,prev_cols,abs_cutoff,per_cutoff)
         curr_cols = manual_ISA_filter_col(binary_mat,curr_rows,abs_cutoff,per_cutoff)
+        if not numpy.any(curr_cols):  #if converge to empty hole, terminate early
+            print 'xxx ABORTION, ALL ZERO'
+            break
         if converge(curr_cols,prev_cols,converge_epsilon):
             print '$$$ REAL CONVERGE'
             #pdb.set_trace()
@@ -385,7 +389,7 @@ def manual_ISA(args):
             curr_depth = curr_depth + 1
             
     #pdb.set_trace()
-    print 'this thread takes {} seconds'.format(time.time() - start_time)
+    #print 'this thread takes {} seconds'.format(time.time() - start_time)
     return curr_rows,curr_cols
             
      
@@ -460,9 +464,11 @@ def manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols):
 def manual_ISA_gen_seeds(binary_mat,num_seeds):
     num_row = binary_mat.shape[0]
     num_col = binary_mat.shape[1]
+    seed_ratio = 0.2    #FIXME
+    
     conn = pyRserve.connect()
     conn.r('require("isa2")')
-    seeds_mat = conn.r('generate.seeds('+ str(num_col)+',count = '+str(num_seeds)+')')
+    seeds_mat = conn.r('generate.seeds('+ str(num_col)+',count = '+str(num_seeds)+',sparsity='+str(seed_ratio * num_col)+')')
     seeds_list = []
     num_seeds = seeds_mat.shape[1]
     for i in range(num_seeds):
@@ -473,8 +479,17 @@ def manual_ISA_gen_seeds(binary_mat,num_seeds):
     #len_each_seed = seeds.shape[0]
     #seed0 = seeds[:,0]
 
+def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff):
+    num_row = numpy.count_nonzero(rows)
+    num_col = numpy.count_nonzero(cols)
 
 
+    nonzero_col_indices = numpy.nonzero(cols)[0].tolist() #numpy.nonzero(cols) return a 2-elements tuple
+    for i_col in nonzero_col_indices:
+        curr_col = binary_mat[:,i_col]
+        curr_sum = numpy.sum(curr_col)
+        if curr_sum < num_row * col_cutoff:
+            cols[i_col] = 0
 
 def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth):
     binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
@@ -494,10 +509,22 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     start_time = time.time()
     sub_clusters_rows_cols = threadPool.map(manual_ISA,manual_ISA_args)        
     print 'all threads take {} seconds'.format(time.time() - start_time)
-    
+
     sub_clusters = []
     for rows_cols in sub_clusters_rows_cols:
-        curr_sub_cluster = manual_ISA_build_Cluster_objects(gene_p_qs,rows_cols[0],rows_cols[1])
+        rows = rows_cols[0]
+        cols = rows_cols[1]
+        manual_ISA_filter_sub_cluster(binary_mat, rows, cols, 0.5, 0.5)
+        if not numpy.any(rows) or not numpy.any(cols):
+            continue
+
+        print '\n'
+        print 'len(rows) = ' + str(numpy.count_nonzero(rows))
+        print 'len(cols) = ' + str(numpy.count_nonzero(cols))
+
+
+
+        curr_sub_cluster = manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols)
         sub_clusters.append(curr_sub_cluster)
 
 
