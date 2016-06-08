@@ -461,11 +461,11 @@ def manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols):
     return Cluster(Cluster_row_comb,Cluster_cols) 
         
 
-def manual_ISA_gen_seeds(binary_mat,num_seeds):
+def manual_ISA_gen_seeds(binary_mat,seed_ratio):
     num_row = binary_mat.shape[0]
     num_col = binary_mat.shape[1]
-    seed_ratio = 0.2    #FIXME
-    
+    num_seeds = int(1/seed_ratio)   
+ 
     conn = pyRserve.connect()
     conn.r('require("isa2")')
     seeds_mat = conn.r('generate.seeds('+ str(num_col)+',count = '+str(num_seeds)+',sparsity='+str(seed_ratio * num_col)+')')
@@ -491,14 +491,14 @@ def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff)
         if curr_sum < num_row * col_cutoff:
             cols[i_col] = 0
 
-def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth):
+def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed_ratio,filter_ratio):
     binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
     #abs_cutoff = 3
     #per_cutoff = 0.5
     #converge_epsilon = 0.1
     #converge_depth = 100
 
-    seeds = manual_ISA_gen_seeds(binary_mat,5)
+    seeds = manual_ISA_gen_seeds(binary_mat,seed_ratio)
     manual_ISA_args = []
     for seed in seeds:
         curr_arg = (binary_mat,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed)
@@ -514,7 +514,7 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     for rows_cols in sub_clusters_rows_cols:
         rows = rows_cols[0]
         cols = rows_cols[1]
-        manual_ISA_filter_sub_cluster(binary_mat, rows, cols, 0.5, 0.5)
+        manual_ISA_filter_sub_cluster(binary_mat, rows, cols, filter_ratio, filter_ratio)
         if not numpy.any(rows) or not numpy.any(cols):
             continue
 
