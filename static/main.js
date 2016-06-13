@@ -543,12 +543,12 @@ function createGraph() {
          .attr("id","converge_depth");
 
     chart.append("text")
-         .text("seed_ratio")
+         .text("est_col_width")
          .style("margin-left",5 * margin +"px");
     chart.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","seed_ratio");
+         .attr("id","est_col_width");
 
 
     chart.append("text")
@@ -576,11 +576,11 @@ function createGraph() {
                 var per_cutoff  = document.getElementById("per_cutoff").value;
                 var converge_epsilon = document.getElementById("converge_epsilon").value;
                 var converge_depth  = document.getElementById("converge_depth").value;
-                var seed_ratio = document.getElementById("seed_ratio").value;
+                var est_col_width = document.getElementById("est_col_width").value;
                 var filter_ratio  = document.getElementById("filter_ratio").value;
 
 
-                d3.json("/sub_clusters?abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&seed_ratio="+seed_ratio+"&filter_ratio="+filter_ratio,sub_clusterscallback);
+                d3.json("/sub_clusters?abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio,sub_clusterscallback);
             });
    // }
 
