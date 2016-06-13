@@ -558,6 +558,13 @@ function createGraph() {
          .attr("size","10")
          .attr("id","filter_ratio");
 
+    chart.append("text")
+         .text("consider_all_genes_in_database")
+         .style("margin-left",5 * margin +"px");
+    chart.append("input")
+         .attr("type","checkbox")
+         .attr("checked","checked")
+         .attr("id","consider_all_genes_in_database")
 
     //if (show_sub_clusters_button == 'True'){
     // }
@@ -578,9 +585,9 @@ function createGraph() {
                 var converge_depth  = document.getElementById("converge_depth").value;
                 var est_col_width = document.getElementById("est_col_width").value;
                 var filter_ratio  = document.getElementById("filter_ratio").value;
+                var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
 
-
-                d3.json("/sub_clusters?abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio,sub_clusterscallback);
+                d3.json("/sub_clusters?abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
             });
    // }
 

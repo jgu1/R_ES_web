@@ -222,6 +222,16 @@ class DAO(object):
         rows = cur.fetchall()
         #print('### fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,(time.time() - start_time)))
         return list(rows) 
+    # get the union of all gene_names for all GWAS-eQTL pairs
+    def get_all_gene_names(self,result_dict):
+        all_gene_names = set()
+        for result in result_dict:
+            curr_tuple_list = result_dict[result]
+            curr_gene_names = [x[2] for x in curr_tuple_list]
+            all_gene_names = all_gene_names.union(set(curr_gene_names))
+        all_gene_names = list(all_gene_names)
+        all_gene_names.sort()
+        return all_gene_names
 
     def get_lowest_n_genes_for_all_pairs(self,result_lists,num_genes_per_pair):
         individual_genes = []
@@ -235,8 +245,12 @@ class DAO(object):
         comm_gene_names.sort() 
         return comm_gene_names
 
-    def filter_result_dict_by_lowest_n_genes_for_each_pair(self,result_dict,num_genes_per_pair):
-        filtered_gene_names = self.get_lowest_n_genes_for_all_pairs(result_dict.values(),num_genes_per_pair)
+    def filter_result_dict_by_lowest_n_genes_for_each_pair(self,result_dict,num_genes_per_pair,consider_all_genes_in_database):
+        filtered_gene_names = []
+        if not consider_all_genes_in_database:
+            filtered_gene_names = self.get_lowest_n_genes_for_all_pairs(result_dict.values(),num_genes_per_pair)
+        else:
+            filtered_gene_names = self.get_all_gene_names(result_dict)
         filtered_dict = {}
         for pair_name in result_dict:
             result = result_dict[pair_name]
@@ -303,7 +317,7 @@ class DAO(object):
 
         return list(GWASs), GWAS_disease_dict
 
-    def fetch_pair_gene(self,web_disease_list,web_eQTL_list,web_num_genes_per_pair):
+    def fetch_pair_gene(self,web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database):
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
 
@@ -323,10 +337,10 @@ class DAO(object):
 
         disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
         eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
-        result_dict = {}
              
 
         start_time = time.time() 
+        result_dict = {}
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
                 GWAS = GWASs[i]
@@ -341,7 +355,7 @@ class DAO(object):
         if contain_merged: 
             for GWAS in GWASs:
                 Merged = self.fetch_gene_p_q_by_GWAS_Merged(GWAS)
-                if len(Merged) >0 :
+                if len(Merged)>0:
                     display_name = GWAS + '---Merged'
                     result_dict[display_name] = Merged
 
@@ -384,7 +398,7 @@ class DAO(object):
 
         if len(result_dict) == 0:
             return None,None,None
-        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_n_genes_for_each_pair(result_dict,num_genes_per_pair)        
+        filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_n_genes_for_each_pair(result_dict,num_genes_per_pair,consider_all_genes_in_database)       
         #pickle.dump(filtered_dict,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/longevity.pickle','wb+'))  
         #pickle.dump(filtered_gene_names,open('/genomesvr1/home/jgu1/WorkSpace/job_11_12/ES_web/gene_names.pickle','wb+'))  
         start_time = time.time()

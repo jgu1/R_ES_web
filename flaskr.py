@@ -40,7 +40,7 @@ def teardown_request(exception):
         dao.db.close()
 
 @app.route('/sub_clusters')
-@app.route("/sub_clusters/<string:abs_cutoff><string:per_cutoff><string:converge_epsilon><string:converge_depth><string:est_col_width><string:filter_ratio>")
+@app.route("/sub_clusters/<string:abs_cutoff><string:per_cutoff><string:converge_epsilon><string:converge_depth><string:est_col_width><string:filter_ratio><string:consider_all_genes_in_database>")
 def sub_clusters():
     abs_cutoff       = request.args.get('abs_cutoff', '')
     per_cutoff       = request.args.get('per_cutoff','')
@@ -48,6 +48,7 @@ def sub_clusters():
     converge_depth   = request.args.get('converge_depth','')
     est_col_width    = request.args.get('est_col_width','')
     filter_ratio     = request.args.get('filter_ratio','')
+    consider_all_genes_in_database = request.args.get('consider_all_genes_in_database','')
     if abs_cutoff == '':
         abs_cutoff = 3
     if per_cutoff == '':
@@ -60,8 +61,12 @@ def sub_clusters():
         est_col_width = 20
     if filter_ratio == '':
         filter_ratio = 0.3
+    if consider_all_genes_in_database == 'true':
+        consider_all_genes_in_database = True
+    else:
+        consider_all_genes_in_database = False
 
-    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix()
+    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
     sub_clusters = R_discover_sub_clusters(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio))
     #pdb.set_trace()
     #sub_clusters = discover_sub_clusters(gene_p_qs)
@@ -106,13 +111,13 @@ def detail():
     ret['all_SNPs_list'] = all_SNPs_list
     return jsonify(ret)
 
-def fetch_and_build_matrix():
+def fetch_and_build_matrix(consider_all_genes_in_database):
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
     web_num_genes_per_pair = session['web_num_genes_per_pair']
     dao = getattr(g, 'dao', None)
     start_time = time.time()
-    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair)
+    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database)
     print "fetch_pair_gene take {} seconds".format(time.time() - start_time)
     if gene_p_qs is None:
         return None,None,None,None 
@@ -135,7 +140,7 @@ def show_matrix():
         page = 1
     session['page'] = page
 
-    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix() 
+    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(False) 
     if gene_p_qs is None:
         return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names) 
     
