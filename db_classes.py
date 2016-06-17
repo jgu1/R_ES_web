@@ -348,7 +348,7 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + "  (" + GWAS + "---" +eQTL + ")"
-                    display_name = GWAS + "---" + eQTL
+                    #display_name = GWAS + "---" + eQTL
                     #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
                     result_dict[display_name] = result
        
@@ -356,7 +356,8 @@ class DAO(object):
             for GWAS in GWASs:
                 Merged = self.fetch_gene_p_q_by_GWAS_Merged(GWAS)
                 if len(Merged)>0:
-                    display_name = GWAS + '---Merged_08212015_pruned_LD02'
+                    display_name = GWAS_disease_dict[GWAS] + '('+ GWAS + ')---Merged'
+                    #display_name = GWAS + '---Merged_08212015_pruned_LD02'
                     result_dict[display_name] = Merged
 
         print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
