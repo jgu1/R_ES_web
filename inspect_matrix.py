@@ -71,9 +71,13 @@ def filter_out_child_sub_clusters(sub_clusters):
             curr_potential_child = sub_clusters[j]
             curr_potential_child_row_comb =  curr_potential_child.row_comb
             curr_potential_child_cols = curr_potential_child.cols
+            if len(curr_potential_child_row_comb) == 1 or len(curr_potential_child_cols) == 1:
+                curr_potential_child.excluded = True # if child has only one row or one col, exclude it
+                continue
+
             if set(curr_potential_child_row_comb).issubset(set(curr_parent_row_comb)) and curr_potential_child_cols.issubset(curr_parent_cols):
                 curr_potential_child.excluded = True # if child can be 'contained' in parent, exclude it
-    
+ 
     filtered_sub_clusters = []
     for cluster in sub_clusters:
         if cluster.excluded == False:
@@ -531,8 +535,12 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
 
     #rows,cols = manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth)
     #one_Cluster = manual_IRA_build_Cluster_objects(gene_p_qs,rows,cols) 
-    #return [one_Cluster] 
-    return sub_clusters
+    #return [one_Cluster]
+
+    filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
+    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+ 
+    return merged_sub_clusters
 
     if False:
         start_time = time.time() 

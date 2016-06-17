@@ -356,7 +356,7 @@ class DAO(object):
             for GWAS in GWASs:
                 Merged = self.fetch_gene_p_q_by_GWAS_Merged(GWAS)
                 if len(Merged)>0:
-                    display_name = GWAS + '---Merged'
+                    display_name = GWAS + '---Merged_08212015_pruned_LD02'
                     result_dict[display_name] = Merged
 
         print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
