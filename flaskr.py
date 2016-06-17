@@ -99,12 +99,15 @@ def detail():
     dao = getattr(g, 'dao', None)
     pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
     
-    pair_SNP_dict = {}
-    if pairNames != 'empty':
-        for pair in pairNames.split(','):
-            pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
-    else:
-        pair_SNP_dict = pair_SNP_dict_all
+    if False:   # show SNP for all GWAS-eQTL pairs
+        pair_SNP_dict = {}
+        if pairNames != 'empty':
+            for pair in pairNames.split(','):
+                pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+        else:
+            pair_SNP_dict = pair_SNP_dict_all
+
+    pair_SNP_dict = pair_SNP_dict_all
     ret = {}
     ret['gene'] = gene
     ret['pair_SNP_dict'] = pair_SNP_dict
