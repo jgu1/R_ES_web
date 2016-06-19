@@ -77,6 +77,9 @@ def filter_out_child_sub_clusters(sub_clusters):
 
             if set(curr_potential_child_row_comb).issubset(set(curr_parent_row_comb)) and curr_potential_child_cols.issubset(curr_parent_cols):
                 curr_potential_child.excluded = True # if child can be 'contained' in parent, exclude it
+            # see how many seeds result in the same sub_cluster 
+            if set(curr_potential_child_row_comb) == set(curr_parent_row_comb) and curr_potential_child_cols== curr_parent_cols:
+                curr_parent.num_seeds = curr_parent.num_seeds + 1
  
     filtered_sub_clusters = []
     for cluster in sub_clusters:
@@ -538,9 +541,9 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     #return [one_Cluster]
 
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+    ##merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
  
-    return merged_sub_clusters
+    return filtered_sub_clusters
 
     if False:
         start_time = time.time() 

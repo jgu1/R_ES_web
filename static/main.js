@@ -12,14 +12,15 @@ function createGraph() {
 
   var sub_clusterscallback = function(data){
     var gene_p_qs = data.gene_p_qs
-    var pairname_idx = data.pairname_idx
+    var serisables = data.serisables
     var gene_descriptions = data.gene_descriptions;  
  
-    for (var i = 0; i < pairname_idx.length; i++){
-        var curr_rowcomb_cols = pairname_idx[i];
-        var row_comb = curr_rowcomb_cols[0];
-        var cols = curr_rowcomb_cols[1];
-        
+    for (var i = 0; i < serisables.length; i++){
+        var serisable = serisables[i];
+        var row_comb = serisable[0];
+        var cols = serisable[1];
+        var num_seeds = serisable[2];       
+ 
         var sub_cluster_gene_p_qs = {};
         var sub_cluster_sorted_pair_names = new Array();
         var sub_cluster_filtered_gene_names = new Array(cols.length);
@@ -45,13 +46,13 @@ function createGraph() {
             sub_cluster_gene_p_qs[curr_pairname] = curr_pair_genes_arr;
         }
           
-        draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names,sub_cluster_gene_descriptions); 
+        draw_subcluster(sub_cluster_gene_p_qs,sub_cluster_filtered_gene_names, sub_cluster_sorted_pair_names,sub_cluster_gene_descriptions,num_seeds); 
     }
     // hide the discover_sub_clusters button  
     //d3.select("#sub_clusters_button").style("display","none");
   }
   
-  function draw_subcluster(gene_p_qs,geneNames,pairNames,geneDescriptions){
+  function draw_subcluster(gene_p_qs,geneNames,pairNames,geneDescriptions,num_seeds){
     var matrix = [];
     var size = 15;
     for (var i = 0; i<pairNames.length;i++) {
@@ -91,6 +92,10 @@ function createGraph() {
     var wrapper_div = sub_clusters.append("div")
                       .attr("width",1000)
                       .style("overflow","scroll");
+    var num_seeds = wrapper_div.append('text')
+                               .text("num_seeds: " + num_seeds)
+                               .attr("transform", "translate(" + 5 * margin + ", " + margin + ")");
+
     var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)

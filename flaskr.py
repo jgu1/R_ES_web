@@ -76,13 +76,14 @@ def sub_clusters():
         row_comb = sub_cluster.row_comb
         cols = list(sub_cluster.cols)
         cols.sort()
-        curr_serisable = [row_comb,cols]
+        num_seeds = sub_cluster.num_seeds
+        curr_serisable = [row_comb,cols,num_seeds]
         serisables.append(curr_serisable)
 
     ret = {}
     ret['gene_p_qs'] = gene_p_qs
     ret['gene_descriptions'] = gene_descriptions
-    ret['pairname_idx'] = serisables
+    ret['serisables'] = serisables
 
     resp = Response(json.dumps(ret), status=200, mimetype='application/json')
     return resp   

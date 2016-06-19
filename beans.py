@@ -70,11 +70,12 @@ class Cluster(object):
     row_comb = None
     cols = None
     excluded = False 
+    num_seeds = 1
     def __init__(self,row_comb,cols):
         self.row_comb = list(row_comb)
         self.cols = set(cols)
         self.excluded = False
-
+        self.num_seeds = 1
 
 
 
