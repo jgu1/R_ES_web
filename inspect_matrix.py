@@ -77,9 +77,10 @@ def filter_out_child_sub_clusters(sub_clusters):
 
             if set(curr_potential_child_row_comb).issubset(set(curr_parent_row_comb)) and curr_potential_child_cols.issubset(curr_parent_cols):
                 curr_potential_child.excluded = True # if child can be 'contained' in parent, exclude it
-            # see how many seeds result in the same sub_cluster 
-            if set(curr_potential_child_row_comb) == set(curr_parent_row_comb) and curr_potential_child_cols== curr_parent_cols:
                 curr_parent.num_seeds = curr_parent.num_seeds + 1
+            # see how many seeds result in the same sub_cluster 
+            #if set(curr_potential_child_row_comb) == set(curr_parent_row_comb) and curr_potential_child_cols== curr_parent_cols:
+            #    curr_parent.num_seeds = curr_parent.num_seeds + 1
  
     filtered_sub_clusters = []
     for cluster in sub_clusters:
@@ -468,7 +469,7 @@ def manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols):
     return Cluster(Cluster_row_comb,Cluster_cols) 
         
 
-def manual_ISA_gen_seeds(binary_mat,est_col_width):
+def manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices):
     num_row = binary_mat.shape[0]
     num_col = binary_mat.shape[1]
     num_seeds = int(num_col/est_col_width)   
@@ -479,9 +480,23 @@ def manual_ISA_gen_seeds(binary_mat,est_col_width):
     seeds_mat = conn.r('generate.seeds('+ str(num_col)+',count = '+str(num_seeds)+',sparsity='+str(est_col_width)+')')
     seeds_list = []
     num_seeds = seeds_mat.shape[1]
+
+    #make a ndarray that having 1 at pre_excluded_indices
+    pre_exclude_mask = numpy.zeros(num_col)
+    for pre_exclude_gene_index in pre_exclude_gene_indices:
+        pre_exclude_mask[pre_exclude_gene_index] = 1
+ 
     for i in range(num_seeds):
         curr_seed_vec = seeds_mat[:,i]
+        #if curr_seed_vec contains pre_excluded gene_indices, remove this seed
+        #the product is greater than 0 only when index matches
+        if numpy.dot(curr_seed_vec,pre_exclude_mask) > 0: 
+            continue
         seeds_list.append(curr_seed_vec)
+
+    
+
+
     return seeds_list
     #num_seeds = seeds.shape[1]
     #len_each_seed = seeds.shape[0]
@@ -506,7 +521,12 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     #converge_epsilon = 0.1
     #converge_depth = 100
 
-    seeds = manual_ISA_gen_seeds(binary_mat,est_col_width)
+    #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
+    pre_exclude_gene_names = []
+    pre_exclude_gene_indices = get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names)
+
+    seeds = manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices)
+    
     manual_ISA_args = []
     for seed in seeds:
         curr_arg = (binary_mat,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed)
@@ -602,6 +622,17 @@ def output_matrix_to_txt(ret):
             except ValueError:
                 pval = 1e-8
             OF.write(str(pval)) 
+
+def get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names):
+    pre_exclude_gene_indices = set()
+    first_gene_tuple_list = gene_p_qs.values()[0]
+    for gene_idx,gene_tuple in enumerate(first_gene_tuple_list):
+        curr_gene_name = gene_tuple[2]
+        if curr_gene_name in pre_exclude_gene_names:
+            pre_exclude_gene_indices.add(gene_idx)
+    return pre_exclude_gene_indices
+            
+     
 
 if __name__=='__main__':
     pickle_filename='ES_Sherlock_dump.pickle'

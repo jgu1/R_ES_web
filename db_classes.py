@@ -245,6 +245,7 @@ class DAO(object):
         comm_gene_names.sort() 
         return comm_gene_names
 
+    # this function will also patch each pair to the same lenth with 'dummy genes'
     def filter_result_dict_by_lowest_n_genes_for_each_pair(self,result_dict,num_genes_per_pair,consider_all_genes_in_database):
         filtered_gene_names = []
         if not consider_all_genes_in_database:
