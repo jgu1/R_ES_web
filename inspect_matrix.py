@@ -521,12 +521,13 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     #converge_epsilon = 0.1
     #converge_depth = 100
 
+
     #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
     pre_exclude_gene_names = []
     pre_exclude_gene_indices = get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names)
 
     seeds = manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices)
-    
+    output_seed_to_txt(seeds,gene_p_qs) 
     manual_ISA_args = []
     for seed in seeds:
         curr_arg = (binary_mat,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed)
@@ -546,9 +547,9 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
         if not numpy.any(rows) or not numpy.any(cols):
             continue
 
-        print '\n'
-        print 'len(rows) = ' + str(numpy.count_nonzero(rows))
-        print 'len(cols) = ' + str(numpy.count_nonzero(cols))
+        #print '\n'
+        #print 'len(rows) = ' + str(numpy.count_nonzero(rows))
+        #print 'len(cols) = ' + str(numpy.count_nonzero(cols))
 
 
 
@@ -632,7 +633,24 @@ def get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names):
             pre_exclude_gene_indices.add(gene_idx)
     return pre_exclude_gene_indices
             
-     
+def output_seed_to_txt(seeds,gene_p_qs):   
+
+    SEED_TXT = open('seed_genes.txt','w+')
+
+    first_gene_tuple_list = gene_p_qs.values()[0]
+    all_gene_names = [x[2] for x in first_gene_tuple_list]
+    all_gene_names.sort()
+    for seed in seeds:
+
+        # print genes in current seed
+        curr_seed_genes = []
+        seed_length = seed.shape[0]
+        for i in range(seed_length):
+            if seed[i] > 0:
+                curr_seed_genes.append(all_gene_names[i])
+        SEED_TXT.write( '\ncurr_seed_genes = ' + str(curr_seed_genes) )
+        # print genes in current seed
+  
 
 if __name__=='__main__':
     pickle_filename='ES_Sherlock_dump.pickle'
