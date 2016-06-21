@@ -20,7 +20,8 @@ DEBUG = True
 SECRET_KEY = 'development key'
 eQTL_name_all = 'all'
 eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
-disease_GWAS_dict = pickle.load(open("disease_GWAS_dict.pickle","rb"))
+#disease_GWAS_dict = pickle.load(open("disease_GWAS_dict.pickle","rb"))
+disease_GWAS_dict = DAO().build_disease_GWAS_dict()
 GENE_P_Q_PER_PAGE=30
 page=1
 

@@ -522,8 +522,8 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     #converge_depth = 100
 
 
-    #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
-    pre_exclude_gene_names = []
+    pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
+    #pre_exclude_gene_names = []
     pre_exclude_gene_indices = get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names)
 
     seeds = manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices)
@@ -562,9 +562,10 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
     #return [one_Cluster]
 
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-    ##merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+    #merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
  
     return filtered_sub_clusters
+    #return merged_sub_clusters
 
     if False:
         start_time = time.time() 

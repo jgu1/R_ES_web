@@ -285,8 +285,9 @@ class DAO(object):
 
     def gen_GWASs_from_web_disease_list(self,web_disease_list):
         web_diseases_term = web_disease_list.strip().split(',')
-        web_diseases_term_found_dict = {} 
-        disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
+        web_diseases_term_found_dict = {}
+        #disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
+        disease_GWAS_dict = self.build_disease_GWAS_dict() 
         GWASs = set([])
         # this dict is used to show which disease a certain GWAS belongs to
         GWAS_disease_dict = dict()
@@ -336,9 +337,10 @@ class DAO(object):
             print 'web_num_genes_per_pair is not an integer, use default value 30'
 
 
-        disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
-        eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
-             
+        #disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
+        disease_GWAS_dict = self.build_disease_GWAS_dict()
+        #eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
+        eQTL_tissue_dict = self.build_eQTL_tissue_dict()    
 
         start_time = time.time() 
         result_dict = {}
@@ -570,3 +572,36 @@ class DAO(object):
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail
 
+    def build_disease_GWAS_dict(self):
+        sql_template = 'select disease,GWAS from disease_GWAS;'
+        disease_GWAS_list = self.exec_fetch_SQL(sql_template)
+        disease_GWAS_dict = {}
+        disease_GWAS_list.sort(key = lambda x: x[0])
+        prev_disease = disease_GWAS_list[0][0]
+        prev_GWAS_list = []
+        for i_tuple in range(len(disease_GWAS_list)):
+            curr_tuple = disease_GWAS_list[i_tuple]
+            curr_disease = curr_tuple[0]
+            curr_GWAS    = curr_tuple[1]
+            if curr_disease != prev_disease:
+                disease_GWAS_dict[prev_disease] = prev_GWAS_list
+                prev_GWAS_list = []
+                prev_disease = curr_disease
+            prev_GWAS_list.append(curr_GWAS)
+
+        disease_GWAS_dict[curr_disease] = prev_GWAS_list # at the end of iteration, add last disease into dict
+ 
+        return disease_GWAS_dict
+
+    def build_eQTL_tissue_dict(self):
+        sql_template = 'select eQTL,tissue from eQTL_tissue;'
+        eQTL_tissue_list = self.exec_fetch_SQL(sql_template)
+        eQTL_tissue_dict = {}
+        for row in eQTL_tissue_list:
+            eQTL   = row[0]
+            tissue = row[1] 
+            eQTL_tissue_dict[eQTL] = tissue
+        return eQTL_tissue_dict
+
+
+      
