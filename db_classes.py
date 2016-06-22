@@ -7,36 +7,6 @@ import time
 import multiprocessing
 import copy_reg,types
 import psutil
-
-#def _reduce_method(m):
-#    if m.im_self is None:
-#        return getattr, (m.im_class, m.im_func.func_name)
-#    else:
-#        return getattr, (m.im_self, m.im_func.func_name)
-#copy_reg.pickle(types.InstanceType, _reduce_method)
-def independent_pool_worker_fetch_gene_p_q_by_GWAS_eQTL(pair):
-    start_time = time.time()
-    global_db = MySQLdb.connect(host="localhost", # your host, usually localhost
-        user="root", # your username
-        passwd="genome", # your password
-        db="ES_OUTPUT") # name of the data base
-
-
-    computation_start_time = time.time() 
-    #print '$$$$$$$$$$$ inside of pool_worker'
-    GWAS = pair[0]
-    eQTL = pair[1]
-    sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
-    ' where Geg.id = gene_p_q.Geg_id'
-    ' and Geg.GWAS="' + GWAS +'"'
-    ' and Geg.eQTL="' + eQTL + '";' )
-    cur = global_db.cursor()
-    cur.execute(sql_template)
-    rows = cur.fetchall()
-    computation_time = time.time() - computation_start_time
-    print('$$$ fetching gene_p_qs for {} and {} takes {}'.format(GWAS,eQTL,computation_time))
-    return GWAS,eQTL,list(rows),computation_time,time.time() - start_time 
-
 class DAO(object):
     db = None
     db_hg19 = None
@@ -72,10 +42,16 @@ class DAO(object):
         return cur.lastrowid
 
     def fetch_or_insert_Geg(self,GWAS,eQTL,gene):
-        sql_template=('select id from Geg where GWAS="' + GWAS + 
+        #sql_template=('select id from Geg where GWAS="' + GWAS + 
+        #              '" and eQTL="' + eQTL + 
+        #              '" and gene="'+ gene + 
+        #              '";')
+        sql_template=('select id from Gegpq where GWAS="' + GWAS + 
                       '" and eQTL="' + eQTL + 
                       '" and gene="'+ gene + 
                       '";')
+        
+
         cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
@@ -198,10 +174,13 @@ class DAO(object):
   
     def fetch_gene_p_q_by_GWAS_eQTL(self,GWAS,eQTL):
         start_time = time.time()
-        sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
-        ' where Geg.id = gene_p_q.Geg_id'
-        ' and Geg.GWAS="' + GWAS +'"'
-        ' and Geg.eQTL="' + eQTL + '";' )
+        #sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
+        #' where Geg.id = gene_p_q.Geg_id'
+        #' and Geg.GWAS="' + GWAS +'"'
+        #' and Geg.eQTL="' + eQTL + '";' )
+        sql_template = (' select GWAS,eQTL,gene,pval,qval from Gegpq'
+                        ' where GWAS="' + GWAS + '"'
+                        ' and eQTL="' + eQTL + '";')
         cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
@@ -213,10 +192,18 @@ class DAO(object):
         #print '$$$$$$$$$$$inside of pool_worker'
         GWAS = pair[0]
         eQTL = pair[1]
-        sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
-        ' where Geg.id = gene_p_q.Geg_id'
-        ' and Geg.GWAS="' + GWAS +'"'
-        ' and Geg.eQTL="' + eQTL + '";' )
+        #sql_template = ('select Geg.GWAS,Geg.eQTL,Geg.gene,gene_p_q.pval,gene_p_q.qval from Geg,gene_p_q'
+        #' where Geg.id = gene_p_q.Geg_id'
+        #' and Geg.GWAS="' + GWAS +'"'
+        #' and Geg.eQTL="' + eQTL + '";' )
+        
+        sql_template = ('select GWAS,eQTL,gene,pval,qval from Gegpq'
+        ' where GWAS="' + GWAS +'"'
+        ' and   eQTL="' + eQTL + '";' )
+
+
+
+
         cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
@@ -365,41 +352,6 @@ class DAO(object):
 
         print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
     
-
-        if False:
-            start_time = time.time() 
-            pool_inputs = []
-            for GWAS in GWASs:
-                for eQTL in eQTLs:
-                    curr_pair = (GWAS,eQTL)
-                    pool_inputs.append(curr_pair)
-
-            p = multiprocessing.Pool(20)
-            #pool_result = p.map(self.pool_worker_toy,l)
-            #pool_result = p.map(self.f,l);
-            #pool_result = p.map(unwrap_self_f, zip([self]*len(l), l))
-     
-            pool_result = p.map(independent_pool_worker_fetch_gene_p_q_by_GWAS_eQTL, pool_inputs)
-            computation_time = 0
-            all_sub_time = 0
-            for GWAS_eQTL_result in pool_result:
-                GWAS = GWAS_eQTL_result[0]
-                eQTL = GWAS_eQTL_result[1]
-                result = GWAS_eQTL_result[2]
-                computation_time = computation_time + GWAS_eQTL_result[3]
-                all_sub_time = all_sub_time + GWAS_eQTL_result[4] 
-                if len(result) > 0:
-                    display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + "  (" + GWAS + "---" +eQTL + ")"
-                    display_name = GWAS + "---" + eQTL
-                    #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
-                    result_dict[display_name] = result
-
-            print (psutil.cpu_percent())
-     
-            print("fetching all pairs using Pool takes %s seconds" % (time.time() - start_time))
-            print("of which  %s seconds is spent for computation" % computation_time)
-            print("of which  %s seconds is spent for computation and establish db connection" % all_sub_time)
-
         if len(result_dict) == 0:
             return None,None,None
         filtered_dict,filtered_gene_names = self.filter_result_dict_by_lowest_n_genes_for_each_pair(result_dict,num_genes_per_pair,consider_all_genes_in_database)       
@@ -437,13 +389,20 @@ class DAO(object):
 #pair manipulation   
 #detail manipulation
     def fetch_SNP_list_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
-        sql_template = ('select GSNP,eSNP,Gpval,epval from Geg, SNP_fields'
-                        ' where Geg.GWAS = "' + GWAS + '"'
-                        ' and Geg.eQTL = "' + eQTL + '"'
-                        ' and Geg.gene = "' + gene + '"'
-                        ' and SNP_fields.Geg_id = Geg.id;'  
+        #sql_template = ('select GSNP,eSNP,Gpval,epval from Geg, SNP_fields'
+        #                ' where Geg.GWAS = "' + GWAS + '"'
+        #                ' and Geg.eQTL = "' + eQTL + '"'
+        #                ' and Geg.gene = "' + gene + '"'
+        #                ' and SNP_fields.Geg_id = Geg.id;'  
+        #                )
+        sql_template = ('select GSNP,eSNP,Gpval from Gegpq, SNP_fields'
+                        ' where Gegpq.GWAS = "' + GWAS + '"'
+                        ' and Gegpq.eQTL = "' + eQTL + '"'
+                        ' and Gegpq.gene = "' + gene + '"'
+                        ' and SNP_fields.Geg_id = Gegpq.id;'  
                         )
-	list_detail = self.exec_fetch_SQL(sql_template)
+
+        list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail        
 
     def get_comm_SNPs(self,result_lists):
@@ -563,12 +522,20 @@ class DAO(object):
 
 #detail manipulation
     def fetch_detail(self,GWAS,eQTL,gene):
-        sql_template = ('select GSNP,eSNP,Gpval from Geg, SNP_fields'
-                        ' where Geg.GWAS = "' + GWAS + '"'
-                        ' and Geg.eQTL = "' + eQTL + '"'
-                        ' and Geg.gene = "' + gene + '"'
-                        ' and SNP_fields.Geg_id = Geg.id;'  
+        #sql_template = ('select GSNP,eSNP,Gpval from Geg, SNP_fields'
+        #                ' where Geg.GWAS = "' + GWAS + '"'
+        #                ' and Geg.eQTL = "' + eQTL + '"'
+        #                ' and Geg.gene = "' + gene + '"'
+        #                ' and SNP_fields.Geg_id = Geg.id;'  
+        #                )
+        sql_template = ('select GSNP,eSNP,Gpval from Gegpq, SNP_fields'
+                        ' where Gegpq.GWAS = "' + GWAS + '"'
+                        ' and Gegpq.eQTL = "' + eQTL + '"'
+                        ' and Gegpq.gene = "' + gene + '"'
+                        ' and SNP_fields.Geg_id = Gegpq.id;'  
                         )
+
+
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail
 
