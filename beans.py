@@ -77,7 +77,27 @@ class Cluster(object):
         self.excluded = False
         self.num_seeds = 1
 
+class pair_manhattan(object):
+    SNP_list = None
+    def __init__(self,SNP_list):
+        self.SNP_list = SNP_list
 
+class gene_manhattan(object):
+    SNP_list = None
+    def __init__(self, SNP_list):
+        self.SNP_list = SNP_list 
+
+
+class SNP_manhattan(object):
+    chrom = None
+    pos   = None
+    Gpval = None
+    epval = None
+    def __init__(self,chrom, pos, Gpval, epval):
+        self.chrom  = chrom
+        self.pos    = pos
+        self.Gpval  = Gpval
+        self.epval  = epval 
 
 
 

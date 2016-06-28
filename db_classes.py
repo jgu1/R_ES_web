@@ -46,7 +46,7 @@ class DAO(object):
         #              '" and eQTL="' + eQTL + 
         #              '" and gene="'+ gene + 
         #              '";')
-        sql_template=('select id from Gegpq where GWAS="' + GWAS + 
+        sql_template=('select id from gene_fields where GWAS="' + GWAS + 
                       '" and eQTL="' + eQTL + 
                       '" and gene="'+ gene + 
                       '";')
@@ -65,45 +65,18 @@ class DAO(object):
             return self.do_insert_Geg(GWAS,eQTL,gene)           # this is a new GWAS_eQTL_gene combination
 
 #####################################
-    def do_insert_gene_p_q(self,pval,qval,Geg_id):
-    
-        sql_template = 'insert into gene_p_q(pval,qval,Geg_id) values(%s,%s,%s)'
+    def do_insert_single_SNP_fields(self,GSNP,eSNP,Gpval,gene_fields_id):
+        sql_template= ('insert into SNP_fields (GSNP,eSNP,Gpval,gene_fields_id) values(%s,%s,%s,%s)')
         cur = self.db.cursor()
         try:
-            cur.execute(sql_template,(pval,qval,Geg_id))
-        except sqlite3.ProgrammingError:
-            pdb.set_trace()
-            a = 1        
-        self.db.commit()
-        return cur.lastrowid
-     
-    def insert_gene_p_q(self,gene_p_q):
-        Geg_id = self.fetch_or_insert_Geg(gene_p_q.GWAS,gene_p_q.eQTL,gene_p_q.gene)
-        sql_template = 'select id,pval,qval from gene_p_q where Geg_id=' + str(Geg_id) + ';'
-        cur = self.db.cursor()
-        cur.execute(sql_template)
-        rows = cur.fetchall()
-        if len(rows) > 1:   # there is an unique constraint on (GWAS,eQTL,gene)
-            print 'table gene_p_q is contaminated!'
-            pdb.set_trace()
-            exit(-1)
-        elif len(rows) == 1 and rows[0][1] == gene_p_q.pval and rows[0][2] == gene_p_q.qval:
-            return rows[0][0],Geg_id
-        else:   # len(rows) == 0
-            return self.do_insert_gene_p_q(gene_p_q.pval,gene_p_q.qval,Geg_id),Geg_id  
-####################################
-    def do_insert_single_SNP_fields(self,GSNP,eSNP,Gpval,Geg_id):
-        sql_template= ('insert into SNP_fields (GSNP,eSNP,Gpval,Geg_id) values(%s,%s,%s,%s)')
-        cur = self.db.cursor()
-        try:
-            cur.execute(sql_template,(GSNP,eSNP,Gpval,Geg_id))
+            cur.execute(sql_template,(GSNP,eSNP,Gpval,gene_fields_id))
         except sqlite3.ProgrammingError:
             pdb.set_trace()
             a = 1        
         self.db.commit()
 
-    def insert_single_SNP_fields(self,GSNP,eSNP,Gpval,Geg_id):
-        sql_template = (' select id, Gpval from SNP_fields where Geg_id=' + str(Geg_id) + 
+    def insert_single_SNP_fields(self,GSNP,eSNP,Gpval,gene_fields_id):
+        sql_template = (' select id, Gpval from SNP_fields where gene_fields_id=' + str(gene_fields_id) + 
                         ' and GSNP="' + GSNP + '"' +
                         ' and eSNP="' + eSNP + '"' +
                         ';')   
@@ -116,15 +89,15 @@ class DAO(object):
         elif len(rows) == 1 and rows[0][1] == Gpval:
             return rows[0][0]
         else: #len(rows) == 0
-            return self.do_insert_single_SNP_fields(GSNP,eSNP,Gpval,Geg_id)
+            return self.do_insert_single_SNP_fields(GSNP,eSNP,Gpval,gene_fields_id)
 
-    def insert_gene_SNPs(self,gene_SNPs,Geg_id):
+    def insert_gene_SNPs(self,gene_SNPs,gene_fields_id):
         #Geg_id = self.fetch_or_insert_Geg(gene_SNPs.GWAS,gene_SNPs.eQTL,gene_SNPs.gene)
         for t in gene_SNPs.SNP_fields:
             GSNP = t[0]
             eSNP = t[1]
             Gpval= t[2]
-            self.insert_single_SNP_fields(GSNP,eSNP,Gpval,Geg_id)
+            self.insert_single_SNP_fields(GSNP,eSNP,Gpval,gene_fields_id)
 
 
 #pair manipulation 
@@ -178,7 +151,7 @@ class DAO(object):
         #' where Geg.id = gene_p_q.Geg_id'
         #' and Geg.GWAS="' + GWAS +'"'
         #' and Geg.eQTL="' + eQTL + '";' )
-        sql_template = (' select GWAS,eQTL,gene,pval,qval from Gegpq'
+        sql_template = (' select GWAS,eQTL,gene,pval,qval from gene_fields'
                         ' where GWAS="' + GWAS + '"'
                         ' and eQTL="' + eQTL + '";')
         cur = self.db.cursor()
@@ -197,7 +170,7 @@ class DAO(object):
         #' and Geg.GWAS="' + GWAS +'"'
         #' and Geg.eQTL="' + eQTL + '";' )
         
-        sql_template = ('select GWAS,eQTL,gene,pval,qval from Gegpq'
+        sql_template = ('select GWAS,eQTL,gene,pval,qval from gene_fields'
         ' where GWAS="' + GWAS +'"'
         ' and   eQTL="' + eQTL + '";' )
 
@@ -395,11 +368,11 @@ class DAO(object):
         #                ' and Geg.gene = "' + gene + '"'
         #                ' and SNP_fields.Geg_id = Geg.id;'  
         #                )
-        sql_template = ('select GSNP,eSNP,Gpval from Gegpq, SNP_fields'
-                        ' where Gegpq.GWAS = "' + GWAS + '"'
-                        ' and Gegpq.eQTL = "' + eQTL + '"'
-                        ' and Gegpq.gene = "' + gene + '"'
-                        ' and SNP_fields.Geg_id = Gegpq.id;'  
+        sql_template = ('select GSNP,eSNP,Gpval from gene_fields, SNP_fields'
+                        ' where gene_fields.GWAS = "' + GWAS + '"'
+                        ' and gene_fields.eQTL = "' + eQTL + '"'
+                        ' and gene_fields.gene = "' + gene + '"'
+                        ' and SNP_fields.gene_fields_id = gene_fields.id;'  
                         )
 
         list_detail = self.exec_fetch_SQL(sql_template)
@@ -528,11 +501,11 @@ class DAO(object):
         #                ' and Geg.gene = "' + gene + '"'
         #                ' and SNP_fields.Geg_id = Geg.id;'  
         #                )
-        sql_template = ('select GSNP,eSNP,Gpval from Gegpq, SNP_fields'
-                        ' where Gegpq.GWAS = "' + GWAS + '"'
-                        ' and Gegpq.eQTL = "' + eQTL + '"'
-                        ' and Gegpq.gene = "' + gene + '"'
-                        ' and SNP_fields.Geg_id = Gegpq.id;'  
+        sql_template = ('select GSNP,eSNP,Gpval from gene_fields, SNP_fields'
+                        ' where gene_fields.GWAS = "' + GWAS + '"'
+                        ' and gene_fields.eQTL = "' + eQTL + '"'
+                        ' and gene_fields.gene = "' + gene + '"'
+                        ' and SNP_fields.gene_fields_id = gene_fields.id;'  
                         )
 
 
