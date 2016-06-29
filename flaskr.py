@@ -94,7 +94,6 @@ def sub_clusters():
 @app.route("/data/<string:gene>")
 @app.route("/data/<string:gene><string:pairNames>")
 def detail():
-    pdb.set_trace()
     gene = request.args.get('gene', 'empty')
     pairNames = request.args.get('pairNames','empty')
     web_disease_list = session['web_disease_list']

@@ -284,7 +284,7 @@ class DAO(object):
 
         display_name = ''
         if eQTL == Merged_name:
-            display_name = GWAS_disease_dict[GWAS] + '---Merged'  + '  (' + GWAS + '--- Merged)'
+            display_name = GWAS_disease_dict[GWAS] + '---Merged'  + '  (' + GWAS + '---Merged)'
         else:
             display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + '  (' + GWAS + '---' + eQTL + ')'
         return display_name 
@@ -476,13 +476,14 @@ class DAO(object):
 
 
     def fetch_pair_SNP(self,web_disease_list,web_eQTL_list,gene):
+        Merged_name = 'Merged_08212015_pruned_LD02'
         #GWASs = GWAS_list.strip().split()
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
 
         if 'merged_pickle' in eQTLs:
-            eQTLs.append('Merged_08212015_pruned_LD02')
             eQTLs.remove('merged_pickle')
+            eQTLs.append(Merged_name)
 
 
         result_dict = {}
@@ -493,7 +494,8 @@ class DAO(object):
                 result = self.fetch_SNP_list_by_GWAS_eQTL_gene(GWAS,eQTL,gene)
                 #result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
-                    result_dict[GWAS + '---' + eQTL] = result
+                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                    result_dict[display_name] = result
         patched_dict,all_SNPs_list = self.patch_result_dict_by_all_SNPs(result_dict)        
        
         return patched_dict,all_SNPs_list
