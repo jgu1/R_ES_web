@@ -67,7 +67,7 @@ def sub_clusters():
     else:
         consider_all_genes_in_database = False
 
-    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
+    gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
     sub_clusters = R_discover_sub_clusters(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio))
     #pdb.set_trace()
     #sub_clusters = discover_sub_clusters(gene_p_qs)
@@ -94,6 +94,7 @@ def sub_clusters():
 @app.route("/data/<string:gene>")
 @app.route("/data/<string:gene><string:pairNames>")
 def detail():
+    pdb.set_trace()
     gene = request.args.get('gene', 'empty')
     pairNames = request.args.get('pairNames','empty')
     web_disease_list = session['web_disease_list']
@@ -122,12 +123,12 @@ def fetch_and_build_matrix(consider_all_genes_in_database):
     web_num_genes_per_pair = session['web_num_genes_per_pair']
     dao = getattr(g, 'dao', None)
     start_time = time.time()
-    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database)
+    gene_p_qs,filtered_gene_names,gene_descriptions,display_name_GWAS_eQTL_dict = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database)
     print "fetch_pair_gene take {} seconds".format(time.time() - start_time)
     if gene_p_qs is None:
-        return None,None,None,None 
+        return None,None,None 
      
-    return gene_p_qs,None,filtered_gene_names,gene_descriptions
+    return gene_p_qs,filtered_gene_names,gene_descriptions
 
 @app.route('/')
 def show_matrix():
@@ -145,7 +146,7 @@ def show_matrix():
         page = 1
     session['page'] = page
 
-    gene_p_qs,pagination,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(False) 
+    gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(False) 
     if gene_p_qs is None:
         return render_template('show_matrix.html',eQTL_names = eQTL_names,disease_names = disease_names) 
     
@@ -163,7 +164,7 @@ def show_matrix():
 
     output_matrix_to_txt(ret)
 
-    return render_template('show_matrix.html', pagination=pagination, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj,show_discover_sub_clusters_button = show_discover_sub_clusters_button)
+    return render_template('show_matrix.html', pagination=None, page=page, eQTL_names=eQTL_names, disease_names = disease_names, draw_pair_json_obj=draw_pair_json_obj,show_discover_sub_clusters_button = show_discover_sub_clusters_button)
 
 @app.route('/draw', methods=['POST'])
 def draw():

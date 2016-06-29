@@ -515,7 +515,7 @@ def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff)
             cols[i_col] = 0
 
 def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,est_col_width,filter_ratio):
-    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,1E-3)
+    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
     #abs_cutoff = 3
     #per_cutoff = 0.5
     #converge_epsilon = 0.1

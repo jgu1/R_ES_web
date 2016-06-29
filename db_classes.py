@@ -279,15 +279,30 @@ class DAO(object):
 
         return list(GWASs), GWAS_disease_dict
 
+    def gen_display_name_from_GWAS_eQTL(self,GWAS_disease_dict,GWAS,eQTL,Merged_name):
+        eQTL_tissue_dict = self.build_eQTL_tissue_dict()
+
+        display_name = ''
+        if eQTL == Merged_name:
+            display_name = GWAS_disease_dict[GWAS] + '---Merged'  + '  (' + GWAS + '--- Merged)'
+        else:
+            display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + '  (' + GWAS + '---' + eQTL + ')'
+        return display_name 
+
     def fetch_pair_gene(self,web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database):
+        Merged_name = 'Merged_08212015_pruned_LD02'
+
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
 
-        contain_merged = False
+        display_name_GWAS_eQTL_tuple_dict = {}
+
+        #contain_merged = False
         if 'merged_pickle' in eQTLs:
             #eQTLs.append('Merged_08212015_pruned_LD85')
-            contain_merged = True
+            #contain_merged = True
             eQTLs.remove('merged_pickle')
+            eQTLs.append(Merged_name)
         if (len(GWASs) == 0 or len(eQTLs) == 0) and (contain_merged == False):
             return None,None,None
         num_genes_per_pair = 30
@@ -298,9 +313,9 @@ class DAO(object):
 
 
         #disease_GWAS_dict = pickle.load(open(os.getcwd() + '/disease_GWAS_dict.pickle','r'))
-        disease_GWAS_dict = self.build_disease_GWAS_dict()
+        #disease_GWAS_dict = self.build_disease_GWAS_dict()
         #eQTL_tissue_dict  = pickle.load(open(os.getcwd() + '/eQTL_tissue_dict.pickle','r'))
-        eQTL_tissue_dict = self.build_eQTL_tissue_dict()    
+        #eQTL_tissue_dict = self.build_eQTL_tissue_dict()    
 
         start_time = time.time() 
         result_dict = {}
@@ -310,18 +325,9 @@ class DAO(object):
                 eQTL = eQTLs[j]
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
-                    display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + "  (" + GWAS + "---" +eQTL + ")"
-                    #display_name = GWAS + "---" + eQTL
-                    #result_dict[GWAS_disease_dict[GWAS] + '(' + GWAS + ')' + '---' + eQTL_tissue_dict[eQTL] + eQTL] = result
+                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                    display_name_GWAS_eQTL_tuple_dict[display_name] = (GWAS,eQTL)
                     result_dict[display_name] = result
-       
-        if contain_merged: 
-            for GWAS in GWASs:
-                Merged = self.fetch_gene_p_q_by_GWAS_Merged(GWAS)
-                if len(Merged)>0:
-                    display_name = GWAS_disease_dict[GWAS] + '('+ GWAS + ')---Merged'
-                    #display_name = GWAS + '---Merged_08212015_pruned_LD02'
-                    result_dict[display_name] = Merged
 
         print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
     
@@ -334,7 +340,7 @@ class DAO(object):
         gene_descriptions = self.fetch_gene_descriptions_by_gene_names_in_memory(filtered_gene_names)
         #self.fetch_gene_descriptions_by_gene_names_in_memory(filtered_gene_names)
         print("get_gene_description takes {} seconds".format(time.time() - start_time))
-        return filtered_dict,filtered_gene_names,gene_descriptions
+        return filtered_dict,filtered_gene_names,gene_descriptions,display_name_GWAS_eQTL_tuple_dict
  
     # fetch the entire table into memory and do matchup for genes in meory
     # tried fetching description one at a time, but the overhead is too significant from python to MySQL
