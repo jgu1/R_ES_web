@@ -55,6 +55,7 @@ function createGraph() {
   function draw_subcluster(gene_p_qs,geneNames,pairNames,geneDescriptions,num_seeds){
     var matrix = [];
     var size = 15;
+    pairNames.sort();
     for (var i = 0; i<pairNames.length;i++) {
         pairName = pairNames[i];
         var genes= gene_p_qs[pairName]
