@@ -61,7 +61,7 @@ def sub_clusters():
     if est_col_width == '':
         est_col_width = 20
     if filter_ratio == '':
-        filter_ratio = 0.3
+        filter_ratio = 0.5
     if consider_all_genes_in_database == 'true':
         consider_all_genes_in_database = True
     else:
@@ -94,6 +94,7 @@ def sub_clusters():
 @app.route("/data/<string:gene>")
 @app.route("/data/<string:gene><string:pairNames>")
 def detail():
+    pdb.set_trace()
     gene = request.args.get('gene', 'empty')
     pairNames = request.args.get('pairNames','empty')
     web_disease_list = session['web_disease_list']
@@ -114,6 +115,26 @@ def detail():
     ret['pair_SNP_dict'] = pair_SNP_dict
     ret['all_SNPs_list'] = all_SNPs_list
     return jsonify(ret)
+
+@app.route('/Manhattan')
+@app.route("/Manhattan/<string:geneNames><string:pairNames>")
+def Manhattan():
+    pdb.set_trace()
+    geneNames = request.args.get('geneNames', 'empty')
+    pairNames = request.args.get('pairNames','empty')
+    
+    web_disease_list = session['web_disease_list']
+    web_eQTL_list = session['web_eQTL_list']
+
+    genes = geneNames.split(',')
+    gene = genes[0]
+    pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
+
+    ret = {}
+    ret['gene'] = gene
+    ret['gene_SNP_dict']
+    return jsonify(ret)
+
 
 def fetch_and_build_matrix(consider_all_genes_in_database):
     web_disease_list = session['web_disease_list']

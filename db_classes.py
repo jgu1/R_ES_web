@@ -374,7 +374,7 @@ class DAO(object):
         #                ' and Geg.gene = "' + gene + '"'
         #                ' and SNP_fields.Geg_id = Geg.id;'  
         #                )
-        sql_template = ('select GSNP,eSNP,Gpval from gene_fields, SNP_fields'
+        sql_template = ('select GSNP,eSNP,Gpval,epval from gene_fields, SNP_fields'
                         ' where gene_fields.GWAS = "' + GWAS + '"'
                         ' and gene_fields.eQTL = "' + eQTL + '"'
                         ' and gene_fields.gene = "' + gene + '"'

@@ -93,9 +93,23 @@ function createGraph() {
     var wrapper_div = sub_clusters.append("div")
                       .attr("width",1000)
                       .style("overflow","scroll");
-    var num_seeds = wrapper_div.append('text')
+
+/*    var num_seeds = wrapper_div.append('text')
                                .text("num_seeds: " + num_seeds)
                                .attr("transform", "translate(" + 5 * margin + ", " + margin + ")");
+*/
+    var manhattan_btn = wrapper_div.append('button')
+                        .attr("type","button")
+                        .text("draw Manhattan Plots")
+                        .on("click",function(d){
+                            //d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
+                            //d3.select("#detail").remove();
+                            //wrapper_div.append("div")
+                            //   .attr("id","detail")
+                            d3.json("/Manhattan?geneNames="+geneNames+"&pairNames="+pairNames,Manhattancallback);
+                            }
+                        ) ;
+
 
     var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
@@ -364,7 +378,10 @@ function createGraph() {
       .attr("dy", ".32em")
       .text(function(d, i) { return all_SNPs_list[i]; }) 
       .on("click", function(d,i) {sortAlongColumn(i);}) ; 
-    
+   
+
+
+ 
     function pair2(pair) {
         var cell = d3.select(this).selectAll(".SNP")
             .data(pair)
@@ -453,6 +470,15 @@ function createGraph() {
         .attr("transform", function(d,i) { return "translate(0,"+sorted.indexOf(i) * size+")";});
     }  
   }
+
+
+  var Manhattancallback = function(data){
+    var value = data.dummy;
+    var a = 1;
+
+  }
+
+
 
   var draw_pair = function(draw_pair_json_obj){
     var matrix = [];
