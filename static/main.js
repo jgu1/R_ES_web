@@ -562,13 +562,12 @@ function createGraph() {
       .style("text-anchor", "end")
       .text("-log10(p-value)");
 
-    /*
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_SNPlist_dict[curr_Manhattan_pairName];
 
         //draw dots
-        svg3.selectAll(".dot")
+        svg.selectAll(".dot")
           .data(curr_pair_name_x_y)
         .enter().append("circle")
           .attr("class", "dot")
@@ -576,9 +575,22 @@ function createGraph() {
           .attr("cx", xMap)
           .attr("cy", yMap)
           .style("fill", function(d) { return color(curr_Manhattan_pairName);}) 
-    
+          .on("mouseover", function(d) {
+                  tooltip.transition()
+                       .duration(200)
+                       .style("opacity", .9);
+                  tooltip.html(d[0] + "<br/> (" + xValue(d) 
+                    + ", " + yValue(d) + ")")
+                       .style("left", (d3.event.pageX + 5) + "px")
+                       .style("top", (d3.event.pageY - 28) + "px");
+              })
+          .on("mouseout", function(d) {
+                  tooltip.transition()
+                       .duration(500)
+                       .style("opacity", 0);
+              });
+ 
     }
-    */
   }
 
 
