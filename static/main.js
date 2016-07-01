@@ -102,10 +102,9 @@ function createGraph() {
                         .attr("type","button")
                         .text("draw Manhattan Plots")
                         .on("click",function(d){
-                            //d3.json("/detail?GWAS="+d[0]+"&eQTL="+d[1]+"&gene="+d[2],detailcallback);
-                            //d3.select("#detail").remove();
-                            //wrapper_div.append("div")
-                            //   .attr("id","detail")
+                            d3.select("#Manhattan").remove();
+                            wrapper_div.append("div")
+                                .attr("id","Manhattan")
                             d3.json("/Manhattan?geneNames="+geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
                         ) ;
@@ -473,8 +472,59 @@ function createGraph() {
 
 
   var Manhattancallback = function(data){
-    var value = data.dummy;
-    var a = 1;
+    var gene                       = data.gene;
+    var location_pval_SNPlist_dict = data.location_pval_SNPlist_dict; 
+    var Manhattan_pairNames        = data.Manhattan_pairNames;    
+    
+    var Manhattan_height = 480;
+    var Manhattan_width = 1000; // should not be null, because at least one gene has SNPs
+    var margin = {top: 120, right: 200, bottom: 10, left: 600};
+    
+    d3.select("#Manhattan").html("");
+    var Manhattan = d3.select("#Manhattan");
+
+    var canvas3=Manhattan
+           .append("svg")
+           .attr("width", Manhattan_width + margin.left)
+           .attr("height", Manhattan_height + margin.top)
+    
+    var svg3=canvas3
+       .append("g")
+       .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
+
+
+    // setup x 
+    var xValue = function(d) { return d[1];}, // data -> value
+        xScale = d3.scale.linear().range([0, Manhattan_width]), // value -> display
+        xMap = function(d) { return xScale(xValue(d));}, // data -> display
+        xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+    // setup y
+    var yValue = function(d) {  var pval = parseFloat(d[2]); 
+                                return -Math.log10(pval);
+                             }, // data -> value
+        yScale = d3.scale.linear().range([Manhattan_height, 0]), // value -> display
+        yMap = function(d) { return yScale(yValue(d));}, // data -> display
+        yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+    var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
+    for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
+        var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
+        curr_pair_name_x_y = location_pval_SNPlist_dict[curr_Manhattan_pairName];
+        curr_xMin = d3.min(curr_pair_name_x_y,xValue); if (xMin<0 || xMin>curr_xMin ){xMin = curr_xMin;}
+        curr_xMax = d3.max(curr_pair_name_x_y,xValue); if (xMax<0 || xMax<curr_xMax ){xMax = curr_xMax;}
+        curr_yMin = d3.min(curr_pair_name_x_y,yValue); if (yMin<0 || yMin>curr_yMin ){yMin = curr_yMin;}
+        curr_yMax = d3.max(curr_pair_name_x_y,yValue); if (yMax<0 || yMax<curr_yMax ){yMax = curr_yMax;}
+    }
+
+    xScale.domain([xMin-1, xMax+1]);
+    yScale.domain([yMin-1, yMax+1]);
+
+
 
   }
 

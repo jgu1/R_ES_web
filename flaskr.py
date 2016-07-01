@@ -21,14 +21,16 @@ SECRET_KEY = 'development key'
 eQTL_name_all = 'all'
 eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
 #disease_GWAS_dict = pickle.load(open("disease_GWAS_dict.pickle","rb"))
-disease_GWAS_dict = DAO().build_disease_GWAS_dict()
+disease_GWAS_dict = DAO(None,None).build_disease_GWAS_dict()
 GENE_P_Q_PER_PAGE=30
 page=1
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 def connect_db():
-    return DAO()
+    web_disease_list = session['web_disease_list']
+    web_eQTL_list = session['web_eQTL_list']
+    return DAO(web_disease_list, web_eQTL_list)
 
 @app.before_request
 def before_request():
@@ -94,7 +96,6 @@ def sub_clusters():
 @app.route("/data/<string:gene>")
 @app.route("/data/<string:gene><string:pairNames>")
 def detail():
-    pdb.set_trace()
     gene = request.args.get('gene', 'empty')
     pairNames = request.args.get('pairNames','empty')
     web_disease_list = session['web_disease_list']
@@ -119,7 +120,6 @@ def detail():
 @app.route('/Manhattan')
 @app.route("/Manhattan/<string:geneNames><string:pairNames>")
 def Manhattan():
-    pdb.set_trace()
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
     
@@ -128,11 +128,22 @@ def Manhattan():
 
     genes = geneNames.split(',')
     gene = genes[0]
+    dao = getattr(g, 'dao', None)
     pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
+
+    pair_SNP_dict = {}
+    if pairNames != 'empty':
+        for pair in pairNames.split(','):
+            pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+    else:
+        pair_SNP_dict = pair_SNP_dict_all
+
+    location_pval_SNPlist_dict,Manhattan_pairNames = dao.Manhattan_build_location_pval_SNPlist_dict(pair_SNP_dict)
 
     ret = {}
     ret['gene'] = gene
-    ret['gene_SNP_dict']
+    ret['location_pval_SNPlist_dict'] = location_pval_SNPlist_dict
+    ret['Manhattan_pairNames'] = Manhattan_pairNames 
     return jsonify(ret)
 
 
@@ -142,7 +153,7 @@ def fetch_and_build_matrix(consider_all_genes_in_database):
     web_num_genes_per_pair = session['web_num_genes_per_pair']
     dao = getattr(g, 'dao', None)
     start_time = time.time()
-    gene_p_qs,filtered_gene_names,gene_descriptions,display_name_GWAS_eQTL_dict = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database)
+    gene_p_qs,filtered_gene_names,gene_descriptions = dao.fetch_pair_gene(web_disease_list,web_eQTL_list,web_num_genes_per_pair,consider_all_genes_in_database)
     print "fetch_pair_gene take {} seconds".format(time.time() - start_time)
     if gene_p_qs is None:
         return None,None,None 
