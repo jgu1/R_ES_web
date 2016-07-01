@@ -482,20 +482,7 @@ function createGraph() {
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40};
     var Manhattan_width = 1000 - margin.left - margin.right; // should not be null, because at least one gene has SNPs
-    var Manhattan_height = 480 - margin.top  - margin.bottom;
-   
-    /* 
-    var canvas3=Manhattan
-           .append("svg")
-           .attr("width", Manhattan_width + margin.left)
-           .attr("height", Manhattan_height + margin.top)
-    
-    var svg3=canvas3
-       .append("g")
-       //.attr("transform", "translate(" + 0 + "," + 0 + ")"); 
-       .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
-
-    */
+    var Manhattan_height = 240 - margin.top  - margin.bottom;
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
         xScale = d3.scale.linear().range([0, Manhattan_width]), // value -> display
@@ -513,24 +500,24 @@ function createGraph() {
     // setup fill color
     color = d3.scale.category20();
 
+    var tooltip = Manhattan.append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     var svg = Manhattan.append("svg")
                 .attr("width", Manhattan_width + margin.left + margin.right)
                 .attr("height", Manhattan_height + margin.top + margin.bottom)
               .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var tooltip = Manhattan.append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
-
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_SNPlist_dict[curr_Manhattan_pairName];
-        curr_xMin = d3.min(curr_pair_name_x_y,xValue); if (xMin<0 || xMin>curr_xMin ){xMin = curr_xMin;}
-        curr_xMax = d3.max(curr_pair_name_x_y,xValue); if (xMax<0 || xMax<curr_xMax ){xMax = curr_xMax;}
-        curr_yMin = d3.min(curr_pair_name_x_y,yValue); if (yMin<0 || yMin>curr_yMin ){yMin = curr_yMin;}
-        curr_yMax = d3.max(curr_pair_name_x_y,yValue); if (yMax<0 || yMax<curr_yMax ){yMax = curr_yMax;}
+        xMin = d3.min(curr_pair_name_x_y,xValue); //if (xMin<0 || xMin>curr_xMin ){xMin = curr_xMin;}
+        xMax = d3.max(curr_pair_name_x_y,xValue); //if (xMax<0 || xMax<curr_xMax ){xMax = curr_xMax;}
+        yMin = d3.min(curr_pair_name_x_y,yValue); //if (yMin<0 || yMin>curr_yMin ){yMin = curr_yMin;}
+        yMax = d3.max(curr_pair_name_x_y,yValue); //if (yMax<0 || yMax<curr_yMax ){yMax = curr_yMax;}
     }
 
     xScale.domain([xMin-1, xMax+1]);
