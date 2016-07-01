@@ -476,13 +476,15 @@ function createGraph() {
     var location_pval_SNPlist_dict = data.location_pval_SNPlist_dict; 
     var Manhattan_pairNames        = data.Manhattan_pairNames;    
     
-    var Manhattan_height = 480;
-    var Manhattan_width = 1000; // should not be null, because at least one gene has SNPs
-    var margin = {top: 120, right: 200, bottom: 10, left: 600};
-    
+   
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
 
+    var margin = {top: 20, right: 20, bottom: 30, left: 40};
+    var Manhattan_width = 1000 - margin.left - margin.right; // should not be null, because at least one gene has SNPs
+    var Manhattan_height = 480 - margin.top  - margin.bottom;
+   
+    /* 
     var canvas3=Manhattan
            .append("svg")
            .attr("width", Manhattan_width + margin.left)
@@ -490,9 +492,10 @@ function createGraph() {
     
     var svg3=canvas3
        .append("g")
+       //.attr("transform", "translate(" + 0 + "," + 0 + ")"); 
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
 
-
+    */
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
         xScale = d3.scale.linear().range([0, Manhattan_width]), // value -> display
@@ -507,7 +510,16 @@ function createGraph() {
         yMap = function(d) { return yScale(yValue(d));}, // data -> display
         yAxis = d3.svg.axis().scale(yScale).orient("left");
 
-    var tooltip = d3.select("body").append("div")
+    // setup fill color
+    color = d3.scale.category20();
+
+    var svg = Manhattan.append("svg")
+                .attr("width", Manhattan_width + margin.left + margin.right)
+                .attr("height", Manhattan_height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var tooltip = Manhattan.append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
 
@@ -525,7 +537,48 @@ function createGraph() {
     yScale.domain([yMin-1, yMax+1]);
 
 
+    // x-axis
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + Manhattan_height + ")")
+      //.attr("transform", "translate(0,)")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", Manhattan_width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Chromosome location");
 
+    // y-axis
+    svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("-log10(p-value)");
+
+    /*
+    for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
+        var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
+        curr_pair_name_x_y = location_pval_SNPlist_dict[curr_Manhattan_pairName];
+
+        //draw dots
+        svg3.selectAll(".dot")
+          .data(curr_pair_name_x_y)
+        .enter().append("circle")
+          .attr("class", "dot")
+          .attr("r", 3.5)
+          .attr("cx", xMap)
+          .attr("cy", yMap)
+          .style("fill", function(d) { return color(curr_Manhattan_pairName);}) 
+    
+    }
+    */
   }
 
 
