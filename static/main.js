@@ -504,11 +504,6 @@ function createGraph() {
         .attr("class", "tooltip")
         .style("opacity", 0);
 
-    var svg = Manhattan.append("svg")
-                .attr("width", Manhattan_width + margin.left + margin.right)
-                .attr("height", Manhattan_height + margin.top + margin.bottom)
-              .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
@@ -518,42 +513,42 @@ function createGraph() {
         xMax = d3.max(curr_pair_name_x_y,xValue); //if (xMax<0 || xMax<curr_xMax ){xMax = curr_xMax;}
         yMin = d3.min(curr_pair_name_x_y,yValue); //if (yMin<0 || yMin>curr_yMin ){yMin = curr_yMin;}
         yMax = d3.max(curr_pair_name_x_y,yValue); //if (yMax<0 || yMax<curr_yMax ){yMax = curr_yMax;}
-    }
 
-    xScale.domain([xMin-1, xMax+1]);
-    yScale.domain([yMin-1, yMax+1]);
+        xScale.domain([xMin-1, xMax+1]);
+        yScale.domain([yMin-1, yMax+1]);
 
 
-    // x-axis
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + Manhattan_height + ")")
-      //.attr("transform", "translate(0,)")
-      .call(xAxis)
-    .append("text")
-      .attr("class", "label")
-      .attr("x", Manhattan_width)
-      .attr("y", -6)
-      .style("text-anchor", "end")
-      .text("Chromosome location");
+        var svg = Manhattan.append("svg")
+                .attr("width", Manhattan_width + margin.left + margin.right)
+                .attr("height", Manhattan_height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // y-axis
-    svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("class", "label")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("-log10(p-value)");
+        // x-axis
+        svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + Manhattan_height + ")")
+          //.attr("transform", "translate(0,)")
+          .call(xAxis)
+        .append("text")
+          .attr("class", "label")
+          .attr("x", Manhattan_width)
+          .attr("y", -6)
+          .style("text-anchor", "end")
+          .text("Chromosome location");
 
-    for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
-        var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
-        curr_pair_name_x_y = location_pval_SNPlist_dict[curr_Manhattan_pairName];
+        // y-axis
+        svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+        .append("text")
+          .attr("class", "label")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("-log10(p-value)");
 
-        //draw dots
         svg.selectAll(".dot")
           .data(curr_pair_name_x_y)
         .enter().append("circle")
@@ -576,7 +571,7 @@ function createGraph() {
                        .duration(500)
                        .style("opacity", 0);
               });
- 
+
     }
   }
 
