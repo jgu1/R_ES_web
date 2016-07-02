@@ -28,6 +28,9 @@ page=1
 app = Flask(__name__)
 app.config.from_object(__name__)
 def connect_db():
+
+    if 'web_disease_list' not in session or 'web_eQTL_list' not in session:
+        return DAO(None,None)
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
     return DAO(web_disease_list, web_eQTL_list)
@@ -138,11 +141,13 @@ def Manhattan():
     else:
         pair_SNP_dict = pair_SNP_dict_all
 
-    location_pval_SNPlist_dict,Manhattan_pairNames = dao.Manhattan_build_location_pval_SNPlist_dict(pair_SNP_dict)
+    pdb.set_trace()
+
+    location_pval_chrom_SNPlist_dict,Manhattan_pairNames = dao.Manhattan_build_location_pval_chrom_SNPlist_dict(pair_SNP_dict)
 
     ret = {}
     ret['gene'] = gene
-    ret['location_pval_SNPlist_dict'] = location_pval_SNPlist_dict
+    ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
     ret['Manhattan_pairNames'] = Manhattan_pairNames 
     return jsonify(ret)
 

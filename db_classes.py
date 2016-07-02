@@ -7,11 +7,14 @@ import time
 import multiprocessing
 import copy_reg,types
 import psutil
+from beans import Chrom_fields
 class DAO(object):
     db = None
     db_hg19 = None
+    db_GWAS = None
+    display_name_GWAS_eQTL_tuple_dict = None
 
-    def __init__(self):
+    def __init__(self,web_disease_list,web_eQTL_list):
         #self.db = sqlite3.connect(DATABASE)
         self.db = MySQLdb.connect(host="localhost", # your host, usually localhost
                     user="root", # your username
@@ -23,11 +26,55 @@ class DAO(object):
                     passwd="genome",
                     db="hg19")
 
+        self.db_GWAS = MySQLdb.connect(host="localhost",
+                    user="root",
+                    passwd="genome",
+                    db="GWAS")
+        if web_disease_list is not None and web_eQTL_list is not None:
+            self.gen_display_name_GWAS_eQTL_tuple_dict(web_disease_list,web_eQTL_list)
+
+    def gen_display_name_GWAS_eQTL_tuple_dict(self,web_disease_list,web_eQTL_list):
+        Merged_name = 'Merged_08212015_pruned_LD02'
+
+        GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
+        eQTLs = web_eQTL_list.strip().split()
+        
+        display_name_GWAS_eQTL_tuple_dict = {}
+        if 'merged_pickle' in eQTLs:
+            eQTLs.remove('merged_pickle')
+            eQTLs.append(Merged_name)
+        
+        for i in range(len(GWASs)):
+            for j in range(len(eQTLs)):
+                GWAS = GWASs[i]
+                eQTL = eQTLs[j]
+                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                display_name_GWAS_eQTL_tuple_dict[display_name] = (GWAS,eQTL)
+
+        self.display_name_GWAS_eQTL_tuple_dict = display_name_GWAS_eQTL_tuple_dict
+
+
     def exec_fetch_SQL(self,sql_template):
         cur = self.db.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
         return list(rows) 
+
+    def exec_fetch_SQL_GWAS(self,sql_template):
+        
+        cur = self.db_GWAS.cursor()
+        try:
+            cur.execute(sql_template)
+        except ProgrammingError as err:
+            if err.errno == errorcode.ER_SYNTAX_ERROR:
+                print("Check your syntax!")
+                return None
+            else:
+                print("Error: {}".format(err))
+                return None
+        rows = cur.fetchall()
+        return list(rows) 
+
 
 
     def do_insert_Geg(self,GWAS,eQTL,gene):
@@ -295,7 +342,6 @@ class DAO(object):
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
 
-        display_name_GWAS_eQTL_tuple_dict = {}
 
         #contain_merged = False
         if 'merged_pickle' in eQTLs:
@@ -326,7 +372,6 @@ class DAO(object):
                 result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
                 if len(result) > 0:
                     display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-                    display_name_GWAS_eQTL_tuple_dict[display_name] = (GWAS,eQTL)
                     result_dict[display_name] = result
 
         print("fetching all pairs using loop takes %s seconds" % (time.time() - start_time))
@@ -340,7 +385,7 @@ class DAO(object):
         gene_descriptions = self.fetch_gene_descriptions_by_gene_names_in_memory(filtered_gene_names)
         #self.fetch_gene_descriptions_by_gene_names_in_memory(filtered_gene_names)
         print("get_gene_description takes {} seconds".format(time.time() - start_time))
-        return filtered_dict,filtered_gene_names,gene_descriptions,display_name_GWAS_eQTL_tuple_dict
+        return filtered_dict,filtered_gene_names,gene_descriptions
  
     # fetch the entire table into memory and do matchup for genes in meory
     # tried fetching description one at a time, but the overhead is too significant from python to MySQL
@@ -496,6 +541,7 @@ class DAO(object):
                 if len(result) > 0:
                     display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
                     result_dict[display_name] = result
+        
         patched_dict,all_SNPs_list = self.patch_result_dict_by_all_SNPs(result_dict)        
        
         return patched_dict,all_SNPs_list
@@ -552,4 +598,68 @@ class DAO(object):
         return eQTL_tissue_dict
 
 
-      
+    def Manhattan_get_all_available_GWAS_in_db(self):
+        sql_template = 'show tables;'
+        table_names = self.exec_fetch_SQL_GWAS(sql_template)
+        available_GWASs = []
+        for row in table_names:
+            available_GWASs.append(row[0])
+        return available_GWASs
+
+    # calcuate the global location when Chroms are concatenated
+    # return None on error
+    def Manhattan_get_SNP_abs_location_chrom(self,SNP_name,GWAS,Chrom_len_dict,Chrom_name_list):
+        a = 1 
+        
+
+        if SNP_name == 'dummy':
+            return None,None
+         
+        sql_template = (' select chrom,location from ' + GWAS +  
+                        ' where snp = "' + SNP_name + '";'
+                       )
+        chrom_location_list = self.exec_fetch_SQL_GWAS(sql_template)
+        if chrom_location_list is None:
+            return None,None
+        elif len(chrom_location_list) == 0:
+            print 'Manhattan: cannot found for SNP (' + SNP_name + ') in GWAS (' + GWAS + ')'
+            return None,None
+        elif len(chrom_location_list)>1:
+            print 'Manhattan: multiple location found for SNP (' + SNP_name + ') in GWAS (' + GWAS + ')'
+        chrom_name     = chrom_location_list[0][0]
+        chrom_location = chrom_location_list[0][1]
+        abs_location = chrom_location
+        for i_chrom in range(Chrom_name_list.index(chrom_name)):
+            curr_chrom_name = Chrom_name_list[i_chrom]
+            abs_location = abs_location + Chrom_len_dict[curr_chrom_name]
+        return abs_location,chrom_name 
+
+    def Manhattan_build_location_pval_chrom_SNPlist_dict(self,pair_SNP_dict):
+        Chrom_len_dict = Chrom_fields.Chrom_len_dict
+        Chrom_name_list = ['chr1' ,'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
+                          'chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20',
+                          'chr21','chr22','chrX','chrY']
+        available_GWASs = self.Manhattan_get_all_available_GWAS_in_db()
+        location_pval_chrom_SNPlist_dict = {}
+        for pair in pair_SNP_dict:
+            GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
+            GWAS = GWAS_eQTL[0]
+            if GWAS not in available_GWASs:
+                #pdb.set_trace()
+                #a = 1
+                continue
+            SNP_list = pair_SNP_dict[pair]
+            curr_SNPlist = []
+            for SNP_tuple in SNP_list:
+                GSNP_name = SNP_tuple[0]
+                GSNP_pval = SNP_tuple[2]
+                abs_location,chrom = self.Manhattan_get_SNP_abs_location_chrom(GSNP_name,GWAS,Chrom_len_dict,Chrom_name_list)
+                if abs_location is None:
+                    continue 
+                Manhattan_SNP_fields = (GSNP_name,abs_location,GSNP_pval,chrom) 
+                curr_SNPlist.append(Manhattan_SNP_fields) 
+            location_pval_chrom_SNPlist_dict[pair] = curr_SNPlist
+
+        #pdb.set_trace()
+        #a = 1   
+        return location_pval_chrom_SNPlist_dict,location_pval_chrom_SNPlist_dict.keys() 

@@ -473,7 +473,7 @@ function createGraph() {
 
   var Manhattancallback = function(data){
     var gene                       = data.gene;
-    var location_pval_SNPlist_dict = data.location_pval_SNPlist_dict; 
+    var location_pval_chrom_SNPlist_dict = data.location_pval_chrom_SNPlist_dict; 
     var Manhattan_pairNames        = data.Manhattan_pairNames;    
     
    
@@ -498,6 +498,7 @@ function createGraph() {
         yAxis = d3.svg.axis().scale(yScale).orient("left");
 
     // setup fill color
+    var cValue = function(d) {return d[3]}
     color = d3.scale.category20();
 
     var tooltip = Manhattan.append("div")
@@ -508,7 +509,7 @@ function createGraph() {
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
-        curr_pair_name_x_y = location_pval_SNPlist_dict[curr_Manhattan_pairName];
+        curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
         xMin = d3.min(curr_pair_name_x_y,xValue); //if (xMin<0 || xMin>curr_xMin ){xMin = curr_xMin;}
         xMax = d3.max(curr_pair_name_x_y,xValue); //if (xMax<0 || xMax<curr_xMax ){xMax = curr_xMax;}
         yMin = d3.min(curr_pair_name_x_y,yValue); //if (yMin<0 || yMin>curr_yMin ){yMin = curr_yMin;}
@@ -556,13 +557,14 @@ function createGraph() {
           .attr("r", 3.5)
           .attr("cx", xMap)
           .attr("cy", yMap)
-          .style("fill", function(d) { return color(curr_Manhattan_pairName);}) 
+          .style("fill", function(d) { return color(cValue(d));}) 
           .on("mouseover", function(d) {
                   tooltip.transition()
                        .duration(200)
                        .style("opacity", .9);
-                  tooltip.html(d[0] + "<br/> (" + xValue(d) 
-                    + ", " + yValue(d) + ")")
+                  tooltip.html(d[0] + "(" + cValue(d) + ")"
+                            + "<br/> (" + xValue(d) 
+                            + ", " + yValue(d) + ")")
                        .style("left", (d3.event.pageX + 5) + "px")
                        .style("top", (d3.event.pageY - 28) + "px");
               })
