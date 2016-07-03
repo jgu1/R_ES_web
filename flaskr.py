@@ -141,8 +141,6 @@ def Manhattan():
     else:
         pair_SNP_dict = pair_SNP_dict_all
 
-    pdb.set_trace()
-
     location_pval_chrom_SNPlist_dict,Manhattan_pairNames = dao.Manhattan_build_location_pval_chrom_SNPlist_dict(pair_SNP_dict)
 
     ret = {}
