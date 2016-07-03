@@ -130,23 +130,35 @@ def Manhattan():
     web_eQTL_list = session['web_eQTL_list']
 
     genes = geneNames.split(',')
-    gene = genes[0]
+    #gene = genes[0]
     dao = getattr(g, 'dao', None)
-    pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
+    location_pval_chrom_SNPlist_dict = {}
+    Manhattan_pairNames = set()
+    for gene in genes:
+        pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
 
-    pair_SNP_dict = {}
-    if pairNames != 'empty':
-        for pair in pairNames.split(','):
-            pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
-    else:
-        pair_SNP_dict = pair_SNP_dict_all
+        pair_SNP_dict = {}
+        if pairNames != 'empty':
+            for pair in pairNames.split(','):
+                pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+        else:
+            pair_SNP_dict = pair_SNP_dict_all
 
-    location_pval_chrom_SNPlist_dict,Manhattan_pairNames = dao.Manhattan_build_location_pval_chrom_SNPlist_dict(pair_SNP_dict)
+        location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_location_pval_chrom_SNPlist_dict(pair_SNP_dict,gene)
+        for pairName in Manhattan_pairNames_gene:
+            if pairName not in Manhattan_pairNames: # if this is a new pair
+                Manhattan_pairNames.add(pairName)
+                location_pval_chrom_SNPlist_dict[pairName] = location_pval_chrom_SNPlist_dict_gene[pairName]
+                continue
+            else:
+                existing_list = location_pval_chrom_SNPlist_dict[pairName]
+                new_list = location_pval_chrom_SNPlist_dict_gene[pairName] + existing_list
+                location_pval_chrom_SNPlist_dict[pairName] = new_list 
 
     ret = {}
     ret['gene'] = gene
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
-    ret['Manhattan_pairNames'] = Manhattan_pairNames 
+    ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
     return jsonify(ret)
 
 

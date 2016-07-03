@@ -562,9 +562,10 @@ function createGraph() {
                   tooltip.transition()
                        .duration(200)
                        .style("opacity", .9);
-                  tooltip.html(d[0] + "(" + cValue(d) + ")"
-                            + "<br/> (" + xValue(d) 
-                            + ", " + yValue(d) + ")")
+                  tooltip.html(d[0] + "(" + d[4] + ")"
+                            + "<br/> pval: " + yValue(d) 
+                            + "<br/> gene: " + d[3]
+                            )
                        .style("left", (d3.event.pageX + 5) + "px")
                        .style("top", (d3.event.pageY - 28) + "px");
               })
@@ -575,6 +576,27 @@ function createGraph() {
               });
 
     }
+     // draw legend
+      var legend = svg.selectAll(".legend")
+          .data(color.domain())
+        .enter().append("g")
+          .attr("class", "legend")
+          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+      // draw legend colored rectangles
+      legend.append("rect")
+          .attr("x", Manhattan_width - 18)
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", color);
+
+      // draw legend text
+      legend.append("text")
+          .attr("x", Manhattan_width - 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .style("text-anchor", "end")
+          .text(function(d) { return d;})
   }
 
 
