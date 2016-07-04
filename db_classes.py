@@ -634,13 +634,14 @@ class DAO(object):
             abs_location = abs_location + Chrom_len_dict[curr_chrom_name]
         return abs_location,chrom_name 
 
-    def Manhattan_build_location_pval_chrom_SNPlist_dict(self,pair_SNP_dict,gene):
+    #Manhattan_SNP_fields in the format of  (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
+    def Manhattan_build_Manhattan_SNP_fields_list_dict(self,pair_SNP_dict,gene):
         Chrom_len_dict = Chrom_fields.Chrom_len_dict
         Chrom_name_list = ['chr1' ,'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
                           'chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20',
                           'chr21','chr22','chrX','chrY']
         available_GWASs = self.Manhattan_get_all_available_GWAS_in_db()
-        location_pval_chrom_SNPlist_dict = {}
+        Manhattan_SNP_fields_list_dict = {}
         for pair in pair_SNP_dict:
             GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
             GWAS = GWAS_eQTL[0]
@@ -658,8 +659,8 @@ class DAO(object):
                     continue 
                 Manhattan_SNP_fields = (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
                 curr_SNPlist.append(Manhattan_SNP_fields) 
-            location_pval_chrom_SNPlist_dict[pair] = curr_SNPlist
+            Manhattan_SNP_fields_list_dict[pair] = curr_SNPlist
 
         #pdb.set_trace()
         #a = 1   
-        return location_pval_chrom_SNPlist_dict,location_pval_chrom_SNPlist_dict.keys() 
+        return Manhattan_SNP_fields_list_dict, Manhattan_SNP_fields_list_dict.keys()
