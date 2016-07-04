@@ -569,25 +569,26 @@ function createGraph() {
               });
 
      // draw legend
+      var legend_block_size = 10;
       var legend = svg.selectAll(".legend")
           .data(color.domain())
         .enter().append("g")
           .attr("class", "legend")
-          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+          .attr("transform", function(d, i) { return "translate(0," + i * legend_block_size + ")"; });
 
       // draw legend colored rectangles
       legend.append("rect")
-          .attr("x", Manhattan_width - 18)
-          .attr("width", 18)
-          .attr("height", 18)
+          .attr("x", Manhattan_width - legend_block_size + 1)
+          .attr("width", legend_block_size -1)
+          .attr("height", legend_block_size -1)
           .style("fill", color);
 
       // draw legend text
       legend.append("text")
           .attr("x", Manhattan_width  )
-          .attr("y", 9)
-          .attr("dy", ".35em")
-          .style("text-anchor", "end")
+          .attr("y", legend_block_size -1)
+          .style("font-size","9px")
+          .style("text-anchor", "start")
           .text(function(d) { return d;})
 
     }
