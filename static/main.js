@@ -505,20 +505,13 @@ function createGraph() {
         .attr("class", "tooltip")
         .style("opacity", 0);
 
+    xScale.domain([0,3500000000]);
+    yScale.domain([0,15]);
 
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
-        xMin = d3.min(curr_pair_name_x_y,xValue); //if (xMin<0 || xMin>curr_xMin ){xMin = curr_xMin;}
-        xMax = d3.max(curr_pair_name_x_y,xValue); //if (xMax<0 || xMax<curr_xMax ){xMax = curr_xMax;}
-        yMin = d3.min(curr_pair_name_x_y,yValue); //if (yMin<0 || yMin>curr_yMin ){yMin = curr_yMin;}
-        yMax = d3.max(curr_pair_name_x_y,yValue); //if (yMax<0 || yMax<curr_yMax ){yMax = curr_yMax;}
-
-        xScale.domain([xMin-1, xMax+1]);
-        yScale.domain([yMin-1, yMax+1]);
-
-
         var svg = Manhattan.append("svg")
                 .attr("width", Manhattan_width + margin.left + margin.right)
                 .attr("height", Manhattan_height + margin.top + margin.bottom)
@@ -575,7 +568,6 @@ function createGraph() {
                        .style("opacity", 0);
               });
 
-    }
      // draw legend
       var legend = svg.selectAll(".legend")
           .data(color.domain())
@@ -597,9 +589,10 @@ function createGraph() {
           .attr("dy", ".35em")
           .style("text-anchor", "end")
           .text(function(d) { return d;})
+
+    }
+
   }
-
-
 
   var draw_pair = function(draw_pair_json_obj){
     var matrix = [];
