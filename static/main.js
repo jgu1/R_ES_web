@@ -498,7 +498,7 @@ function createGraph() {
         yAxis = d3.svg.axis().scale(yScale).orient("left");
 
     // setup fill color
-    var cValue = function(d) {return d[3]}
+    var cValue = function(d) {return d[3]} // color by gene
     color = d3.scale.category20();
 
     var tooltip = Manhattan.append("div")
@@ -592,7 +592,7 @@ function createGraph() {
 
       // draw legend text
       legend.append("text")
-          .attr("x", Manhattan_width - 24)
+          .attr("x", Manhattan_width  )
           .attr("y", 9)
           .attr("dy", ".35em")
           .style("text-anchor", "end")

@@ -134,6 +134,7 @@ def Manhattan():
     dao = getattr(g, 'dao', None)
     location_pval_chrom_SNPlist_dict = {}
     Manhattan_pairNames = set()
+    start_time = time.time()
     for gene in genes:
         pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
 
@@ -154,6 +155,7 @@ def Manhattan():
                 existing_list = location_pval_chrom_SNPlist_dict[pairName]
                 new_list = location_pval_chrom_SNPlist_dict_gene[pairName] + existing_list
                 location_pval_chrom_SNPlist_dict[pairName] = new_list 
+    print 'fetching Manhattan list takes {} seconds'.format(time.time() - start_time)
 
     ret = {}
     ret['gene'] = gene
