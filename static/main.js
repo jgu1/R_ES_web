@@ -503,6 +503,8 @@ function createGraph() {
 
     var tooltip = Manhattan.append("div")
         .attr("class", "tooltip")
+        .style("height",100)
+        .style("width",200)
         .style("opacity", 0);
 
     xScale.domain([0,3500000000]);
@@ -552,15 +554,25 @@ function createGraph() {
           .attr("cy", yMap)
           .style("fill", function(d) { return color(cValue(d));}) 
           .on("mouseover", function(d) {
+                  tooltip.html("");
                   tooltip.transition()
                        .duration(200)
                        .style("opacity", .9);
+                  /*  
                   tooltip.html(d[0] + "(" + d[4] + ")"
-                            + "<br/> pval: " + yValue(d) 
-                            + "<br/> gene: " + d[3]
+                            + " pval: " + yValue(d) 
+                            + " gene: " + d[3]
                             )
-                       .style("left", (d3.event.pageX + 5) + "px")
-                       .style("top", (d3.event.pageY - 28) + "px");
+                 */
+ 
+                  tooltip.style("left", (d3.event.pageX ) + "px")
+                       .style("top", (d3.event.pageY - 60) + "px");
+                  tooltip.append("text")
+                         .style("font-size","10px")
+                         .text(d[0] + "(" + d[4] + ")"
+                            + " gene: " + d[3]
+                            + " pval: " + yValue(d) 
+                          ) 
               })
           .on("mouseout", function(d) {
                   tooltip.transition()
@@ -570,18 +582,23 @@ function createGraph() {
 
      // draw legend
       var legend_block_size = 10;
-      
-
-
+      /*
+        var legend_wrapper_g = svg.append("g")
+           .attr("height",20 * legend_block_size)
+           .attr("width", 10 * legend_block_Size);   
+      */
+    
       var legend = svg.selectAll(".legend")
           .data(color.domain())
         .enter().append("g")
           .attr("class", "legend")
+          //.attr("transform", function(d, i) { return "translate(" + Manhattan_width - 10 * legend_bloxk_size + "," + i * legend_block_size + ")"; });
           .attr("transform", function(d, i) { return "translate(0," + i * legend_block_size + ")"; });
 
       // draw legend colored rectangles
       legend.append("rect")
           .attr("x", Manhattan_width - 10*legend_block_size)
+          //.attr("x", 0)
           .attr("width", legend_block_size -1)
           .attr("height", legend_block_size -1)
           .style("fill", color);
@@ -589,6 +606,7 @@ function createGraph() {
       // draw legend text
       legend.append("text")
           .attr("x", Manhattan_width - 9 * legend_block_size)
+          //.attr("x",legend_block_size)
           .attr("y", legend_block_size -1)
           .style("font-size","9px")
           .style("text-anchor", "start")
