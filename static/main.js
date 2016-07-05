@@ -570,6 +570,9 @@ function createGraph() {
 
      // draw legend
       var legend_block_size = 10;
+      
+
+
       var legend = svg.selectAll(".legend")
           .data(color.domain())
         .enter().append("g")
@@ -578,14 +581,14 @@ function createGraph() {
 
       // draw legend colored rectangles
       legend.append("rect")
-          .attr("x", Manhattan_width - legend_block_size + 1)
+          .attr("x", Manhattan_width - 10*legend_block_size)
           .attr("width", legend_block_size -1)
           .attr("height", legend_block_size -1)
           .style("fill", color);
 
       // draw legend text
       legend.append("text")
-          .attr("x", Manhattan_width  )
+          .attr("x", Manhattan_width - 9 * legend_block_size)
           .attr("y", legend_block_size -1)
           .style("font-size","9px")
           .style("text-anchor", "start")
