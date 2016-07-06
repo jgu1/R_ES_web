@@ -145,7 +145,7 @@ def Manhattan():
         else:
             pair_SNP_dict = pair_SNP_dict_all
 
-        location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_location_pval_chrom_SNPlist_dict(pair_SNP_dict,gene)
+        location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_Manhattan_SNP_fields_list_dict(pair_SNP_dict,gene)
         for pairName in Manhattan_pairNames_gene:
             if pairName not in Manhattan_pairNames: # if this is a new pair
                 Manhattan_pairNames.add(pairName)
@@ -155,7 +155,10 @@ def Manhattan():
                 existing_list = location_pval_chrom_SNPlist_dict[pairName]
                 new_list = location_pval_chrom_SNPlist_dict_gene[pairName] + existing_list
                 location_pval_chrom_SNPlist_dict[pairName] = new_list 
-    print 'fetching Manhattan list takes {} seconds'.format(time.time() - start_time)
+    print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
+    start_time = time.time()
+    location_pval_chrom_SNPlist_dict = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
+    print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
 
     ret = {}
     ret['gene'] = gene

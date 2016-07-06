@@ -461,7 +461,7 @@ class DAO(object):
         all_SNPs = set.union(*individual_SNPs)
         all_SNPs_list = list(all_SNPs)
         #all_SNPs_list.sort()
-        all_SNPs_list = self.sort_SNP_by_chrom_pos(all_SNPs_list)
+        #all_SNPs_list = self.sort_SNP_by_chrom_pos(all_SNPs_list)
         return all_SNPs_list
 
     def fetch_chrom_chromStart_for_SNP_as_float(self,SNP):
@@ -632,10 +632,66 @@ class DAO(object):
         for i_chrom in range(Chrom_name_list.index(chrom_name)):
             curr_chrom_name = Chrom_name_list[i_chrom]
             abs_location = abs_location + Chrom_len_dict[curr_chrom_name]
-        return abs_location,chrom_name 
+        return abs_location,chrom_name
+
+    def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
+        # build chrom_name -> abs_location diction
+        Chrom_len_dict = Chrom_fields.Chrom_len_dict
+        Chrom_name_list = ['chr1' ,'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
+                          'chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20',
+                          'chr21','chr22','chrX','chrY']
+        chrom_abs_dict = {}
+        for chrom_name in Chrom_name_list:
+            abs_location = 0
+            for i_chrom in range(Chrom_name_list.index(chrom_name)):
+                curr_chrom_name = Chrom_name_list[i_chrom]
+                abs_location = abs_location + Chrom_len_dict[curr_chrom_name]
+            chrom_abs_dict[chrom_name] = abs_location
+        # build chrom_name -> abs_location diction
+
+        Manhattan_SNP_fields_list_dict_new = {}
+        for pair in Manhattan_SNP_fields_list_dict.keys():
+            # build snp_location_dict for all snps in a GWAS
+            GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
+            GWAS = GWAS_eQTL[0]
+            sql_template = ' select snp,chrom,location from ' + GWAS + ';' 
+            lines = self.exec_fetch_SQL_GWAS(sql_template)
+            snp_location_dict = {}    #snp_location_dict[snp] = (chrom,abs_location)
+            for line in lines:
+                snp      = line[0]
+                chrom    = line[1]
+                location = line[2]
+    
+                if chrom not in chrom_abs_dict:
+                    abs_location = 3200000000L # give a bad location off the end of genome
+                else:
+                    abs_location = chrom_abs_dict[chrom] + location
+                snp_location_dict[snp] = (chrom,abs_location)
+            # build snp_location_dict for all snps in a GWAS
+        
+            Manhattan_SNP_fields_list_old = Manhattan_SNP_fields_list_dict[pair] # in the format (GSNP_name,GSNP_pval,gene) 
+
+            Manhattan_SNP_fields_list_new = []  # in the format (GSNP_name,abs_location,GSNP_pval,gene_chrom)
+            for snp in Manhattan_SNP_fields_list_dict[pair]:
+                GSNP_name = snp[0]
+                GSNP_pval = snp[1]
+                gene      = snp[2]
+                
+                if GSNP_name not in snp_location_dict: # can be 'dummy'
+                    continue               
+ 
+                chrom_abs_location = snp_location_dict[GSNP_name]
+                chrom        = chrom_abs_location[0]
+                abs_location = chrom_abs_location[1]
+                new_tuple = (GSNP_name,abs_location,GSNP_pval,gene,chrom)
+                Manhattan_SNP_fields_list_new.append(new_tuple)
+            Manhattan_SNP_fields_list_dict_new[pair] = Manhattan_SNP_fields_list_new
+
+        return Manhattan_SNP_fields_list_dict_new
 
     #Manhattan_SNP_fields in the format of  (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
     def Manhattan_build_Manhattan_SNP_fields_list_dict(self,pair_SNP_dict,gene):
+        start_time = time.time()
         Chrom_len_dict = Chrom_fields.Chrom_len_dict
         Chrom_name_list = ['chr1' ,'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
                           'chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20',
@@ -654,13 +710,13 @@ class DAO(object):
             for SNP_tuple in SNP_list:
                 GSNP_name = SNP_tuple[0]
                 GSNP_pval = SNP_tuple[2]
-                abs_location,chrom = self.Manhattan_get_SNP_abs_location_chrom(GSNP_name,GWAS,Chrom_len_dict,Chrom_name_list)
-                if abs_location is None:
-                    continue 
-                Manhattan_SNP_fields = (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
+                #abs_location,chrom = self.Manhattan_get_SNP_abs_location_chrom(GSNP_name,GWAS,Chrom_len_dict,Chrom_name_list)
+                #Manhattan_SNP_fields = (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
+                Manhattan_SNP_fields = (GSNP_name,GSNP_pval,gene) 
                 curr_SNPlist.append(Manhattan_SNP_fields) 
             Manhattan_SNP_fields_list_dict[pair] = curr_SNPlist
 
         #pdb.set_trace()
         #a = 1   
+        print 'Manhattan fetching SNPs for gene "' + gene + '" takes ' + str(time.time() - start_time) + ' seconds' 
         return Manhattan_SNP_fields_list_dict, Manhattan_SNP_fields_list_dict.keys()
