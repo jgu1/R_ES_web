@@ -60,6 +60,13 @@ class DAO(object):
         rows = cur.fetchall()
         return list(rows) 
 
+    def exec_fetch_SQL_hg19(self,sql_template):
+        cur = self.db_hg19.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        return list(rows) 
+
+
     def exec_fetch_SQL_GWAS(self,sql_template):
         
         cur = self.db_GWAS.cursor()
@@ -608,19 +615,20 @@ class DAO(object):
 
 
 
-    def Manhattan_fetch_chrom_chromStart_for_SNP_as_float(self,Manhattan_SNP_fields_list):
-        SNP_list_str = '( '
+    def Manhattan_enhance_SNPs_with_location(self,Manhattan_SNP_fields_list,chrom_abs_dict):
+        snp_list = []   
         for snp in Manhattan_SNP_fields_list:
             GSNP_name = snp[0]
-            #GSNP_pval = snp[1]
-            #gene      = snp[2]
-            SNP_list_str = SNP_list_str + '"' + GSNP_name + '", '
-        SNP_list_str = SNP_list_str + ')'
+            snp_list.append('"' + GSNP_name+ '"')
+        SNP_list_str = '( ' + ','.join(snp_list) + ')'
 
-        sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str+ ';'
-        cur = self.db_hg19.cursor() 
-        cur.execute(sql_template)
-        rows = cur.fetchall()
+        chrom_list = []
+        for chrom in chrom_abs_dict.keys():
+            chrom_list.append('"' + chrom + '"')
+        chrom_list_str = '(' + ','.join(chrom_list) + ')'
+
+        sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str+ ' and chrom in ' + chrom_list_str + ';'
+        rows = self.exec_fetch_SQL_hg19(sql_template)
         snp_location_dict = {} 
         for row in rows:
             name = row[0]
@@ -628,7 +636,14 @@ class DAO(object):
             chromStart = row[2]
             if name in snp_location_dict:
                 print 'dup SNP in snp138 for ' + name
-            snp_location_dict[name] = (chrom,chromStart)
+            abs_location = chromStart
+            if chrom in chrom_abs_dict:
+                abs_location = abs_location + chrom_abs_dict[chrom]
+            else:
+                abs_location = abs_location + 3200000000 # put unkown snps at the end
+                   
+            snp_location_dict[name] = (chrom,abs_location)
+        #build_query
         Manhattan_SNP_fields_list_new = []  # in the format (GSNP_name,abs_location,GSNP_pval,gene_chrom)
         for snp in Manhattan_SNP_fields_list:
             GSNP_name = snp[0]
@@ -643,7 +658,7 @@ class DAO(object):
             abs_location = chrom_abs_location[1]
             new_tuple = (GSNP_name,abs_location,GSNP_pval,gene,chrom)
             Manhattan_SNP_fields_list_new.append(new_tuple)
-    return Manhattan_SNP_fields_list_new
+        return Manhattan_SNP_fields_list_new
 
     def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
         # build chrom_name -> abs_location diction
@@ -662,40 +677,7 @@ class DAO(object):
 
         Manhattan_SNP_fields_list_dict_new = {}
         for pair in Manhattan_SNP_fields_list_dict.keys():
-            # build snp_location_dict for all snps in a GWAS
-            GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
-            GWAS = GWAS_eQTL[0]
-            sql_template = ' select snp,chrom,location from ' + GWAS + ';' 
-            lines = self.exec_fetch_SQL_GWAS(sql_template)
-            snp_location_dict = {}    #snp_location_dict[snp] = (chrom,abs_location)
-            for line in lines:
-                snp      = line[0]
-                chrom    = line[1]
-                location = line[2]
-    
-                if chrom not in chrom_abs_dict:
-                    abs_location = 3200000000L # give a bad location off the end of genome
-                else:
-                    abs_location = chrom_abs_dict[chrom] + location
-                snp_location_dict[snp] = (chrom,abs_location)
-            # build snp_location_dict for all snps in a GWAS
-        
-            Manhattan_SNP_fields_list_old = Manhattan_SNP_fields_list_dict[pair] # in the format (GSNP_name,GSNP_pval,gene) 
-
-            Manhattan_SNP_fields_list_new = []  # in the format (GSNP_name,abs_location,GSNP_pval,gene_chrom)
-            for snp in Manhattan_SNP_fields_list_dict[pair]:
-                GSNP_name = snp[0]
-                GSNP_pval = snp[1]
-                gene      = snp[2]
-                
-                if GSNP_name not in snp_location_dict: # can be 'dummy'
-                    continue               
- 
-                chrom_abs_location = snp_location_dict[GSNP_name]
-                chrom        = chrom_abs_location[0]
-                abs_location = chrom_abs_location[1]
-                new_tuple = (GSNP_name,abs_location,GSNP_pval,gene,chrom)
-                Manhattan_SNP_fields_list_new.append(new_tuple)
+            Manhattan_SNP_fields_list_new = self.Manhattan_enhance_SNPs_with_location(Manhattan_SNP_fields_list_dict[pair],chrom_abs_dict) 
             Manhattan_SNP_fields_list_dict_new[pair] = Manhattan_SNP_fields_list_new
 
         chrom_starts = chrom_abs_dict.values()

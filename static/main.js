@@ -528,6 +528,7 @@ function createGraph() {
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
+        
         var svg = Manhattan.append("svg")
                 .attr("width", Manhattan_width + margin.left + margin.right)
                 .attr("height", Manhattan_height + margin.top + margin.bottom)
@@ -566,7 +567,7 @@ function createGraph() {
           .attr("x", Manhattan_width)
           .attr("y", -6)
           .style("text-anchor", "end")
-          .text("Chromosome location");
+          .text("Chrom loc");
 
         // y-axis
         svg.append("g")
