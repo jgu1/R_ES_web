@@ -158,13 +158,14 @@ def Manhattan():
                 location_pval_chrom_SNPlist_dict[pairName] = new_list 
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()
-    location_pval_chrom_SNPlist_dict = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
+    location_pval_chrom_SNPlist_dict,chrom_starts = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
     print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
 
     ret = {}
     ret['gene'] = gene
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
+    ret['chrom_starts'] = chrom_starts
     return jsonify(ret)
 
 

@@ -687,7 +687,9 @@ class DAO(object):
                 Manhattan_SNP_fields_list_new.append(new_tuple)
             Manhattan_SNP_fields_list_dict_new[pair] = Manhattan_SNP_fields_list_new
 
-        return Manhattan_SNP_fields_list_dict_new
+        chrom_starts = chrom_abs_dict.values()
+        chrom_starts.sort()
+        return Manhattan_SNP_fields_list_dict_new,chrom_starts
 
     #Manhattan_SNP_fields in the format of  (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
     def Manhattan_build_Manhattan_SNP_fields_list_dict(self,pair_SNP_dict,gene):
