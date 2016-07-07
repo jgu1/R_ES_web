@@ -534,6 +534,11 @@ function createGraph() {
               .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+        svg.append("g")
+          .attr("class","Manhattan_pairName")
+         .append("text")
+          .text(curr_Manhattan_pairName);
+
         // x-axis
         svg.append("g")
           .attr("class", "x axis")
@@ -572,21 +577,13 @@ function createGraph() {
                   tooltip.transition()
                        .duration(200)
                        .style("opacity", .9);
-                  /*  
-                  tooltip.html(d[0] + "(" + d[4] + ")"
-                            + " pval: " + yValue(d) 
-                            + " gene: " + d[3]
-                            )
-                 */
- 
+          
                   tooltip.style("left", (d3.event.pageX ) + "px")
-                       .style("top", (d3.event.pageY - 60) + "px");
-                  tooltip.append("text")
-                         .style("font-size","10px")
-                         .text(d[0] + "(" + d[4] + ")"
-                            + " gene: " + d[3]
-                            + " pval: " + yValue(d) 
-                          ) 
+                       .style("top", (d3.event.pageY - 60) + "px")
+                       .html(d[0] + "(" + d[4] + ")"
+                            + " <br/>pval: " + yValue(d) 
+                            + " <br/>gene: " + d[3]
+                            );
               })
           .on("mouseout", function(d) {
                   tooltip.transition()
