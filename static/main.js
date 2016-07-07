@@ -486,10 +486,10 @@ function createGraph() {
 
 
   var Manhattancallback = function(data){
-    var gene                       = data.gene;
+    var gene                             = data.gene;
     var location_pval_chrom_SNPlist_dict = data.location_pval_chrom_SNPlist_dict; 
-    var Manhattan_pairNames        = data.Manhattan_pairNames;    
-    
+    var Manhattan_pairNames              = data.Manhattan_pairNames;    
+    var chrom_starts_data                = data.chrom_starts;
    
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
@@ -539,6 +539,22 @@ function createGraph() {
          .append("text")
           .text(curr_Manhattan_pairName);
 
+        svg.selectAll(".chrom_starts").data([]).exit().remove();
+        var chrom_starts =svg.selectAll(".chrom_starts")
+              .data(chrom_starts_data)
+              .enter().append("g")
+              .attr("class","chrom_starts")
+              .attr("transform", function(d) { 
+                var x_translate = 0;
+                if (d == 0) x_translate = 0;
+                else x_translate = xScale(d);
+                return"translate(" + x_translate + ")rotate(-90)"; 
+                });
+               
+        chrom_starts.append("line")
+            .attr("x1",-Manhattan_height)
+            .style("stroke","black");
+ 
         // x-axis
         svg.append("g")
           .attr("class", "x axis")
