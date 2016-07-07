@@ -125,12 +125,13 @@ def detail():
 def Manhattan():
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
-    
+
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
 
     genes = geneNames.split(',')
-    #gene = genes[0]
+    genes = filter(None, genes) #remove empty gene, empty gene is unchecked in the web_interface   
+ 
     dao = getattr(g, 'dao', None)
     location_pval_chrom_SNPlist_dict = {}
     Manhattan_pairNames = set()

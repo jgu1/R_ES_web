@@ -83,3 +83,15 @@ h2              { font-size: 1.2em; }
 #disease_dropdown{
     height:300px;
 }
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+input[type="checkbox"]{
+  width: 15px; /*Desired width*/
+  height: 15px; /*Desired height*/
+  padding:0; 
+  margin:0;
+}

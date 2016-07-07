@@ -99,9 +99,33 @@ class SNP_manhattan(object):
         self.Gpval  = Gpval
         self.epval  = epval 
 
-
-
-
+class Chrom_fields(object):
+    Chrom_len_dict = None
+    Chrom_len_dict = {}
+    Chrom_len_dict['chr1']  = 249250621 
+    Chrom_len_dict['chr2']  = 243199373
+    Chrom_len_dict['chr3']  = 198022430
+    Chrom_len_dict['chr4']  = 191154276
+    Chrom_len_dict['chr5']  = 180915260
+    Chrom_len_dict['chr6']  = 171115067
+    Chrom_len_dict['chr7']  = 159138663
+    Chrom_len_dict['chr8']  = 146364022
+    Chrom_len_dict['chr9']  = 141213431
+    Chrom_len_dict['chr10'] = 135534747
+    Chrom_len_dict['chr11'] = 135006516
+    Chrom_len_dict['chr12'] = 133851895
+    Chrom_len_dict['chr13'] = 115169878
+    Chrom_len_dict['chr14'] = 107349540
+    Chrom_len_dict['chr15'] = 102531392
+    Chrom_len_dict['chr16'] = 90354753
+    Chrom_len_dict['chr17'] = 81195210
+    Chrom_len_dict['chr18'] = 78077248
+    Chrom_len_dict['chr19'] = 59128983
+    Chrom_len_dict['chr20'] = 63025520
+    Chrom_len_dict['chr21'] = 48129895
+    Chrom_len_dict['chr22'] = 51304566
+    Chrom_len_dict['chrX']  = 155270560
+    Chrom_len_dict['chrY']  = 59373566
 
 
 

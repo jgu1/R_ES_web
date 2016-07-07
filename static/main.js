@@ -94,20 +94,20 @@ function createGraph() {
                       .attr("width",1000)
                       .style("overflow","scroll");
 
-/*    var num_seeds = wrapper_div.append('text')
-                               .text("num_seeds: " + num_seeds)
-                               .attr("transform", "translate(" + 5 * margin + ", " + margin + ")");
-*/
-    var manhattan_btn = wrapper_div.append('button')
-                        .attr("type","button")
-                        .text("draw Manhattan Plots")
-                        .on("click",function(d){
-                            d3.select("#Manhattan").remove();
-                            wrapper_div.append("div")
-                                .attr("id","Manhattan")
-                            d3.json("/Manhattan?geneNames="+geneNames+"&pairNames="+pairNames,Manhattancallback);
-                            }
-                        ) ;
+    var Manhattan_input_div = wrapper_div.append('div')
+                                .style("height",size)
+//                                .style("width" ,1000)
+                                .style("margin-left","600px")
+                                .attr("class","Manhattan_input_div");
+
+    var Manhattan_checkbox = Manhattan_input_div.selectAll('input')
+                             .data(geneNames)
+                             .enter()
+                                .append('input')
+                                .attr("type","checkbox")
+                                .attr("checked",true);
+
+
 
 
     var svg = wrapper_div.append("svg")
@@ -196,7 +196,7 @@ function createGraph() {
                 return "pval:" + d[3] + "\nqval:" + d[4] + "\nGWAS:" + d[0] + "\neQTL:" + d[1] + "\ngene:" + d[2];
             });
        
- 
+   
   }
 
     function getColumnINegLog10(i){
@@ -263,11 +263,25 @@ function createGraph() {
     }  
 
 
+    var Manhattan_btn = wrapper_div.append('button')
+                        .attr("type","button")
+                        .text("draw Manhattan Plots")
+                        .style("margin-left","600px")
+                        .on("click",function(d){
+                            d3.select("#Manhattan").remove();
+                            wrapper_div.append("div")
+                                .attr("id","Manhattan")
+        
+                            var selected_geneNames = Manhattan_input_div.selectAll('input')[0].map(function(checkBox){
+                                          var gene = checkBox.__data__;
+                                          var checked = checkBox.checked;
+                                          if (checked){return gene;}
+                                          });
 
-
-
-
-  
+                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
+                            }
+                        ) ;
+ 
     var a = 1;  
   }
 
@@ -594,7 +608,7 @@ function createGraph() {
           .attr("class", "legend")
           //.attr("transform", function(d, i) { return "translate(" + Manhattan_width - 10 * legend_bloxk_size + "," + i * legend_block_size + ")"; });
           .attr("transform", function(d, i) { return "translate(0," + i * legend_block_size + ")"; });
-
+     
       // draw legend colored rectangles
       legend.append("rect")
           .attr("x", Manhattan_width - 10*legend_block_size)
