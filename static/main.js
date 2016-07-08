@@ -542,6 +542,8 @@ function createGraph() {
          .append("text")
           .text(curr_Manhattan_pairName);
 
+
+        // draw a black line to indicate the location chromosome starts
         svg.selectAll(".chrom_starts").data([]).exit().remove();
         var chrom_starts =svg.selectAll(".chrom_starts")
               .data(chrom_starts_data)
@@ -558,6 +560,28 @@ function createGraph() {
             .attr("x1",-Manhattan_height)
             .style("stroke","black");
  
+        // draw a color coded line to indicate the location gene starts
+        svg.selectAll(".gene_starts").data([]).exit().remove();
+        var gene_starts =svg.selectAll(".gene_starts")
+              .data(Manhattan_geneNames)
+              .enter().append("g")
+              .attr("class","gene_starts")
+              .attr("transform", function(d) { 
+                var chromStart_chromEnd = gene_location_dict[d]; 
+                var chromStart = chromStart_chromEnd[0];
+                x_translate = 0;
+                if (chromStart == null){
+                    x_translate = 0;
+                }else{
+                    x_translate = xScale(chromStart);
+                }
+                return"translate(" + x_translate + ")rotate(-90)"; 
+                });
+               
+        gene_starts.append("line")
+            .attr("x1",-Manhattan_height)
+            .style("stroke","blue");
+
         // x-axis
         svg.append("g")
           .attr("class", "x axis")
@@ -609,36 +633,6 @@ function createGraph() {
                        .duration(500)
                        .style("opacity", 0);
               });
-
-        svg.selectAll(".rectGene")
-          .data(Manhattan_geneNames)
-        .enter().append("rect")
-          .attr("class","rectGene")
-          .attr("x",function(d){
-            var chromStart_chromEnd = gene_location_dict[d];
-            var chromStart = chromStart_chromEnd[0];
-            if (chromStart == null){
-                return 0;
-            }else{
-                return xScale(chromStart);
-            } 
-          })
-          .attr("width",function(d){
-            var chromStart_chromEnd = gene_location_dict[d];
-            var chromStart = chromStart_chromEnd[0];
-            var chromEnd   = chromStart_chromEnd[1];
-            if (chromStart == null || chromEnd == null){
-                return 0;
-            }else{
-                var end   = xScale(chromEnd);
-                var start = xScale(chromStart); 
-                return xScale(chromEnd) - xScale(chromStart);
-            }
-          })
-          .attr("y",0)
-          .attr("height",50)
-          .style("fill", function(d) { return color(d);})  
-          ;
 
      // draw legend
       var legend_block_size = 10;
