@@ -578,28 +578,11 @@ function createGraph() {
                 return"translate(" + x_translate + ")rotate(-90)"; 
                 });
 
-/*              
-        for (var i_gene_start = 0; i_gene_start < gene_starts[0].length; i_gene_start ++){
-            var curr_gene_start = gene_starts[0][i_gene_start];
-            var gene_name = curr_gene_start.__data__;
-            curr_gene_start.append("line")
-                           .attr("x1",-Manhattan_height)
-                           .style("stroke","blue");
-
-            var a = 1;
-        }
-*/
         gene_starts.append("line")
-            //.attr("x1",-Manhattan_height)
-            .attr("x1",function(d){
-                return -Manhattan_height;
-            })
+            .attr("x1", -Manhattan_height)
             .style("stroke",function(d){
-                var dd = d;
-                return "blue";
+                return color(d);
             })
-
-        //    .style("stroke","blue");
         
         // x-axis
         svg.append("g")
