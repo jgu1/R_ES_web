@@ -486,11 +486,13 @@ function createGraph() {
 
 
   var Manhattancallback = function(data){
-    var gene                             = data.gene;
     var location_pval_chrom_SNPlist_dict = data.location_pval_chrom_SNPlist_dict; 
     var Manhattan_pairNames              = data.Manhattan_pairNames;    
     var chrom_starts_data                = data.chrom_starts;
-   
+    var Manhattan_geneNames              = data.Manhattan_geneNames;
+    var gene_location_dict               = data.gene_location_dict;  
+
+ 
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
 
@@ -607,6 +609,36 @@ function createGraph() {
                        .duration(500)
                        .style("opacity", 0);
               });
+
+        svg.selectAll(".rectGene")
+          .data(Manhattan_geneNames)
+        .enter().append("rect")
+          .attr("class","rectGene")
+          .attr("x",function(d){
+            var chromStart_chromEnd = gene_location_dict[d];
+            var chromStart = chromStart_chromEnd[0];
+            if (chromStart == null){
+                return 0;
+            }else{
+                return xScale(chromStart);
+            } 
+          })
+          .attr("width",function(d){
+            var chromStart_chromEnd = gene_location_dict[d];
+            var chromStart = chromStart_chromEnd[0];
+            var chromEnd   = chromStart_chromEnd[1];
+            if (chromStart == null || chromEnd == null){
+                return 0;
+            }else{
+                var end   = xScale(chromEnd);
+                var start = xScale(chromStart); 
+                return xScale(chromEnd) - xScale(chromStart);
+            }
+          })
+          .attr("y",0)
+          .attr("height",50)
+          .style("fill", function(d) { return color(d);})  
+          ;
 
      // draw legend
       var legend_block_size = 10;

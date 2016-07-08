@@ -2,6 +2,7 @@
 
 import pdb
 import MySQLdb
+import os
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash, jsonify, Response
 from contextlib import closing
@@ -131,6 +132,7 @@ def Manhattan():
 
     genes = geneNames.split(',')
     genes = filter(None, genes) #remove empty gene, empty gene is unchecked in the web_interface   
+    genes.sort()
  
     dao = getattr(g, 'dao', None)
     location_pval_chrom_SNPlist_dict = {}
@@ -160,12 +162,15 @@ def Manhattan():
     start_time = time.time()
     location_pval_chrom_SNPlist_dict,chrom_starts = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
     print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
+   
+    gene_location_dict = dao.Manhattan_gen_gene_location_dict(genes) 
 
     ret = {}
-    ret['gene'] = gene
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
     ret['chrom_starts'] = chrom_starts
+    ret['Manhattan_geneNames'] = genes
+    ret['gene_location_dict'] = gene_location_dict
     return jsonify(ret)
 
 

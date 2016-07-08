@@ -613,6 +613,7 @@ class DAO(object):
             available_GWASs.append(row[0])
         return available_GWASs
 
+    
 
 
     def Manhattan_enhance_SNPs_with_location(self,Manhattan_SNP_fields_list,chrom_abs_dict):
@@ -660,7 +661,37 @@ class DAO(object):
             Manhattan_SNP_fields_list_new.append(new_tuple)
         return Manhattan_SNP_fields_list_new
 
-    def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
+    def Manhattan_gen_gene_location_dict(self,genes):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
+        gene_list = []
+        for gene in genes:
+            gene_list.append('"' + gene + '"')
+        gene_list_str = '(' + ','.join(gene_list) + ')'
+        sql_template = 'select gene,chrom,chromStart,chromEnd from gene_location where gene in ' + gene_list_str + ';'
+        rows = self.exec_fetch_SQL(sql_template) 
+        gene_location_dict_available_in_db = {} #some gene may not in db
+        for row in rows:
+            gene        = row[0]
+            chrom       = row[1]
+            chromStart  = row[2]
+            chromEnd    = row[3]
+            
+            chrom_abs_start = chrom_abs_dict[chrom] + chromStart
+            chrom_abs_end   = chrom_abs_dict[chrom] + chromEnd
+            gene_location_dict_available_in_db[gene] = (chrom_abs_start,chrom_abs_end)
+
+        gene_location_dict = {} #for those gene not in db, assign(None,None) for location
+        genes.sort()
+        for i_gene in range(len(genes)):
+            curr_gene = genes[i_gene]
+            if curr_gene in gene_location_dict_available_in_db:
+                gene_location_dict[curr_gene] = gene_location_dict_available_in_db[curr_gene]
+            else:
+                gene_location_dict[curr_gene] = (None,None)
+
+        return gene_location_dict
+
+    def Manhattan_gen_chrom_abs_dict(self):
         # build chrom_name -> abs_location diction
         Chrom_len_dict = Chrom_fields.Chrom_len_dict
         Chrom_name_list = ['chr1' ,'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
@@ -674,7 +705,11 @@ class DAO(object):
                 abs_location = abs_location + Chrom_len_dict[curr_chrom_name]
             chrom_abs_dict[chrom_name] = abs_location
         # build chrom_name -> abs_location diction
+        return chrom_abs_dict
 
+
+    def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()       
         Manhattan_SNP_fields_list_dict_new = {}
         for pair in Manhattan_SNP_fields_list_dict.keys():
             Manhattan_SNP_fields_list_new = self.Manhattan_enhance_SNPs_with_location(Manhattan_SNP_fields_list_dict[pair],chrom_abs_dict) 
@@ -691,15 +726,15 @@ class DAO(object):
         Chrom_name_list = ['chr1' ,'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
                           'chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20',
                           'chr21','chr22','chrX','chrY']
-        available_GWASs = self.Manhattan_get_all_available_GWAS_in_db()
+        #available_GWASs = self.Manhattan_get_all_available_GWAS_in_db()
         Manhattan_SNP_fields_list_dict = {}
         for pair in pair_SNP_dict:
             GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
             GWAS = GWAS_eQTL[0]
-            if GWAS not in available_GWASs:
+            #if GWAS not in available_GWASs:
                 #pdb.set_trace()
                 #a = 1
-                continue
+            #    continue
             SNP_list = pair_SNP_dict[pair]
             curr_SNPlist = []
             for SNP_tuple in SNP_list:
