@@ -500,6 +500,9 @@ function createGraph() {
     var margin = {top: 20, right: 20, bottom: 30, left: 40};
     var Manhattan_width = 1000 - margin.left - margin.right; // should not be null, because at least one gene has SNPs
     var Manhattan_height = 240 - margin.top  - margin.bottom;
+    var xScaleMax = 3500000000;
+    var yScaleMax = 15;
+
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
         xScale = d3.scale.linear().range([0, Manhattan_width]), // value -> display
@@ -511,7 +514,13 @@ function createGraph() {
                                 return -Math.log10(pval);
                              }, // data -> value
         yScale = d3.scale.linear().range([Manhattan_height, 0]), // value -> display
-        yMap = function(d) { return yScale(yValue(d));}, // data -> display
+        yMap = function(d) {
+            var yValue_direct = yValue(d);
+            var yScale_input  = yValue_direct;
+            if (yScale_input > yScaleMax){  // if pval is too large, it will go beyond plot, truncate it
+                yScale_input = yScaleMax;
+            }
+            return yScale(yScale_input);}, // data -> display
         yAxis = d3.svg.axis().scale(yScale).orient("left");
 
     // setup fill color
@@ -524,8 +533,8 @@ function createGraph() {
         .style("width",200)
         .style("opacity", 0);
 
-    xScale.domain([0,3500000000]);
-    yScale.domain([0,15]);
+    xScale.domain([0,xScaleMax]);
+    yScale.domain([0,yScaleMax]);
 
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     Manhattan_pairNames.sort();
