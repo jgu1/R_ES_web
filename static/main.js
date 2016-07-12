@@ -95,8 +95,9 @@ function createGraph() {
                       .style("overflow","scroll");
 
     var Manhattan_input_div = wrapper_div.append('div')
-                                .style("height",size)
-//                                .style("width" ,1000)
+                                .attr("height",size)
+                                .attr("width" ,1000)
+                                //.style("overflow","scroll")
                                 .style("margin-left","600px")
                                 .attr("class","Manhattan_input_div");
 
@@ -105,7 +106,7 @@ function createGraph() {
                              .enter()
                                 .append('input')
                                 .attr("type","checkbox")
-                                .attr("checked",true);
+                                .attr("checked",null);
 
 
 
@@ -113,7 +114,7 @@ function createGraph() {
     var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
-                    .style("overflow","scroll")
+                    //.style("overflow","scroll")
                   .append("svg:g")
                         .attr("transform", "translate(" + 5 * margin + ", " + margin + ")");
 
@@ -527,6 +528,7 @@ function createGraph() {
     yScale.domain([0,15]);
 
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
+    Manhattan_pairNames.sort();
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
@@ -583,6 +585,7 @@ function createGraph() {
             .style("stroke",function(d){
                 return color(d);
             })
+
         
         // x-axis
         svg.append("g")
@@ -624,7 +627,9 @@ function createGraph() {
                        .style("opacity", .9);
           
                   tooltip.style("left", (d3.event.pageX ) + "px")
-                       .style("top", (d3.event.pageY - 60) + "px")
+                       //.style("top", (d3.event.pageY - 60) + "px")
+                       .style("top", function(d){
+                            return (d3.event.pageY - 60) + "px"})
                        .html(d[0] + "(" + d[4] + ")"
                             + " <br/>pval: " + yValue(d) 
                             + " <br/>gene: " + d[3]
