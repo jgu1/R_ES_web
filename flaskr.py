@@ -20,7 +20,7 @@ import time
 DEBUG = True
 SECRET_KEY = 'development key'
 eQTL_name_all = 'all'
-eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle']
+eQTL_names = ['Dixon_07','Duan_08','Liang_2012','Muther_12','Myers_07','Schadt_08','Wright_14_pruned_e6_2','Zeller_10','merged_pickle','GTExV6_LD85']
 #disease_GWAS_dict = pickle.load(open("disease_GWAS_dict.pickle","rb"))
 disease_GWAS_dict = DAO(None,None).build_disease_GWAS_dict()
 GENE_P_Q_PER_PAGE=30
@@ -67,7 +67,7 @@ def sub_clusters():
     if est_col_width == '':
         est_col_width = 20
     if filter_ratio == '':
-        filter_ratio = 0.5
+        filter_ratio = 0.3
     if consider_all_genes_in_database == 'true':
         consider_all_genes_in_database = True
     else:
@@ -86,6 +86,7 @@ def sub_clusters():
         num_seeds = sub_cluster.num_seeds
         curr_serisable = [row_comb,cols,num_seeds]
         serisables.append(curr_serisable)
+
 
     ret = {}
     ret['gene_p_qs'] = gene_p_qs

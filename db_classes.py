@@ -356,7 +356,7 @@ class DAO(object):
             #contain_merged = True
             eQTLs.remove('merged_pickle')
             eQTLs.append(Merged_name)
-        if (len(GWASs) == 0 or len(eQTLs) == 0) and (contain_merged == False):
+        if (len(GWASs) == 0 or len(eQTLs) == 0): 
             return None,None,None
         num_genes_per_pair = 30
         try:
@@ -650,7 +650,7 @@ class DAO(object):
             GSNP_name = snp[0]
             GSNP_pval = snp[1]
             gene      = snp[2]
-            
+           
             if GSNP_name not in snp_location_dict: # can be 'dummy'
                 continue               
 
@@ -675,7 +675,12 @@ class DAO(object):
             chrom       = row[1]
             chromStart  = row[2]
             chromEnd    = row[3]
-            
+            if chromStart is None:
+                print 'gene "' + gene + '" has chromStart NULL'
+                chromStart = 0
+            if chromEnd is None:
+                print 'gene "' + gene + '" has chromEnd NULL'
+                chromEnd = 0 
             chrom_abs_start = chrom_abs_dict[chrom] + chromStart
             chrom_abs_end   = chrom_abs_dict[chrom] + chromEnd
             gene_location_dict_available_in_db[gene] = (chrom_abs_start,chrom_abs_end)
