@@ -145,7 +145,10 @@ def Manhattan():
         pair_SNP_dict = {}
         if pairNames != 'empty':
             for pair in pairNames.split(','):
-                pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+                if pair in pair_SNP_dict_all:
+                    pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+                else:   #this gene may not appear in this pair, in this case no SNP can be ever found
+                    continue
         else:
             pair_SNP_dict = pair_SNP_dict_all
 
