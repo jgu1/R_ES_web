@@ -111,7 +111,10 @@ def detail():
     pair_SNP_dict = {}
     if pairNames != 'empty':
         for pair in pairNames.split(','):
-            pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+            if pair in pair_SNP_dict_all:
+                pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+            else:   # this gene may not be in the current pair. 
+                continue
     else:
         pair_SNP_dict = pair_SNP_dict_all
 
