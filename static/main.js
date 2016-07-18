@@ -738,12 +738,9 @@ function createGraph() {
          .text("consider_all_genes_in_database")
     wrapper_div.append("input")
          .attr("type","checkbox")
-         .attr("checked","checked")
+         .attr("checked",null)
          .attr("id","consider_all_genes_in_database");
-
-
   }
-
 
   var draw_pair = function(draw_pair_json_obj){
     var matrix = [];
@@ -851,12 +848,12 @@ function createGraph() {
                 sub_clusters.html("");
 
 
-                var abs_cutoff = document.getElementById("abs_cutoff").value;
-                var per_cutoff  = document.getElementById("per_cutoff").value;
-                var converge_epsilon = document.getElementById("converge_epsilon").value;
-                var converge_depth  = document.getElementById("converge_depth").value;
-                var est_col_width = document.getElementById("est_col_width").value;
-                var filter_ratio  = document.getElementById("filter_ratio").value;
+                var abs_cutoff = document.getElementById("ISA_abs_cutoff").value;
+                var per_cutoff  = document.getElementById("ISA_per_cutoff").value;
+                var converge_epsilon = document.getElementById("ISA_converge_epsilon").value;
+                var converge_depth  = document.getElementById("ISA_converge_depth").value;
+                var est_col_width = document.getElementById("ISA_est_col_width").value;
+                var filter_ratio  = document.getElementById("ISA_filter_ratio").value;
                 var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
 
                 d3.json("/sub_clusters?abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
