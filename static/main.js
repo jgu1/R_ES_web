@@ -686,6 +686,65 @@ function createGraph() {
 
   }
 
+
+  function draw_ISA_input_fields(wrapper_div){
+    var ISA_input_wrapper_div = wrapper_div.append("div")
+                                .attr("id","ISA_input_wrapper_div");
+
+    ISA_input_wrapper_div.append("text")
+         .text("abs_cutoff")
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_abs_cutoff");
+
+    ISA_input_wrapper_div.append("text")
+         .text("per_cutoff");
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_per_cutoff");
+
+    ISA_input_wrapper_div.append("text")
+         .text("converge_epsilon")
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_converge_epsilon");
+
+    ISA_input_wrapper_div.append("text")
+         .text("converge_depth");
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_converge_depth");
+
+    ISA_input_wrapper_div.append("text")
+         .text("est_col_width")
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_est_col_width");
+
+
+    ISA_input_wrapper_div.append("text")
+         .text("filter_ratio");
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_filter_ratio");
+
+    wrapper_div.append("text")
+         .text("consider_all_genes_in_database")
+    wrapper_div.append("input")
+         .attr("type","checkbox")
+         .attr("checked","checked")
+         .attr("id","consider_all_genes_in_database");
+
+
+  }
+
+
   var draw_pair = function(draw_pair_json_obj){
     var matrix = [];
     var pairNames = [];
@@ -746,6 +805,10 @@ function createGraph() {
       .attr("height", height_pair);
 
    // show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
+                                      
+    var clustering_algs_input_wrapper_div = chart.append("div")
+                                            .attr("id","clustering_algs_input_wrapper_div")
+                                            .style("margin-left", 5* margin + "px");
 
     var clustering_algs_wrapper_div = chart.append("div")
                                         .attr("id",'clustering_algs_wrapper_div')
@@ -763,67 +826,19 @@ function createGraph() {
     clustering_algs_wrapper_div.append("input")
          .attr("type","checkbox")
          .attr("checked",null)
-         .attr("id","clustering_algs_ISA");
+         .attr("id","clustering_algs_ISA")
+         .on("change",function(d){
+            
+            clustering_algs_input_wrapper_div.html("");
+            if (this.checked) {
+                draw_ISA_input_fields(clustering_algs_input_wrapper_div);
+            }
+         });
+
+
                                        
-                                      
-    var clustering_algs_input_wrapper_div = chart.append("div")
-                                            .attr("id","clustering_algs_input_wrapper_div");
     
-
-    var ISA_input_wrapper_div = clustering_algs_input_wrapper_div.append("div")
-                                .attr("id","ISA_input_wrapper_div")
-                                .style("margin-left", 5* margin + "px");
-
-    ISA_input_wrapper_div.append("text")
-         .text("abs_cutoff")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_abs_cutoff");
-
-    ISA_input_wrapper_div.append("text")
-         .text("per_cutoff");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_per_cutoff");
-
-    ISA_input_wrapper_div.append("text")
-         .text("converge_epsilon")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_converge_epsilon");
-
-    ISA_input_wrapper_div.append("text")
-         .text("converge_depth");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_converge_depth");
-
-    ISA_input_wrapper_div.append("text")
-         .text("est_col_width")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_est_col_width");
-
-
-    ISA_input_wrapper_div.append("text")
-         .text("filter_ratio");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_filter_ratio");
-
-    clustering_algs_input_wrapper_div.append("text")
-         .text("consider_all_genes_in_database")
-         .style("margin-left", 5* margin + "px");
-    clustering_algs_input_wrapper_div.append("input")
-         .attr("type","checkbox")
-         .attr("checked","checked")
-         .attr("id","consider_all_genes_in_database");
+//    draw_ISA_input_fields(clustering_algs_input_wrapper_div);
 
         chart.append("input")
              .attr("type","button")
