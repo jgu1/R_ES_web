@@ -84,7 +84,6 @@ def sub_clusters():
     
     elif alg == 'PLAID':
        
-        pdb.set_trace() 
         consider_all_genes_in_database = request.args.get('consider_all_genes_in_database','')
         if consider_all_genes_in_database == 'true':
             consider_all_genes_in_database = True

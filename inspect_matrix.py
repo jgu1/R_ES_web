@@ -674,8 +674,6 @@ def R_discover_sub_clusters_PLAID(gene_p_qs):
         #return filtered_sub_clusters
         return merged_sub_clusters
 
-    pdb.set_trace()
-
     start_time = time.time() 
     p_m = R_build_matrix(gene_p_qs)
     conn = pyRserve.connect()
