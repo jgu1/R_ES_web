@@ -514,16 +514,11 @@ def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff)
         if curr_sum < num_row * col_cutoff:
             cols[i_col] = 0
 
-def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,est_col_width,filter_ratio):
+def R_discover_sub_clusters_ISA(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,est_col_width,filter_ratio):
     binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
-    #abs_cutoff = 3
-    #per_cutoff = 0.5
-    #converge_epsilon = 0.1
-    #converge_depth = 100
+    #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
+    pre_exclude_gene_names = []
 
-
-    pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
-    #pre_exclude_gene_names = []
     pre_exclude_gene_indices = get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names)
 
     seeds = manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices)
@@ -547,19 +542,8 @@ def R_discover_sub_clusters(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,con
         if not numpy.any(rows) or not numpy.any(cols):
             continue
 
-        #print '\n'
-        #print 'len(rows) = ' + str(numpy.count_nonzero(rows))
-        #print 'len(cols) = ' + str(numpy.count_nonzero(cols))
-
-
-
         curr_sub_cluster = manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols)
         sub_clusters.append(curr_sub_cluster)
-
-
-    #rows,cols = manual_ISA(binary_mat,abs_cutoff, per_cutoff,converge_epsilon,converge_depth)
-    #one_Cluster = manual_IRA_build_Cluster_objects(gene_p_qs,rows,cols) 
-    #return [one_Cluster]
 
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
     merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
@@ -652,6 +636,76 @@ def output_seed_to_txt(seeds,gene_p_qs):
         SEED_TXT.write( '\ncurr_seed_genes = ' + str(curr_seed_genes) )
         # print genes in current seed
   
+def R_discover_sub_clusters_PLAID(gene_p_qs):
+    if False:
+        binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
+        #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
+        pre_exclude_gene_names = []
+
+        pre_exclude_gene_indices = get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names)
+
+        seeds = manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices)
+        output_seed_to_txt(seeds,gene_p_qs) 
+        manual_ISA_args = []
+        for seed in seeds:
+            curr_arg = (binary_mat,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed)
+            manual_ISA_args.append(curr_arg)
+
+
+        threadPool = multiprocessing.Pool(5)
+        start_time = time.time()
+        sub_clusters_rows_cols = threadPool.map(manual_ISA,manual_ISA_args)        
+        print 'all threads take {} seconds'.format(time.time() - start_time)
+
+        sub_clusters = []
+        for rows_cols in sub_clusters_rows_cols:
+            rows = rows_cols[0]
+            cols = rows_cols[1]
+            manual_ISA_filter_sub_cluster(binary_mat, rows, cols, filter_ratio, filter_ratio)
+            if not numpy.any(rows) or not numpy.any(cols):
+                continue
+
+            curr_sub_cluster = manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols)
+            sub_clusters.append(curr_sub_cluster)
+
+        filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
+        merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+     
+        #return filtered_sub_clusters
+        return merged_sub_clusters
+
+    pdb.set_trace()
+
+    start_time = time.time() 
+    p_m = R_build_matrix(gene_p_qs)
+    conn = pyRserve.connect()
+    conn.r('require("biclust")')
+    R_args = {
+        'x':p_m,
+        'method':'BCPlaid',
+        'cluster':'b',
+        #'fit.model':'y~m+a+b',
+        'background':False,
+        'row.release':0.7,
+        'col.release':0.7,
+        #'shuffle':3,
+        'shuffle':3,
+        'back.fit':0,
+        'max.layers':20,
+        'iter.startup':5,
+        'iter.layer':10,
+        'verbose':True,
+    }
+    result = conn.r.biclust(**R_args)
+    attr = result.lexeme.attr
+    disease_names = gene_p_qs.keys() #FIXME temporarily comment off for testing p_m
+    clusters = R_parse_cluster_result(attr,disease_names)    
+
+    print 'found ' + str(len(clusters)) + ' clusters\n'    
+    #clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
+    print("sub_clustering took --- %s seconds ---" % (time.time() - start_time))
+    return clusters
+
 
 if __name__=='__main__':
     pickle_filename='ES_Sherlock_dump.pickle'

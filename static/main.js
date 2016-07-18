@@ -686,7 +686,7 @@ function createGraph() {
   }
 
 
-  function draw_ISA_input_fields(wrapper_div){
+  function draw_input_fields_ISA(wrapper_div){
     var ISA_input_wrapper_div = wrapper_div.append("div")
                                 .attr("id","ISA_input_wrapper_div");
 
@@ -733,6 +733,62 @@ function createGraph() {
          .attr("size","10")
          .attr("id","ISA_filter_ratio");
 
+    wrapper_div.append("text")
+         .text("consider_all_genes_in_database")
+    wrapper_div.append("input")
+         .attr("type","checkbox")
+         .attr("checked",null)
+         .attr("id","consider_all_genes_in_database");
+  }
+
+  function draw_input_fields_PLAID(wrapper_div){
+    var PLAID_input_wrapper_div = wrapper_div.append("div")
+                                .attr("id","PLAID_input_wrapper_div");
+
+    /*
+    ISA_input_wrapper_div.append("text")
+         .text("abs_cutoff")
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_abs_cutoff");
+
+    ISA_input_wrapper_div.append("text")
+         .text("per_cutoff");
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_per_cutoff");
+
+    ISA_input_wrapper_div.append("text")
+         .text("converge_epsilon")
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_converge_epsilon");
+
+    ISA_input_wrapper_div.append("text")
+         .text("converge_depth");
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_converge_depth");
+
+    ISA_input_wrapper_div.append("text")
+         .text("est_col_width")
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_est_col_width");
+
+
+    ISA_input_wrapper_div.append("text")
+         .text("filter_ratio");
+    ISA_input_wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","ISA_filter_ratio");
+    */
     wrapper_div.append("text")
          .text("consider_all_genes_in_database")
     wrapper_div.append("input")
@@ -816,10 +872,9 @@ function createGraph() {
          .attr("checked",null)
          .attr("id","clustering_algs_ISA")
          .on("change",function(d){
-            
             clustering_algs_input_wrapper_div.html("");
             if (this.checked) {
-                draw_ISA_input_fields(clustering_algs_input_wrapper_div);
+                draw_input_fields_ISA(clustering_algs_input_wrapper_div);
             }
          });
 
@@ -829,7 +884,14 @@ function createGraph() {
     clustering_algs_wrapper_div.append("input")
          .attr("type","checkbox")
          .attr("checked",null)
-         .attr("id","clustering_algs_PLAID");
+         .attr("id","clustering_algs_PLAID")
+         .on("change",function(d){
+            clustering_algs_input_wrapper_div.html("");
+            if (this.checked) {
+                draw_input_fields_PLAID(clustering_algs_input_wrapper_div);
+            }
+
+        });
   
 
                                        
@@ -857,6 +919,9 @@ function createGraph() {
                     var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
 
                     d3.json("/sub_clusters?alg=ISA&abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
+                }else if (document.getElementById("clustering_algs_PLAID").checked){
+                    var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
+                    d3.json("/sub_clusters?alg=PLAID&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
                 }
             });
    // }

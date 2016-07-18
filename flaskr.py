@@ -14,7 +14,7 @@ from datetime import datetime,timedelta
 from db_classes import DAO
 import json
 import pickle
-from inspect_matrix import R_discover_sub_clusters,discover_sub_clusters,output_matrix_to_txt
+from inspect_matrix import R_discover_sub_clusters_ISA, R_discover_sub_clusters_PLAID, discover_sub_clusters,output_matrix_to_txt
 import time
 # configuration
 DEBUG = True
@@ -48,6 +48,7 @@ def teardown_request(exception):
 
 @app.route('/sub_clusters')
 @app.route("/sub_clusters/<string:alg><string:abs_cutoff><string:per_cutoff><string:converge_epsilon><string:converge_depth><string:est_col_width><string:filter_ratio><string:consider_all_genes_in_database>")
+@app.route("/sub_clusters/<string:alg><string:consider_all_genes_in_database>")
 def sub_clusters():
 
     alg = request.args.get('alg','')
@@ -78,10 +79,20 @@ def sub_clusters():
             consider_all_genes_in_database = False
 
         gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
-        sub_clusters = R_discover_sub_clusters(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio))
-    #pdb.set_trace()
-    #sub_clusters = discover_sub_clusters(gene_p_qs)
+        sub_clusters = R_discover_sub_clusters_ISA(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio))
+   
     
+    elif alg == 'PLAID':
+       
+        pdb.set_trace() 
+        consider_all_genes_in_database = request.args.get('consider_all_genes_in_database','')
+        if consider_all_genes_in_database == 'true':
+            consider_all_genes_in_database = True
+        else:
+            consider_all_genes_in_database = False
+        gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
+        sub_clusters = R_discover_sub_clusters_PLAID(gene_p_qs)
+ 
     serisables = []
     for sub_cluster in sub_clusters:
         row_comb = sub_cluster.row_comb
