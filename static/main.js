@@ -9,7 +9,6 @@ function createGraph() {
   //var xscale = d3.scale.linear().range([0, w]);
   //var yscale = d3.scale.linear().range([h, 0]);
 
-
   var sub_clusterscallback = function(data){
     var gene_p_qs = data.gene_p_qs
     var serisables = data.serisables
