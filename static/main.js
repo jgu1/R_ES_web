@@ -746,66 +746,85 @@ function createGraph() {
       .attr("height", height_pair);
 
    // show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
+
+    var clustering_algs_wrapper_div = chart.append("div")
+                                        .attr("id",'clustering_algs_wrapper_div')
+                                        .style("margin-left", 5* margin + "px");
+ 
+    clustering_algs_wrapper_div.append("text")
+         .text("PLAID");
+    clustering_algs_wrapper_div.append("input")
+         .attr("type","checkbox")
+         .attr("checked",null)
+         .attr("id","clustering_algs_PLAID");
+  
+    clustering_algs_wrapper_div.append("text")
+         .text("ISA");
+    clustering_algs_wrapper_div.append("input")
+         .attr("type","checkbox")
+         .attr("checked",null)
+         .attr("id","clustering_algs_ISA");
+                                       
+                                      
+    var clustering_algs_input_wrapper_div = chart.append("div")
+                                            .attr("id","clustering_algs_input_wrapper_div");
     
 
+    var ISA_input_wrapper_div = clustering_algs_input_wrapper_div.append("div")
+                                .attr("id","ISA_input_wrapper_div")
+                                .style("margin-left", 5* margin + "px");
 
-    chart.append("text")
+    ISA_input_wrapper_div.append("text")
          .text("abs_cutoff")
-         .style("margin-left",5 * margin +"px");
-    chart.append("input")
+    ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","abs_cutoff");
+         .attr("id","ISA_abs_cutoff");
 
-    chart.append("text")
+    ISA_input_wrapper_div.append("text")
          .text("per_cutoff");
-    chart.append("input")
+    ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","per_cutoff");
+         .attr("id","ISA_per_cutoff");
 
-    chart.append("text")
+    ISA_input_wrapper_div.append("text")
          .text("converge_epsilon")
-         .style("margin-left",5 * margin +"px");
-    chart.append("input")
+    ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","converge_epsilon");
+         .attr("id","ISA_converge_epsilon");
 
-
-    chart.append("text")
+    ISA_input_wrapper_div.append("text")
          .text("converge_depth");
-    chart.append("input")
+    ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","converge_depth");
+         .attr("id","ISA_converge_depth");
 
-    chart.append("text")
+    ISA_input_wrapper_div.append("text")
          .text("est_col_width")
-         .style("margin-left",5 * margin +"px");
-    chart.append("input")
+    ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","est_col_width");
+         .attr("id","ISA_est_col_width");
 
 
-    chart.append("text")
+    ISA_input_wrapper_div.append("text")
          .text("filter_ratio");
-    chart.append("input")
+    ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","filter_ratio");
+         .attr("id","ISA_filter_ratio");
 
-    chart.append("text")
+    clustering_algs_input_wrapper_div.append("text")
          .text("consider_all_genes_in_database")
-         .style("margin-left",5 * margin +"px");
-    chart.append("input")
+         .style("margin-left", 5* margin + "px");
+    clustering_algs_input_wrapper_div.append("input")
          .attr("type","checkbox")
          .attr("checked","checked")
-         .attr("id","consider_all_genes_in_database")
+         .attr("id","consider_all_genes_in_database");
 
-    //if (show_sub_clusters_button == 'True'){
-    // }
         chart.append("input")
              .attr("type","button")
              .attr("value","Discover sub_clusters")
