@@ -280,6 +280,8 @@ def R_parse_cluster_result(attr,disease_names):
             colIndex = elem[1]
             rowCol['Col'] = colIndex
             num_cluster = len(colIndex)
+    
+    #pdb.set_trace()
     for i_cluster in range(num_cluster):
         #pdb.set_trace()
         curr_cluster_row = rowCol['Row'][:,i_cluster]
@@ -288,7 +290,8 @@ def R_parse_cluster_result(attr,disease_names):
         #curr_cluster_row_name  = [disease_names[i_row] for i_row in curr_cluster_row_index]
         curr_cluster_col = [i_col for i_col,x in enumerate(curr_cluster_col) if x]
         
-        curr_cluster_disease_names = [disease_names[i_col] for i_col in curr_cluster_col]
+        #pdb.set_trace()  
+        curr_cluster_disease_names = [disease_names[i_row] for i_row in curr_cluster_row_index]
         curr_cluster = Cluster(curr_cluster_disease_names, curr_cluster_col)
         clusters.append(curr_cluster) 
         
@@ -551,37 +554,6 @@ def R_discover_sub_clusters_ISA(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon
     #return filtered_sub_clusters
     return merged_sub_clusters
 
-    if False:
-        start_time = time.time() 
-        p_m = R_build_matrix(gene_p_qs)
-        conn = pyRserve.connect()
-        conn.r('require("biclust")')
-        R_args = {
-            'x':p_m,
-            'method':'BCPlaid',
-            'cluster':'b',
-            #'fit.model':'y~m+a+b',
-            'background':False,
-            'row.release':0.7,
-            'col.release':0.7,
-            #'shuffle':3,
-            'shuffle':3,
-            'back.fit':0,
-            'max.layers':20,
-            'iter.startup':5,
-            'iter.layer':10,
-            'verbose':True,
-        }
-        result = conn.r.biclust(**R_args)
-        attr = result.lexeme.attr
-        disease_names = gene_p_qs.keys() #FIXME temporarily comment off for testing p_m
-        clusters = R_parse_cluster_result(attr,disease_names)    
-
-        print 'found ' + str(len(clusters)) + ' clusters\n'    
-        clusters = R_filter_clusters(clusters,gene_p_qs,row_percent,row_cutoff,col_percent,col_cutoff)
-        print("sub_clustering took --- %s seconds ---" % (time.time() - start_time))
-    return clusters
-
 def output_matrix_to_txt(ret):
     genes = ret['filtered_gene_names']
     diseases = ret['sorted_pair_names']
@@ -593,8 +565,6 @@ def output_matrix_to_txt(ret):
         OF.write('\t')
         OF.write(d)
     #write the header
-   
-    
     for i_gene,gene in enumerate(genes):    #write each row
         OF.write('\n')
         OF.write(gene)
@@ -604,7 +574,7 @@ def output_matrix_to_txt(ret):
             p_val = -1
             try:
                 pval = float(p_val_str)
-                pval =  -numpy.log10(pval)
+                #pval =  -numpy.log10(pval)
             except ValueError:
                 pval = 1e-8
             OF.write(str(pval)) 
@@ -637,65 +607,33 @@ def output_seed_to_txt(seeds,gene_p_qs):
         # print genes in current seed
   
 def R_discover_sub_clusters_PLAID(gene_p_qs):
-    if False:
-        binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
-        #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
-        pre_exclude_gene_names = []
-
-        pre_exclude_gene_indices = get_pre_exclude_gene_idx(gene_p_qs,pre_exclude_gene_names)
-
-        seeds = manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices)
-        output_seed_to_txt(seeds,gene_p_qs) 
-        manual_ISA_args = []
-        for seed in seeds:
-            curr_arg = (binary_mat,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,seed)
-            manual_ISA_args.append(curr_arg)
-
-
-        threadPool = multiprocessing.Pool(5)
-        start_time = time.time()
-        sub_clusters_rows_cols = threadPool.map(manual_ISA,manual_ISA_args)        
-        print 'all threads take {} seconds'.format(time.time() - start_time)
-
-        sub_clusters = []
-        for rows_cols in sub_clusters_rows_cols:
-            rows = rows_cols[0]
-            cols = rows_cols[1]
-            manual_ISA_filter_sub_cluster(binary_mat, rows, cols, filter_ratio, filter_ratio)
-            if not numpy.any(rows) or not numpy.any(cols):
-                continue
-
-            curr_sub_cluster = manual_ISA_build_Cluster_objects(gene_p_qs,rows,cols)
-            sub_clusters.append(curr_sub_cluster)
-
-        filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-        merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
-     
-        #return filtered_sub_clusters
-        return merged_sub_clusters
-
-    start_time = time.time() 
-    p_m = R_build_matrix(gene_p_qs)
+    start_time = time.time()
+    #p_m = R_build_matrix(gene_p_qs)
+    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.0005)
     conn = pyRserve.connect()
     conn.r('require("biclust")')
     R_args = {
-        'x':p_m,
+        'x':binary_mat,
         'method':'BCPlaid',
         'cluster':'b',
-        #'fit.model':'y~m+a+b',
-        'background':False,
-        'row.release':0.7,
-        'col.release':0.7,
+        # 'fit.model':'y~m+a+b',
+        #'background':False,
+        'row.release':0.2,
+        'col.release':0.2,
         #'shuffle':3,
-        'shuffle':3,
-        'back.fit':0,
-        'max.layers':20,
-        'iter.startup':5,
-        'iter.layer':10,
-        'verbose':True,
+        #'shuffle':3,
+        #'back.fit':0,
+        #'max.layers':20,
+        #'iter.startup':5,
+        #'iter.layer':10,
+        #'verbose':True,
     }
     result = conn.r.biclust(**R_args)
+    result = conn.r.biclust(binary_mat, method = "BCPlaid")
+
     attr = result.lexeme.attr
+    
+    #pdb.set_trace()
     disease_names = gene_p_qs.keys() #FIXME temporarily comment off for testing p_m
     clusters = R_parse_cluster_result(attr,disease_names)    
 
