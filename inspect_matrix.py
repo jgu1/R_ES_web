@@ -607,10 +607,10 @@ def output_seed_to_txt(seeds,gene_p_qs):
         SEED_TXT.write( '\ncurr_seed_genes = ' + str(curr_seed_genes) )
         # print genes in current seed
   
-def R_discover_sub_clusters_PLAID(gene_p_qs):
+def R_discover_sub_clusters_PLAID(gene_p_qs,binarize_cutoff):
     start_time = time.time()
     #p_m = R_build_matrix(gene_p_qs)
-    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.0005)
+    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,binarize_cutoff)
     conn = pyRserve.connect()
     conn.r('require("biclust")')
     R_args = {

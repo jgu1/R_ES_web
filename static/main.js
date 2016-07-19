@@ -691,18 +691,18 @@ function createGraph() {
                                 .attr("id","ISA_input_wrapper_div");
 
     ISA_input_wrapper_div.append("text")
-         .text("binarize_cutoff");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_binarize_cutoff");
-
-    ISA_input_wrapper_div.append("text")
          .text("filter_ratio");
     ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
          .attr("id","ISA_filter_ratio");
+
+    wrapper_div.append("text")
+         .text("binarize_cutoff");
+    wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","binarize_cutoff");
 
     wrapper_div.append("text")
          .text("consider_all_genes_in_database")
@@ -715,7 +715,12 @@ function createGraph() {
   function draw_input_fields_PLAID(wrapper_div){
     var PLAID_input_wrapper_div = wrapper_div.append("div")
                                 .attr("id","PLAID_input_wrapper_div");
-
+    wrapper_div.append("text")
+         .text("binarize_cutoff");
+    wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","binarize_cutoff");
    
     wrapper_div.append("text")
          .text("consider_all_genes_in_database")
@@ -836,24 +841,16 @@ function createGraph() {
                 var sub_clusters = d3.select("#sub_clusters");
                 sub_clusters.html("");
 
+                var binarize_cutoff = document.getElementById("binarize_cutoff").value;
+                var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
+
 
                 if (document.getElementById("clustering_algs_ISA").checked){
-                    /*
-                    var abs_cutoff = document.getElementById("ISA_abs_cutoff").value;
-                    var per_cutoff  = document.getElementById("ISA_per_cutoff").value;
-                    var converge_epsilon = document.getElementById("ISA_converge_epsilon").value;
-                    var converge_depth  = document.getElementById("ISA_converge_depth").value;
-                    var est_col_width = document.getElementById("ISA_est_col_width").value;
-                    */
-                    var binarize_cutoff = document.getElementById("ISA_binarize_cutoff").value;
                     var filter_ratio  = document.getElementById("ISA_filter_ratio").value;
-                    var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
-
-                    //d3.json("/sub_clusters?alg=ISA&abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
+                    
                     d3.json("/sub_clusters?alg=ISA&filter_ratio="+filter_ratio + "&binarize_cutoff=" + binarize_cutoff + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
                 }else if (document.getElementById("clustering_algs_PLAID").checked){
-                    var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
-                    d3.json("/sub_clusters?alg=PLAID&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
+                    d3.json("/sub_clusters?alg=PLAID&binarize_cutoff=" + binarize_cutoff + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
                 }
             });
    // }
