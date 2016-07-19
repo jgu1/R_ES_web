@@ -47,7 +47,8 @@ def teardown_request(exception):
         dao.db.close()
 
 @app.route('/sub_clusters')
-@app.route("/sub_clusters/<string:alg><string:abs_cutoff><string:per_cutoff><string:converge_epsilon><string:converge_depth><string:est_col_width><string:filter_ratio><string:consider_all_genes_in_database>")
+#@app.route("/sub_clusters/<string:alg><string:abs_cutoff><string:per_cutoff><string:converge_epsilon><string:converge_depth><string:est_col_width><string:filter_ratio><string:consider_all_genes_in_database>")
+@app.route("/sub_clusters/<string:alg><string:binarize_cutoff><string:filter_ratio><string:consider_all_genes_in_database>")
 @app.route("/sub_clusters/<string:alg><string:consider_all_genes_in_database>")
 def sub_clusters():
 
@@ -59,6 +60,7 @@ def sub_clusters():
         converge_epsilon = request.args.get('converge_epsilon','')
         converge_depth   = request.args.get('converge_depth','')
         est_col_width    = request.args.get('est_col_width','')
+        binarize_cutoff  = request.args.get('binarize_cutoff')
         filter_ratio     = request.args.get('filter_ratio','')
         consider_all_genes_in_database = request.args.get('consider_all_genes_in_database','')
         if abs_cutoff == '':
@@ -71,6 +73,8 @@ def sub_clusters():
             converge_depth  = 100
         if est_col_width == '':
             est_col_width = 20
+        if binarize_cutoff == '':
+            binarize_cutoff = 0.003157#1E-2.5
         if filter_ratio == '':
             filter_ratio = 0.3
         if consider_all_genes_in_database == 'true':
@@ -79,7 +83,7 @@ def sub_clusters():
             consider_all_genes_in_database = False
 
         gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
-        sub_clusters = R_discover_sub_clusters_ISA(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio))
+        sub_clusters = R_discover_sub_clusters_ISA(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio),float(binarize_cutoff))
    
     
     elif alg == 'PLAID':

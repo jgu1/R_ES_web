@@ -517,8 +517,9 @@ def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff)
         if curr_sum < num_row * col_cutoff:
             cols[i_col] = 0
 
-def R_discover_sub_clusters_ISA(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,est_col_width,filter_ratio):
-    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
+def R_discover_sub_clusters_ISA(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,est_col_width,filter_ratio,binarize_cutoff):
+    #binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
+    binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,binarize_cutoff)#1E-2.5
     #pre_exclude_gene_names = ['DND1','LRRC37A4','MAPK8IP1','MAPT','ZNF285','CLDN23']
     pre_exclude_gene_names = []
 

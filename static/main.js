@@ -691,40 +691,11 @@ function createGraph() {
                                 .attr("id","ISA_input_wrapper_div");
 
     ISA_input_wrapper_div.append("text")
-         .text("abs_cutoff")
+         .text("binarize_cutoff");
     ISA_input_wrapper_div.append("input")
          .attr("type","text")
          .attr("size","10")
-         .attr("id","ISA_abs_cutoff");
-
-    ISA_input_wrapper_div.append("text")
-         .text("per_cutoff");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_per_cutoff");
-
-    ISA_input_wrapper_div.append("text")
-         .text("converge_epsilon")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_converge_epsilon");
-
-    ISA_input_wrapper_div.append("text")
-         .text("converge_depth");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_converge_depth");
-
-    ISA_input_wrapper_div.append("text")
-         .text("est_col_width")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_est_col_width");
-
+         .attr("id","ISA_binarize_cutoff");
 
     ISA_input_wrapper_div.append("text")
          .text("filter_ratio");
@@ -745,50 +716,7 @@ function createGraph() {
     var PLAID_input_wrapper_div = wrapper_div.append("div")
                                 .attr("id","PLAID_input_wrapper_div");
 
-    /*
-    ISA_input_wrapper_div.append("text")
-         .text("abs_cutoff")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_abs_cutoff");
-
-    ISA_input_wrapper_div.append("text")
-         .text("per_cutoff");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_per_cutoff");
-
-    ISA_input_wrapper_div.append("text")
-         .text("converge_epsilon")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_converge_epsilon");
-
-    ISA_input_wrapper_div.append("text")
-         .text("converge_depth");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_converge_depth");
-
-    ISA_input_wrapper_div.append("text")
-         .text("est_col_width")
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_est_col_width");
-
-
-    ISA_input_wrapper_div.append("text")
-         .text("filter_ratio");
-    ISA_input_wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","ISA_filter_ratio");
-    */
+   
     wrapper_div.append("text")
          .text("consider_all_genes_in_database")
     wrapper_div.append("input")
@@ -910,15 +838,19 @@ function createGraph() {
 
 
                 if (document.getElementById("clustering_algs_ISA").checked){
+                    /*
                     var abs_cutoff = document.getElementById("ISA_abs_cutoff").value;
                     var per_cutoff  = document.getElementById("ISA_per_cutoff").value;
                     var converge_epsilon = document.getElementById("ISA_converge_epsilon").value;
                     var converge_depth  = document.getElementById("ISA_converge_depth").value;
                     var est_col_width = document.getElementById("ISA_est_col_width").value;
+                    */
+                    var binarize_cutoff = document.getElementById("ISA_binarize_cutoff").value;
                     var filter_ratio  = document.getElementById("ISA_filter_ratio").value;
                     var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
 
-                    d3.json("/sub_clusters?alg=ISA&abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
+                    //d3.json("/sub_clusters?alg=ISA&abs_cutoff="+abs_cutoff+"&per_cutoff="+per_cutoff+"&converge_epsilon="+converge_epsilon+"&converge_depth="+converge_depth + "&est_col_width="+est_col_width+"&filter_ratio="+filter_ratio + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
+                    d3.json("/sub_clusters?alg=ISA&filter_ratio="+filter_ratio + "&binarize_cutoff=" + binarize_cutoff + "&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
                 }else if (document.getElementById("clustering_algs_PLAID").checked){
                     var consider_all_genes_in_database = document.getElementById("consider_all_genes_in_database").checked
                     d3.json("/sub_clusters?alg=PLAID&consider_all_genes_in_database="+consider_all_genes_in_database,sub_clusterscallback);
