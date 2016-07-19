@@ -807,6 +807,7 @@ function createGraph() {
          .on("change",function(d){
             clustering_algs_input_wrapper_div.html("");
             if (this.checked) {
+                document.getElementById('clustering_algs_PLAID').checked = false;
                 draw_input_fields_ISA(clustering_algs_input_wrapper_div);
             }
          });
@@ -821,6 +822,7 @@ function createGraph() {
          .on("change",function(d){
             clustering_algs_input_wrapper_div.html("");
             if (this.checked) {
+                document.getElementById('clustering_algs_ISA').checked = false;
                 draw_input_fields_PLAID(clustering_algs_input_wrapper_div);
             }
 
