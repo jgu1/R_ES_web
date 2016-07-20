@@ -79,7 +79,7 @@ def sub_clusters():
         if binarize_cutoff == '':
             binarize_cutoff = 0.003157#1E-2.5
         if filter_ratio == '':
-            filter_ratio = 0.3
+            filter_ratio = 0.5
    
         gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
         sub_clusters = R_discover_sub_clusters_ISA(gene_p_qs,float(abs_cutoff),float(per_cutoff),float(converge_epsilon),float(converge_depth),float(est_col_width),float(filter_ratio),float(binarize_cutoff))
