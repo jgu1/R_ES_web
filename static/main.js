@@ -94,23 +94,6 @@ function createGraph() {
                       .attr("width",1000)
                       .style("overflow","scroll");
 
-    var Manhattan_input_div = wrapper_div.append('div')
-                                .attr("height",size)
-                                .attr("width" ,1000)
-                                //.style("overflow","scroll")
-                                .style("margin-left","600px")
-                                .attr("id","Manhattan_input_div");
-
-    var Manhattan_checkbox = Manhattan_input_div.selectAll('input')
-                             .data(geneNames)
-                             .enter()
-                                .append('input')
-                                .attr("type","checkbox")
-                                .attr("checked",null);
-
-
-
-
     var svg = wrapper_div.append("svg")
                     .attr("width", w + 5 * margin)
                     .attr("height",height_pair + margin)
@@ -521,7 +504,7 @@ function createGraph() {
     var xValue = function(d) { return d[1];}, // data -> value
         xScale = d3.scaleLinear().range([0, Manhattan_width]), // value -> display
         xMap = function(d) { return xScale(xValue(d));}, // data -> display
-        xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+        xAxis = d3.axisBottom().scale(xScale);
 
     // setup y
     var yValue = function(d) {  var pval = parseFloat(d[2]); 
@@ -535,11 +518,11 @@ function createGraph() {
                 yScale_input = yScaleMax;
             }
             return yScale(yScale_input);}, // data -> display
-        yAxis = d3.svg.axis().scale(yScale).orient("left");
+        yAxis = d3.axisLeft().scale(yScale);
 
     // setup fill color
-    var cValue = function(d) {return d[3]} // color by gene
-    color = d3.scale.category20();
+    var cValue = function(d) {return d[3]}; // color by gene
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
 
     var tooltip = Manhattan.append("div")
         .attr("class", "tooltip")
