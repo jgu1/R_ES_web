@@ -54,6 +54,7 @@ function createGraph() {
   function draw_subcluster(gene_p_qs,geneNames,pairNames,geneDescriptions,num_seeds){
     var matrix = [];
     var size = 15;
+    var selectedTextColor = "green"
     pairNames.sort();
     for (var i = 0; i<pairNames.length;i++) {
         pairName = pairNames[i];
@@ -68,7 +69,7 @@ function createGraph() {
     }
     var max_pval = 5;
     var min_pval = 0;
-    var color_scale=d3.scale.linear()
+    var color_scale=d3.scaleLinear()
                         .domain([min_pval,max_pval])
                         .range(['#ffeda0','#f03b20']);
 
@@ -98,7 +99,7 @@ function createGraph() {
                                 .attr("width" ,1000)
                                 //.style("overflow","scroll")
                                 .style("margin-left","600px")
-                                .attr("class","Manhattan_input_div");
+                                .attr("id","Manhattan_input_div");
 
     var Manhattan_checkbox = Manhattan_input_div.selectAll('input')
                              .data(geneNames)
@@ -154,7 +155,7 @@ function createGraph() {
         .attr("x1",-height_pair)
         .style("stroke","#fff");
 
-    column.append("text")
+    var columnText = column.append("text")
       .attr("x", 6)
       .attr("y", 7)
       .attr("width",size)
@@ -162,6 +163,17 @@ function createGraph() {
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; })
       .on("click", function(d,i) {sortAlongColumn(i);}) 
+      .on("contextmenu",function(d,i){
+            d3.event.preventDefault();
+            var currColor = this.getAttribute("fill");
+            if (currColor != selectedTextColor){
+                this.setAttribute("fill",selectedTextColor);
+            }else{
+                this.setAttribute("fill",null);
+            }
+        });
+
+    columnText
       .append("title")
         .text(function(d,i){return geneNames[i] +": " + geneDescriptions[i]; });
  
@@ -271,12 +283,15 @@ function createGraph() {
                             d3.select("#Manhattan").remove();
                             wrapper_div.append("div")
                                 .attr("id","Manhattan")
-        
-                            var selected_geneNames = Manhattan_input_div.selectAll('input')[0].map(function(checkBox){
-                                          var gene = checkBox.__data__;
-                                          var checked = checkBox.checked;
-                                          if (checked){return gene;}
-                                          });
+
+                            var selected_geneNames = columnText._groups[0].map(function(text){
+                                var oH = text.outerHTML;
+                                var selectedTag = 'fill="' + selectedTextColor+'"'; 
+                                if (oH.indexOf(selectedTag)>-1){
+                                    var geneName = text.__data__;
+                                    return geneName;
+                                }
+                            });
 
                             d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
@@ -331,7 +346,7 @@ function createGraph() {
 
     var max_pval = 5;
     var min_pval = 0;
-    var color_scale=d3.scale.linear()
+    var color_scale=d3.scaleLinear()
                         .domain([min_pval,max_pval])
                         .range(['#ffeda0','#f03b20']);
 
@@ -504,7 +519,7 @@ function createGraph() {
 
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
-        xScale = d3.scale.linear().range([0, Manhattan_width]), // value -> display
+        xScale = d3.scaleLinear().range([0, Manhattan_width]), // value -> display
         xMap = function(d) { return xScale(xValue(d));}, // data -> display
         xAxis = d3.svg.axis().scale(xScale).orient("bottom");
 
@@ -512,7 +527,7 @@ function createGraph() {
     var yValue = function(d) {  var pval = parseFloat(d[2]); 
                                 return -Math.log10(pval);
                              }, // data -> value
-        yScale = d3.scale.linear().range([Manhattan_height, 0]), // value -> display
+        yScale = d3.scaleLinear().range([Manhattan_height, 0]), // value -> display
         yMap = function(d) {
             var yValue_direct = yValue(d);
             var yScale_input  = yValue_direct;
@@ -752,7 +767,7 @@ function createGraph() {
     }   
     var max_pval = 5;
     var min_pval = 0;
-    var color_scale=d3.scale.linear()
+    var color_scale=d3.scaleLinear()
                         .domain([min_pval,max_pval])
                         .range(['#ffeda0','#f03b20']);
 
