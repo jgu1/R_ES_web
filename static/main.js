@@ -495,8 +495,10 @@ function createGraph() {
     var Manhattan = d3.select("#Manhattan");
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40};
-    var Manhattan_width = 1000 - margin.left - margin.right; // should not be null, because at least one gene has SNPs
-    var Manhattan_height = 240 - margin.top  - margin.bottom;
+    var total_width  = 1000;
+    var total_height = 240; 
+    var Manhattan_width = total_width - margin.left - margin.right; // should not be null, because at least one gene has SNPs
+    var Manhattan_height = total_height - margin.top  - margin.bottom;
     var xScaleMax = 3500000000;
     var yScaleMax = 15;
 
@@ -538,36 +540,139 @@ function createGraph() {
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
+
         
+        //var zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
+
+        //Zoom in v4
+        var gx1 = d3.scaleLinear()
+            .range([0,Manhattan_width]);
+
+        var gx2 = d3.scaleLinear()
+         
+            .range([0,Manhattan_width]);
+
+        gx1.domain([0, xScaleMax]).nice();
+         
+        gx2.domain([0, xScaleMax]).nice();
+
+        var zoomX = d3.zoom().scaleExtent([0.2, 2000000]).on("zoom", zoomedX);
+        //Zoom in v4
+
         var svg = Manhattan.append("svg")
                 .attr("width", Manhattan_width + margin.left + margin.right)
                 .attr("height", Manhattan_height + margin.top + margin.bottom)
               .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+                .call(zoomX)
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .attr("class","Manhattan_group");
+            
+        svg.append("rect")
+                .attr("width", Manhattan_width)
+                .attr("height", Manhattan_height)
+                .style("fill", "none")
+                .style("pointer-events", "all");
         svg.append("g")
           .attr("class","Manhattan_pairName")
          .append("text")
           .text(curr_Manhattan_pairName);
+
+        function zoomedX(){
+            var tr = d3.event.transform;
+            gx2 = tr.rescaleX(gx1);
+            var x = gx2.domain()[0];
+            var y = gx2.domain()[1];
+            console.log("gx2: x,y:"+x+ ' '+ y + ' ')
+            console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
+            Manhattan.selectAll(".Manhattan_group").selectAll(".dot")
+                .attr("cx",xcoord);
+            Manhattan.selectAll(".Manhattan_group").selectAll(".xAxis")
+                .call(xAxis.scale(gx2));
+
+            Manhattan.selectAll(".Manhattan_group").selectAll(".chrom_starts")
+                .attr("x1",function(d){return gx2(d)})
+                .attr("x2",function(d){return gx2(d)});
+
+            Manhattan.selectAll(".Manhattan_group").selectAll(".gene_starts")
+                .attr("x",function(d){
+                  var chromStart_chromEnd = gene_location_dict[d]; 
+                  var chromStart = chromStart_chromEnd[0];
+                  var x = 0;
+                  if (chromStart != null){
+                    x = gx2(chromStart);
+                  }
+                  return x;
+                })
+               .attr("width",function(d){
+                 var chromStart_chromEnd = gene_location_dict[d]; 
+                 var chromStart = chromStart_chromEnd[0];
+                 var chromEnd   = chromStart_chromEnd[1];
+                 var width = 1;
+                 if (chromStart != null && chromEnd != null){
+                    width = gx2(chromEnd) - gx2(chromStart);
+                 }
+                 if (width < 1){ width = 1;}
+                 return width;
+              });
+ 
+
+            
+        };
+
+        //Zoom in v4
+        var xcoord = function(d){
+            return gx2(xValue(d));
+        };
+
+        //Zoom in v4
 
 
         // draw a black line to indicate the location chromosome starts
         svg.selectAll(".chrom_starts").data([]).exit().remove();
         var chrom_starts =svg.selectAll(".chrom_starts")
               .data(chrom_starts_data)
-              .enter().append("g")
+              .enter().append("line")
               .attr("class","chrom_starts")
-              .attr("transform", function(d) { 
-                var x_translate = 0;
-                if (d == 0) x_translate = 0;
-                else x_translate = xScale(d);
-                return"translate(" + x_translate + ")rotate(-90)"; 
-                });
-               
-        chrom_starts.append("line")
-            .attr("x1",-Manhattan_height)
-            .style("stroke","black");
+              .attr("x1",function(d){return xScale(d);})
+              .attr("x2",function(d){return xScale(d);})
+              .attr("y1",0)
+              .attr("y2",Manhattan_height) 
+              .style("opacity", .2)
+              .style("stroke","black");
  
+        svg.selectAll(".gene_starts").data([]).exit().remove();
+        var gene_starts =svg.selectAll(".gene_starts")
+              .data(Manhattan_geneNames)
+              .enter().append("rect")
+              .attr("class","gene_starts")
+              .attr("x",function(d){
+                var chromStart_chromEnd = gene_location_dict[d]; 
+                var chromStart = chromStart_chromEnd[0];
+                var x = 0;
+                if (chromStart != null){
+                    x = xScale(chromStart);
+                }
+                return x;
+              })
+              .attr("y",0)
+              .attr("width",function(d){
+                var chromStart_chromEnd = gene_location_dict[d]; 
+                var chromStart = chromStart_chromEnd[0];
+                var chromEnd   = chromStart_chromEnd[1];
+                var diff       = chromEnd - chromStart;
+                var width = 1;
+                if (chromStart != null && chromEnd != null){
+                    width = xScale(chromEnd) -xScale(chromStart);
+                }
+                if (width < 1){ width = 1;}
+                return width;
+              })
+              .attr("height",Manhattan_height)
+              .attr("fill",function(d){
+                return color(d);
+              });
+    
+        /*
         // draw a color coded line to indicate the location gene starts
         svg.selectAll(".gene_starts").data([]).exit().remove();
         var gene_starts =svg.selectAll(".gene_starts")
@@ -591,11 +696,11 @@ function createGraph() {
             .style("stroke",function(d){
                 return color(d);
             })
-
+        */
         
         // x-axis
         svg.append("g")
-          .attr("class", "x axis")
+          .attr("class", "xAxis")
           .attr("transform", "translate(0," + Manhattan_height + ")")
           //.attr("transform", "translate(0,)")
           .call(xAxis)
@@ -608,7 +713,7 @@ function createGraph() {
 
         // y-axis
         svg.append("g")
-          .attr("class", "y axis")
+          .attr("class", "yAxis")
           .call(yAxis)
         .append("text")
           .attr("class", "label")
