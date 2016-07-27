@@ -386,7 +386,7 @@ def manual_ISA(args):
             print 'xxx ABORTION, ALL ZERO'
             break
         if converge(curr_cols,prev_cols,converge_epsilon):
-            print '$$$ REAL CONVERGE'
+            print '$$$ REAL CONVERGE num_rows = ' + str(numpy.count_nonzero(curr_rows)) + '     num_cols = ' + str(numpy.count_nonzero(curr_cols))
             #pdb.set_trace()
             a = 1
             break

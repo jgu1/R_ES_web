@@ -900,9 +900,9 @@ function createGraph() {
                     .text("draw Manhattan Plots")
                     .style("margin-left","600px")
                     .on("click",function(d){
-                        /*
+                        
                         d3.select("#Manhattan").remove();
-                        wrapper_div.append("div")
+                        chart.append("div")
                             .attr("id","Manhattan")
 
                         var selected_geneNames = columnText._groups[0].map(function(text){
@@ -913,9 +913,8 @@ function createGraph() {
                                 return geneName;
                             }
                         });
-
+                        
                         d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
-                        */
                         }
                     ) ;
 
