@@ -15,21 +15,30 @@ class DAO(object):
     display_name_GWAS_eQTL_tuple_dict = None
 
     def __init__(self,web_disease_list,web_eQTL_list):
-        #self.db = sqlite3.connect(DATABASE)
-        self.db = MySQLdb.connect(host="localhost", # your host, usually localhost
-                    user="root", # your username
-                    passwd="genome", # your password
+        self.db = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
+                    user="es", # your username
+                    passwd="detective", # your password
                     db="ES_OUTPUT") # name of the data base
-        
-        self.db_hg19 = MySQLdb.connect(host="localhost",
-                    user="root",
-                    passwd="genome",
+ 
+        self.db_hg19 = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
+                    user="es",
+                    passwd="detective",
                     db="hg19")
 
-        self.db_GWAS = MySQLdb.connect(host="localhost",
-                    user="root",
-                    passwd="genome",
-                    db="GWAS")
+        #self.db = MySQLdb.connect(host="localhost", # your host, usually localhost
+        #            user="root", # your username
+        #            passwd="genome", # your password
+        #            db="ES_OUTPUT") # name of the data base
+        
+        #self.db_hg19 = MySQLdb.connect(host="localhost",
+        #            user="root",
+        #            passwd="genome",
+        #            db="hg19")
+
+        #self.db_GWAS = MySQLdb.connect(host="localhost",
+        #            user="root",
+        #            passwd="genome",
+        #            db="GWAS")
         if web_disease_list is not None and web_eQTL_list is not None:
             self.gen_display_name_GWAS_eQTL_tuple_dict(web_disease_list,web_eQTL_list)
 
