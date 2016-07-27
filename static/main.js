@@ -834,6 +834,7 @@ function createGraph() {
   }
 
   var draw_pair = function(draw_pair_json_obj){
+    var selectedTextColor = "green"
     var matrix = [];
     var pairNames = [];
     var geneNames = [];
@@ -893,7 +894,32 @@ function createGraph() {
       .attr("height", height_pair);
 
    // show_sub_clusters_button = document.getElementById('show_discover_sub_clusters_button').value 
-                                      
+ 
+    var Manhattan_btn = chart.append('button')
+                    .attr("type","button")
+                    .text("draw Manhattan Plots")
+                    .style("margin-left","600px")
+                    .on("click",function(d){
+                        /*
+                        d3.select("#Manhattan").remove();
+                        wrapper_div.append("div")
+                            .attr("id","Manhattan")
+
+                        var selected_geneNames = columnText._groups[0].map(function(text){
+                            var oH = text.outerHTML;
+                            var selectedTag = 'fill="' + selectedTextColor+'"'; 
+                            if (oH.indexOf(selectedTag)>-1){
+                                var geneName = text.__data__;
+                                return geneName;
+                            }
+                        });
+
+                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
+                        */
+                        }
+                    ) ;
+
+                                     
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
                                             .style("margin-left", 5* margin + "px");
@@ -959,6 +985,10 @@ function createGraph() {
                 }
             });
    // }
+
+
+
+
 
     var pair = svg.selectAll(".pair")
       .data(matrix)
@@ -1078,7 +1108,7 @@ function createGraph() {
         .style("stroke","#fff");
 
 
-    column.append("text")
+    var columnText = column.append("text")
       .attr("x", 6)
       .attr("y", 7)
       .attr("width",size)
@@ -1086,7 +1116,17 @@ function createGraph() {
       .attr("dy", ".32em")
       .text(function(d, i) { return geneNames[i]; }) 
       .on("click", function(d,i) {sortAlongColumn(i);})
-      .append("title")
+      .on("contextmenu",function(d,i){
+            d3.event.preventDefault();
+            var currColor = this.getAttribute("fill");
+            if (currColor != selectedTextColor){
+                this.setAttribute("fill",selectedTextColor);
+            }else{
+                this.setAttribute("fill",null);
+            }
+        });
+
+      columnText.append("title")
           .text(function(d,i){ return geneNames[i] +": "+ geneDescriptions[i];});
  
   function pair(pair) {
