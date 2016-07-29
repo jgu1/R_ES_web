@@ -182,7 +182,9 @@ def Manhattan():
     start_time = time.time()
     location_pval_chrom_SNPlist_dict,chrom_starts = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
     print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
-   
+
+    dao.Manhattan_gen_eQTL_SNPlist(location_pval_chrom_SNPlist_dict,genes)
+
     gene_location_dict = dao.Manhattan_gen_gene_location_dict(genes) 
 
     ret = {}

@@ -506,16 +506,40 @@ def manual_ISA_gen_seeds(binary_mat,est_col_width,pre_exclude_gene_indices):
     #seed0 = seeds[:,0]
 
 def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff):
-    num_row = numpy.count_nonzero(rows)
-    num_col = numpy.count_nonzero(cols)
+    #############
+    filter_epsilon = 0.1
+    while True:
+        num_row = numpy.count_nonzero(rows)
+        num_col = numpy.count_nonzero(cols)
+        print 'filtering: num_row = ' + str(num_row)
+        print 'filtering: num_col = ' + str(num_col) 
+        prev_rows = rows
 
+        nonzero_col_indices = numpy.nonzero(cols)[0].tolist() #numpy.nonzero(cols) return a 2-elements tuple
+        for i_col in nonzero_col_indices:
+            curr_col = binary_mat[:,i_col]
+            #curr_sum = numpy.sum(curr_col)
+            curr_sum = numpy.inner(curr_col,rows)
+            if curr_sum < num_row * col_cutoff:
+                cols[i_col] = 0 
+    
+        num_col = numpy.count_nonzero(cols)
+        nonzero_row_indices = numpy.nonzero(rows)[0].tolist() #numpy.nonzero(cols) return a 2-elements tuple
+        for i_row in nonzero_row_indices:
+            curr_row = binary_mat[i_row,:]
+            #curr_sum = numpy.sum(curr_row)
+            curr_sum = numpy.inner(curr_row,cols)
+            if curr_sum < num_col * row_cutoff:
+                rows[i_row] = 0
 
-    nonzero_col_indices = numpy.nonzero(cols)[0].tolist() #numpy.nonzero(cols) return a 2-elements tuple
-    for i_col in nonzero_col_indices:
-        curr_col = binary_mat[:,i_col]
-        curr_sum = numpy.sum(curr_col)
-        if curr_sum < num_row * col_cutoff:
-            cols[i_col] = 0
+        #curr_num_row = numpy.count_nonzero(rows)
+        #diff = curr_num_row - num_row
+        diff = abs(rows - prev_rows)
+        delta_length = numpy.count_nonzero(diff)
+        print 'delta_length = ' + str(delta_length)
+        if abs( float(delta_length) / num_row  ) < filter_epsilon:
+            print '$$$ filtering success, the final count is num_row = ' + str(num_row) + ' num_col = ' + str(num_col)
+            break
 
 def R_discover_sub_clusters_ISA(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon,converge_depth,est_col_width,filter_ratio,binarize_cutoff):
     #binary_mat = R_build_numpy_matrix_from_gene_p_qs(gene_p_qs,0.003157)#1E-2.5
@@ -550,10 +574,10 @@ def R_discover_sub_clusters_ISA(gene_p_qs,abs_cutoff,per_cutoff,converge_epsilon
         sub_clusters.append(curr_sub_cluster)
 
     filtered_sub_clusters = filter_out_child_sub_clusters(sub_clusters)  
-    merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
+    #merged_sub_clusters = merge_sub_clusters_with_same_cols(filtered_sub_clusters)
  
-    #return filtered_sub_clusters
-    return merged_sub_clusters
+    return filtered_sub_clusters
+    #return merged_sub_clusters
 
 def output_matrix_to_txt(ret):
     genes = ret['filtered_gene_names']

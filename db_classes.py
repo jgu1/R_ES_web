@@ -600,7 +600,7 @@ class DAO(object):
             prev_GWAS_list.append(curr_GWAS)
 
         disease_GWAS_dict[curr_disease] = prev_GWAS_list # at the end of iteration, add last disease into dict
- 
+
         return disease_GWAS_dict
 
     def build_eQTL_tissue_dict(self):
@@ -764,3 +764,33 @@ class DAO(object):
         #a = 1   
         print 'Manhattan fetching SNPs for gene "' + gene + '" takes ' + str(time.time() - start_time) + ' seconds' 
         return Manhattan_SNP_fields_list_dict, Manhattan_SNP_fields_list_dict.keys()
+
+    def Manhattan_gen_eQTL_SNPlist(self,location_pval_chrom_SNPlist_dict,genes):
+        gene_str_list = []
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
+        for gene in genes:
+            gene_str_list.append('"' + gene + '"')
+        gene_str = '(' + ','.join(gene_str_list) + ')'
+        for pair in location_pval_chrom_SNPlist_dict:
+            GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
+            eQTL = GWAS_eQTL[1]
+            sql_template = 'select SNP,chromStart,pval,gene,chrom from eQTLs where eQTL = "' + eQTL + '" and gene in ' + gene_str + ';'
+            rows = self.exec_fetch_SQL(sql_template)
+            curr_eQTL_SNPlist = []
+            for row in rows:
+                SNP         = row[0]
+                chromStart  = row[1]
+                pval        = row[2]
+                gene        = row[3]
+                chrom       = row[4]
+
+                chrom_location_whole = chrom_abs_dict[chrom] + chromStart                
+                
+                eQTL_SNPlist_ele = (SNP,chrom_location_whole,str(pval),eQTL,chrom)
+                curr_eQTL_SNPlist.append(eQTL_SNPlist_ele)
+
+            a = 1
+            location_pval_chrom_SNPlist_dict[pair] = location_pval_chrom_SNPlist_dict[pair] + curr_eQTL_SNPlist
+                
+ 
+
