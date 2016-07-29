@@ -792,5 +792,10 @@ class DAO(object):
             a = 1
             location_pval_chrom_SNPlist_dict[pair] = location_pval_chrom_SNPlist_dict[pair] + curr_eQTL_SNPlist
                 
+    def Manhattan_get_all_eQTL_names(self):
+        sql_template = "select distinct eQTL from eQTLs;"
+        rows = self.exec_fetch_SQL(sql_template)
+        all_eQTL_names = [row[0] for row in rows]
+        return all_eQTL_names
  
 

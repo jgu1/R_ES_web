@@ -489,7 +489,7 @@ function createGraph() {
     var chrom_starts_data                = data.chrom_starts;
     var Manhattan_geneNames              = data.Manhattan_geneNames;
     var gene_location_dict               = data.gene_location_dict;  
-
+    var all_eQTL_names                   = data.all_eQTL_names;
  
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
@@ -730,7 +730,13 @@ function createGraph() {
           .attr("r", 3.5)
           .attr("cx", xMap)
           .attr("cy", yMap)
-          .style("fill", function(d) { return color(cValue(d));}) 
+          .style("fill", function(d) { 
+            if (cValue(d) == 'Merged_08212015_pruned_LD02'){
+                return 'black';
+            }
+
+            return color(cValue(d));
+            }) 
           .on("mouseover", function(d) {
                   tooltip.html("");
                   tooltip.transition()

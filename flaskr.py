@@ -187,12 +187,15 @@ def Manhattan():
 
     gene_location_dict = dao.Manhattan_gen_gene_location_dict(genes) 
 
+    all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
+
     ret = {}
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
     ret['chrom_starts'] = chrom_starts
     ret['Manhattan_geneNames'] = genes
     ret['gene_location_dict'] = gene_location_dict
+    ret['all_eQTL_names'] = all_eQTL_names
     return jsonify(ret)
 
 
