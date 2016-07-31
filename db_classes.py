@@ -798,4 +798,27 @@ class DAO(object):
         all_eQTL_names = [row[0] for row in rows]
         return all_eQTL_names
  
-
+    def remove_sub_clusters_from_same_disease(self,sub_clusters):
+        sub_clusters_new = []
+        for sub_cluster in sub_clusters:
+            disease_set = set()
+            row_comb = sub_cluster.row_comb
+            for row in row_comb:
+                GWAS_eQTL   = self.display_name_GWAS_eQTL_tuple_dict[row]
+                GWAS        = GWAS_eQTL[0]
+                disease     = self.get_disease_by_GWAS(GWAS)
+                disease_set.add(disease)
+            if len(disease_set) > 1:
+                sub_clusters_new.append(sub_cluster)
+            else:
+                print 'remove one subcluster all belong to disease: ' + str(disease_set)
+        return sub_clusters_new
+    
+    def get_disease_by_GWAS(self,GWAS):
+        sql_template = 'select disease from disease_GWAS where GWAS = "'  + GWAS + '";'
+        rows = self.exec_fetch_SQL(sql_template)
+        if len(rows) != 1:
+            print 'cannot find disease for GWAS ' + GWAS
+            return None
+        else:
+            return rows[0][0]      

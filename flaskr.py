@@ -69,7 +69,7 @@ def sub_clusters():
         if abs_cutoff == '':
             abs_cutoff = 3
         if per_cutoff == '':
-            per_cutoff  = 0.5
+            per_cutoff  = 0.4
         if converge_epsilon == '':
             converge_epsilon = 0.1
         if converge_depth == '':
@@ -90,6 +90,9 @@ def sub_clusters():
             binarize_cutoff = 0.0001
         gene_p_qs,filtered_gene_names,gene_descriptions = fetch_and_build_matrix(consider_all_genes_in_database)
         sub_clusters = R_discover_sub_clusters_PLAID(gene_p_qs,float(binarize_cutoff))
+
+    dao = getattr(g, 'dao', None)
+    sub_clusters = dao.remove_sub_clusters_from_same_disease(sub_clusters)
  
     serisables = []
     for sub_cluster in sub_clusters:
