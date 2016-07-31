@@ -771,6 +771,8 @@ class DAO(object):
         for gene in genes:
             gene_str_list.append('"' + gene + '"')
         gene_str = '(' + ','.join(gene_str_list) + ')'
+        
+        eQTL_SNPlist_dict = {}
         for pair in location_pval_chrom_SNPlist_dict:
             GWAS_eQTL = self.display_name_GWAS_eQTL_tuple_dict[pair]
             eQTL = GWAS_eQTL[1]
@@ -790,8 +792,9 @@ class DAO(object):
                 curr_eQTL_SNPlist.append(eQTL_SNPlist_ele)
 
             a = 1
-            location_pval_chrom_SNPlist_dict[pair] = location_pval_chrom_SNPlist_dict[pair] + curr_eQTL_SNPlist
-                
+            eQTL_SNPlist_dict[pair] = curr_eQTL_SNPlist
+               
+        return eQTL_SNPlist_dict 
     def Manhattan_get_all_eQTL_names(self):
         sql_template = "select distinct eQTL from eQTLs;"
         rows = self.exec_fetch_SQL(sql_template)

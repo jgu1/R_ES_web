@@ -490,6 +490,8 @@ function createGraph() {
     var Manhattan_geneNames              = data.Manhattan_geneNames;
     var gene_location_dict               = data.gene_location_dict;  
     var all_eQTL_names                   = data.all_eQTL_names;
+    var eQTL_SNPlist_dict                = data.eQTL_SNPlist_dict;
+
  
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
@@ -501,6 +503,7 @@ function createGraph() {
     var Manhattan_height = total_height - margin.top  - margin.bottom;
     var xScaleMax = 3500000000;
     var yScaleMax = 8;
+    var yScaleMax_eQTL = 16;
 
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
@@ -522,6 +525,19 @@ function createGraph() {
             return yScale(yScale_input);}, // data -> display
         yAxis = d3.axisLeft().scale(yScale);
 
+    // setup y for eQTL
+    var yScale_eQTL = d3.scaleLinear().range([Manhattan_height, 0]), // value -> display
+        yMap_eQTL = function(d) {
+            var yValue_direct = yValue(d);
+            var yScale_input  = yValue_direct;
+            if (yScale_input > yScaleMax_eQTL){  // if pval is too large, it will go beyond plot, truncate it
+                yScale_input = yScaleMax_eQTL;
+            }
+            return yScale_eQTL(yScale_input);}; // data -> display
+    var yAxis_eQTL = d3.axisRight().scale(yScale_eQTL);
+
+
+
     // setup fill color
     var cValue = function(d) {return d[3]}; // color by gene
     var color = d3.scaleOrdinal(d3.schemeCategory20);
@@ -534,14 +550,15 @@ function createGraph() {
 
     xScale.domain([0,xScaleMax]);
     yScale.domain([0,yScaleMax]);
+    yScale_eQTL.domain([0,yScaleMax_eQTL]);
 
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     Manhattan_pairNames.sort();
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
-
-        
+        curr_eQTLlist      = eQTL_SNPlist_dict[curr_Manhattan_pairName];
+          
         //var zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
 
         //Zoom in v4
@@ -586,6 +603,9 @@ function createGraph() {
             console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
             Manhattan.selectAll(".Manhattan_group").selectAll(".dot")
                 .attr("cx",xcoord);
+
+            Manhattan.selectAll(".Manhattan_group").selectAll(".recteQTL")
+                .attr("x",xcoord);
             Manhattan.selectAll(".Manhattan_group").selectAll(".xAxis")
                 .call(xAxis.scale(gx2));
 
@@ -671,33 +691,7 @@ function createGraph() {
               .attr("fill",function(d){
                 return color(d);
               });
-    
-        /*
-        // draw a color coded line to indicate the location gene starts
-        svg.selectAll(".gene_starts").data([]).exit().remove();
-        var gene_starts =svg.selectAll(".gene_starts")
-              .data(Manhattan_geneNames)
-              .enter().append("g")
-              .attr("class","gene_starts")
-              .attr("transform", function(d) { 
-                var chromStart_chromEnd = gene_location_dict[d]; 
-                var chromStart = chromStart_chromEnd[0];
-                x_translate = 0;
-                if (chromStart == null){
-                    x_translate = 0;
-                }else{
-                    x_translate = xScale(chromStart);
-                }
-                return"translate(" + x_translate + ")rotate(-90)"; 
-                });
-
-        gene_starts.append("line")
-            .attr("x1", -Manhattan_height)
-            .style("stroke",function(d){
-                return color(d);
-            })
-        */
-        
+           
         // x-axis
         svg.append("g")
           .attr("class", "xAxis")
@@ -739,6 +733,53 @@ function createGraph() {
                 return color(gene_or_eQTL);                 //gene
             }
             }) 
+          .on("mouseover", function(d) {
+                  tooltip.html("");
+                  tooltip.transition()
+                       .duration(200)
+                       .style("opacity", .9);
+          
+                  tooltip.style("left", (d3.event.pageX ) + "px")
+                       //.style("top", (d3.event.pageY - 60) + "px")
+                       .style("top", function(d){
+                            return (d3.event.pageY - 60) + "px"})
+                       .html(d[0] + "(" + d[4] + ")"
+                            + " <br/>pval: " + yValue(d) 
+                            + " <br/>gene: " + d[3]
+                            );
+              })
+          .on("mouseout", function(d) {
+                  tooltip.transition()
+                       .duration(500)
+                       .style("opacity", 0);
+              });
+
+
+        // y-axis
+        svg.append("g")
+          .attr("class", "yAxis_eQTL")
+          .call(yAxis_eQTL)
+        .append("text")
+          .attr("class", "label")
+          .attr("transform", "translate(" + Manhattan_width + ",0)" + "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("eQTL: -log10(p-value)");
+
+        //draw eQTLs
+        svg.selectAll(".recteQTL")
+          .data(curr_eQTLlist)
+        .enter().append("rect")
+          .attr("class", "recteQTL")
+          .attr("width", 10)
+          .attr("height",10)
+          .attr("x", xMap)
+          .attr("y", yMap_eQTL)
+          .style("fill", function(d) {return "black";})
+          .style("fill-opacity",0.1)
+          .style("stroke",function(d){return "black"})
+          .style("stoke-width",function(d){return 5}) 
           .on("mouseover", function(d) {
                   tooltip.html("");
                   tooltip.transition()
