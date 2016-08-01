@@ -711,7 +711,6 @@ function createGraph() {
           .call(yAxis)
         .append("text")
           .attr("class", "label")
-          .attr("transform", "rotate(-90)")
           .attr("y", 6)
           .attr("dy", ".71em")
           .style("text-anchor", "end")
@@ -759,9 +758,9 @@ function createGraph() {
         svg.append("g")
           .attr("class", "yAxis_eQTL")
           .call(yAxis_eQTL)
+          .attr("transform", "translate(" + Manhattan_width + ",0)")
         .append("text")
           .attr("class", "label")
-          .attr("transform", "translate(" + Manhattan_width + ",0)" + "rotate(-90)")
           .attr("y", 6)
           .attr("dy", ".71em")
           .style("text-anchor", "end")
@@ -772,8 +771,8 @@ function createGraph() {
           .data(curr_eQTLlist)
         .enter().append("rect")
           .attr("class", "recteQTL")
-          .attr("width", 10)
-          .attr("height",10)
+          .attr("width", 5)
+          .attr("height",5)
           .attr("x", xMap)
           .attr("y", yMap_eQTL)
           .style("fill", function(d) {return "black";})
@@ -792,7 +791,7 @@ function createGraph() {
                             return (d3.event.pageY - 60) + "px"})
                        .html(d[0] + "(" + d[4] + ")"
                             + " <br/>pval: " + yValue(d) 
-                            + " <br/>gene: " + d[3]
+                            + " <br/>eQTL: " + d[3]
                             );
               })
           .on("mouseout", function(d) {
