@@ -504,6 +504,7 @@ function createGraph() {
     var xScaleMax = 3500000000;
     var yScaleMax = 8;
     var yScaleMax_eQTL = 16;
+    var recteQTL_size = 5;
 
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
@@ -524,6 +525,14 @@ function createGraph() {
             }
             return yScale(yScale_input);}, // data -> display
         yAxis = d3.axisLeft().scale(yScale);
+
+    // setup x for eQTL
+
+    xMap_eQTL = function(d) {
+      var xMap_part =  xScale(xValue(d));
+      var shift     = recteQTL_size;
+      return xMap_part - shift;
+    }; 
 
     // setup y for eQTL
     var yScale_eQTL = d3.scaleLinear().range([Manhattan_height, 0]), // value -> display
@@ -771,13 +780,14 @@ function createGraph() {
           .data(curr_eQTLlist)
         .enter().append("rect")
           .attr("class", "recteQTL")
-          .attr("width", 5)
-          .attr("height",5)
-          .attr("x", xMap)
+          .attr("width", recteQTL_size)
+          .attr("height",recteQTL_size)
+          .attr("x", xMap_eQTL)
           .attr("y", yMap_eQTL)
           .style("fill", function(d) {return "black";})
           .style("fill-opacity",0.1)
           .style("stroke",function(d){return "black"})
+          .style("stroke-opacity",0.1)
           .style("stoke-width",function(d){return 5}) 
           .on("mouseover", function(d) {
                   tooltip.html("");
