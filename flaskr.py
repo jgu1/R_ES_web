@@ -146,9 +146,13 @@ def detail():
 def Manhattan():
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
-    Manhattan_GWAS_cutoff = request.args.get('Manhattan_GWAS_cutoff','empty')
+    Manhattan_GWAS_cutoff_str = request.args.get('Manhattan_GWAS_cutoff','empty')
 
-    pdb.set_trace()
+    Manhattan_GWAS_cutoff = 1
+    try:
+        Manhattan_GWAS_cutoff = float(Manhattan_GWAS_cutoff_str)
+    except ValueError:
+        a = 1  # placeholder 
 
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
@@ -174,6 +178,7 @@ def Manhattan():
         else:
             pair_SNP_dict = pair_SNP_dict_all
 
+        pair_SNP_dict = Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff)
         location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_Manhattan_SNP_fields_list_dict(pair_SNP_dict,gene)
         for pairName in Manhattan_pairNames_gene:
             if pairName not in Manhattan_pairNames: # if this is a new pair
@@ -205,6 +210,26 @@ def Manhattan():
     ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict
     return jsonify(ret)
 
+# display only those GWAS SNPs that more significant than cutoff, for example 10-3
+def Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff):
+    pair_SNP_dict_filtered = {}
+    for pair in pair_SNP_dict:
+        orig_SNP_tuple_list = pair_SNP_dict[pair]
+        new_SNP_tuple_list = []
+        for SNP_tuple in orig_SNP_tuple_list:
+            curr_GWAS_pval_str = SNP_tuple[2]   #GSNP_name,eSNP_name,Gpval,epval 
+            curr_GWAS_pval = -1
+            try:
+                curr_GWAS_pval = float(curr_GWAS_pval_str)
+            except ValueError:
+                a = 1   #placeholder
+            
+            if curr_GWAS_pval < Manhattan_GWAS_cutoff:  # including those dummyone from pair_SNP_dict
+                new_SNP_tuple_list.append(SNP_tuple)
+            else:
+                new_SNP_tuple_list.append(('dummy', 'dummy', '-1', '-1'))
+        pair_SNP_dict_filtered[pair] = new_SNP_tuple_list
+    return pair_SNP_dict_filtered 
 
 def fetch_and_build_matrix(consider_all_genes_in_database):
     web_disease_list = session['web_disease_list']
