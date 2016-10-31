@@ -514,7 +514,7 @@ function createGraph() {
     var xScaleMax = 3500000000;
     var yScaleMax = 8;
     var yScaleMax_eQTL = 16;
-    var recteQTL_size = 5;
+    var recteQTL_size = 2;
 
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
