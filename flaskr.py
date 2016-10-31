@@ -142,10 +142,13 @@ def detail():
     return jsonify(ret)
 
 @app.route('/Manhattan')
-@app.route("/Manhattan/<string:geneNames><string:pairNames>")
+@app.route("/Manhattan/<string:geneNames><string:pairNames><string:Manhattan_GWAS_cutoff>")
 def Manhattan():
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
+    Manhattan_GWAS_cutoff = request.args.get('Manhattan_GWAS_cutoff','empty')
+
+    pdb.set_trace()
 
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
