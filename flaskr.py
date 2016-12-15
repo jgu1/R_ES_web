@@ -141,6 +141,22 @@ def detail():
     ret['all_SNPs_list'] = all_SNPs_list
     return jsonify(ret)
 
+
+def Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene):
+    dao = getattr(g, 'dao', None)
+    pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
+    pair_SNP_dict = {}
+    if pairNames != 'empty':
+        for pair in pairNames.split(','):
+            if pair in pair_SNP_dict_all:
+                pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
+            else:   #this gene may not appear in this pair, in this case no SNP can be ever found
+                continue
+    else:
+        pair_SNP_dict = pair_SNP_dict_all
+    return pair_SNP_dict
+
+
 @app.route('/Manhattan')
 @app.route("/Manhattan/<string:geneNames><string:pairNames><string:Manhattan_GWAS_cutoff>")
 def Manhattan():
@@ -166,19 +182,12 @@ def Manhattan():
     Manhattan_pairNames = set()
     start_time = time.time()
     for gene in genes:
-        pair_SNP_dict_all,all_SNPs_list = dao.fetch_pair_SNP(web_disease_list,web_eQTL_list,gene)
-
-        pair_SNP_dict = {}
-        if pairNames != 'empty':
-            for pair in pairNames.split(','):
-                if pair in pair_SNP_dict_all:
-                    pair_SNP_dict[pair] = pair_SNP_dict_all[pair]
-                else:   #this gene may not appear in this pair, in this case no SNP can be ever found
-                    continue
-        else:
-            pair_SNP_dict = pair_SNP_dict_all
-
-        pair_SNP_dict = Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff)
+        pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
+        #pair_SNP_dict = Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff)
+   
+        pair_SNP_dict_with_location_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
+ 
+        #pdb.set_trace()
         location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_Manhattan_SNP_fields_list_dict(pair_SNP_dict,gene)
         for pairName in Manhattan_pairNames_gene:
             if pairName not in Manhattan_pairNames: # if this is a new pair
@@ -191,6 +200,8 @@ def Manhattan():
                 location_pval_chrom_SNPlist_dict[pairName] = new_list 
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()
+    
+    #pdb.set_trace()
     location_pval_chrom_SNPlist_dict,chrom_starts = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
     print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
 
@@ -200,6 +211,8 @@ def Manhattan():
 
     all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
 
+
+    pdb.set_trace()
     ret = {}
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)

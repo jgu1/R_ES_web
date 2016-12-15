@@ -7,12 +7,15 @@ import time
 import multiprocessing
 import copy_reg,types
 import psutil
+import copy
 from beans import Chrom_fields
 class DAO(object):
     db = None
     db_hg19 = None
     db_GWAS = None
     display_name_GWAS_eQTL_tuple_dict = None
+
+    MAX_CHROM_POS = 3200000000 
 
     def __init__(self,web_disease_list,web_eQTL_list):
         self.db = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
@@ -622,8 +625,73 @@ class DAO(object):
             available_GWASs.append(row[0])
         return available_GWASs
 
-    
+    #   given a SNP list, return a dict {SNP_name : (chrom,abs_location)}
+    def Manhattan_build_snp_location_dict(self,SNP_set,chrom_abs_dict):
+        SNP_list_str = '( ' + ','.join(SNP_set) + ')'
+        sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str + ';'
+        rows = self.exec_fetch_SQL_hg19(sql_template) 
+        snp_location_dict = {} 
+        for row in rows:
+            name = row[0]
+            chrom = row[1]
+            chromStart = row[2]
+            #if name in snp_location_dict:
+            #    print 'dup SNP in snp138 for ' + name
+            abs_location = chromStart
+            if chrom in chrom_abs_dict:
+                abs_location = abs_location + chrom_abs_dict[chrom]
+            else:
+                abs_location = abs_location + 3200000000 # put unkown snps at the end
 
+            snp_location_dict[name] = (chrom,abs_location)
+        return snp_location_dict
+
+    # generate a set of all SNPs in pair_SNP_dict. 
+    # all the GWAS and eQTL SNPs for a particular gene across all pairs
+    def Manhattan_gen_SNP_set(self,pair_SNP_dict):
+        all_SNP_set = set()
+        for pair, curr_SNP_list in pair_SNP_dict.iteritems():
+            # each SNP is in the format of (GSNP,eSNP,Gpval,epval)
+            for SNP in curr_SNP_list:
+                GSNP = '"' + SNP[0] + '"' 
+                eSNP = '"' + SNP[1] + '"' 
+                all_SNP_set.add(GSNP)
+                all_SNP_set.add(eSNP) 
+        return all_SNP_set
+
+    def Manhattan_enhance_SNP_tuple_with_abs_location(self,pair_SNP_dict,SNP_location_dict,gene):
+        pair_SNP_dict_with_location = {}
+        for pair_name, SNP_tuple_list in pair_SNP_dict.iteritems():
+            SNP_tuple_list_with_location = []
+            for SNP_tuple in SNP_tuple_list:
+                GSNP_name = SNP_tuple[0]
+                eSNP_name = SNP_tuple[1]
+                GSNP_location = self.MAX_CHROM_POS
+                eSNP_location = self.MAX_CHROM_POS
+                try:
+                    GSNP_location = SNP_location_dict[GSNP_name] 
+                    eSNP_location = SNP_location_dict[eSNP_name]
+                except KeyError:    # the SNP can be 'dummy'
+                    a = 1
+                       
+
+                # generate a new tuple in the format (GSNP_name, eSNP_name, GSNP_pval, eSNP_pval, GSNP_loc, eSNP_loc, gene)  
+                SNP_tuple_with_location = copy.deepcopy(SNP_tuple)
+                SNP_tuple_with_location = SNP_tuple_with_location + (GSNP_location, eSNP_location,gene)    
+                #SNP_tuple_with_location.append(GSNP_location)
+                #SNP_tuple_with_location.append(eSNP_location)
+                
+                # add this new tuple in new list
+                SNP_tuple_list_with_location.append(SNP_tuple_with_location)
+            pair_SNP_dict_with_location[pair_name] = SNP_tuple_list_with_location
+        return pair_SNP_dict_with_location
+
+    def Manhattan_enhance_pair_SNP_dict_with_location(self, pair_SNP_dict,gene):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
+        all_SNP_set = self.Manhattan_gen_SNP_set(pair_SNP_dict)        
+        SNP_location_dict = self.Manhattan_build_snp_location_dict(all_SNP_set,chrom_abs_dict) 
+        pair_SNP_dict_with_location = self.Manhattan_enhance_SNP_tuple_with_abs_location(pair_SNP_dict,SNP_location_dict,gene) 
+        return pair_SNP_dict_with_location            
 
     def Manhattan_enhance_SNPs_with_location(self,Manhattan_SNP_fields_list,chrom_abs_dict):
         snp_list = []   
@@ -720,6 +788,11 @@ class DAO(object):
             chrom_abs_dict[chrom_name] = abs_location
         # build chrom_name -> abs_location diction
         return chrom_abs_dict
+
+
+    def Manhattan_add_abs_location(self,pair_SNP_dict):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
+
 
 
     def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
