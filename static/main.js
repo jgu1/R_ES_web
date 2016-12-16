@@ -742,15 +742,7 @@ function createGraph() {
           .attr("r", 3.5)
           .attr("cx", xMap)
           .attr("cy", yMap)
-          .style("fill", function(d) {
-            var gene_or_eQTL = cValue(d);
- 
-            if (all_eQTL_names.indexOf(gene_or_eQTL) >=0 ){ //eQTL
-                return 'black';
-            }else{
-                return color(gene_or_eQTL);                 //gene
-            }
-            }) 
+          .style("fill","black") 
           .on("mouseover", function(d) {
                   tooltip.html("");
                   tooltip.transition()
