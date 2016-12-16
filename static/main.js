@@ -508,7 +508,7 @@ function createGraph() {
 
     var margin = {top: 50, right: 20, bottom: 30, left: 40, between: 50};
     var total_width  = 1000;
-    var total_height = 120; 
+    var total_height = 500; 
     var Manhattan_width = total_width - margin.left - margin.right; // should not be null, because at least one gene has SNPs
     var Manhattan_height = total_height - margin.top  - margin.bottom;
     var xScaleMax = 3500000000;

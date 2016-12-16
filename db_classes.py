@@ -15,7 +15,8 @@ class DAO(object):
     db_GWAS = None
     display_name_GWAS_eQTL_tuple_dict = None
 
-    MAX_CHROM_POS = 3200000000 
+    EMPTY_CHROM_POS = 3200000000 
+    EMPTY_CHR = 'chr1'
 
     def __init__(self,web_disease_list,web_eQTL_list):
         self.db = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
@@ -641,8 +642,9 @@ class DAO(object):
             if chrom in chrom_abs_dict:
                 abs_location = abs_location + chrom_abs_dict[chrom]
             else:
-                abs_location = abs_location + 3200000000 # put unkown snps at the end
-
+                abs_location = abs_location + EMPTY_CHROM_POS # put unkown snps at the end
+                chrom = EMPTY_CHR            
+    
             snp_location_dict[name] = (chrom,abs_location)
         return snp_location_dict
 
@@ -666,8 +668,8 @@ class DAO(object):
             for SNP_tuple in SNP_tuple_list:
                 GSNP_name = SNP_tuple[0]
                 eSNP_name = SNP_tuple[1]
-                GSNP_location = self.MAX_CHROM_POS
-                eSNP_location = self.MAX_CHROM_POS
+                GSNP_location = (self.EMPTY_CHR,self.EMPTY_CHROM_POS)
+                eSNP_location = (self.EMPTY_CHR,self.EMPTY_CHROM_POS)
                 try:
                     GSNP_location = SNP_location_dict[GSNP_name] 
                     eSNP_location = SNP_location_dict[eSNP_name]
@@ -715,8 +717,9 @@ class DAO(object):
             if chrom in chrom_abs_dict:
                 abs_location = abs_location + chrom_abs_dict[chrom]
             else:
-                abs_location = abs_location + 3200000000 # put unkown snps at the end
-                   
+                abs_location = abs_location + EMPTY_CHROM_POS # put unkown snps at the end
+                chrom = EMPTY_CHR                   
+
             snp_location_dict[name] = (chrom,abs_location)
             #snp_location_dict[name] = abs_location
         #build_query

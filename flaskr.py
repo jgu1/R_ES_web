@@ -176,20 +176,24 @@ def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
         curr_location_pval_chrom_SNPlist = []
         curr_eQTL_SNPlist = []
         for SNP_tuple in SNP_tuple_list_all:
-            GSNP_name       = SNP_tuple[0]
-            if GSNP_name == 'dummy':    # skip any dummy tuples
-                continue
-            eSNP_name       = SNP_tuple[1]
-            GSNP_pval       = SNP_tuple[2]
-            eSNP_pval       = SNP_tuple[3]
-            GSNP_chrom_abs  = SNP_tuple[4]
-            GSNP_chrom      = GSNP_chrom_abs[0]
-            GSNP_abs        = GSNP_chrom_abs[1]
-            eSNP_chrom_abs  = SNP_tuple[5]
-            eSNP_chrom      = eSNP_chrom_abs[0]
-            eSNP_abs        = eSNP_chrom_abs[1]
-            gene            = SNP_tuple[6]
-   
+            try:
+                GSNP_name       = SNP_tuple[0]
+                eSNP_name       = SNP_tuple[1]
+                if GSNP_name == 'dummy' or eSNP_name == 'dummy':    # skip any dummy tuples
+                    continue
+                GSNP_pval       = SNP_tuple[2]
+                eSNP_pval       = SNP_tuple[3]
+                GSNP_chrom_abs  = SNP_tuple[4]
+                GSNP_chrom      = GSNP_chrom_abs[0]
+                GSNP_abs        = GSNP_chrom_abs[1]
+                eSNP_chrom_abs  = SNP_tuple[5]
+                eSNP_chrom      = eSNP_chrom_abs[0]
+                eSNP_abs        = eSNP_chrom_abs[1]
+                gene            = SNP_tuple[6]
+            except TypeError:
+                pdb.set_trace()
+                a = 1
+     
             curr_location_pval_chrom_SNPlist_tuple = (GSNP_name,GSNP_abs,GSNP_pval,gene,GSNP_chrom)
             curr_eQTL_SNPlist_tuple = (eSNP_name,eSNP_abs,eSNP_pval,gene,eSNP_chrom) 
              
