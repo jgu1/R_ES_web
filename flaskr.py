@@ -156,6 +156,50 @@ def Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene):
         pair_SNP_dict = pair_SNP_dict_all
     return pair_SNP_dict
 
+def Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene):
+    pair_names_curr_gene = pair_SNP_dict_with_location_curr_gene.keys()
+    
+    for pair_name in pair_names_curr_gene:
+        
+        if pair_name not in pair_SNP_dict_with_location_all_genes:
+            pair_SNP_dict_with_location_all_genes[pair_name] = pair_SNP_dict_with_location_curr_gene[pair_name] 
+        else:
+            existing_SNP_dict = pair_SNP_dict_with_location_all_genes[pair_name]
+            pair_SNP_dict_with_location_all_genes[pair_name] = existing_SNP_dict + pair_SNP_dict_with_location_curr_gene[pair_name]
+            
+    return pair_SNP_dict_with_location_all_genes
+
+def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
+    location_pval_chrom_SNPlist_dict = {}
+    eQTL_SNPlist_dict = {}
+    for pair_name,SNP_tuple_list_all in pair_SNP_dict_with_location_all_genes.iteritems():
+        curr_location_pval_chrom_SNPlist = []
+        curr_eQTL_SNPlist = []
+        for SNP_tuple in SNP_tuple_list_all:
+            GSNP_name       = SNP_tuple[0]
+            if GSNP_name == 'dummy':    # skip any dummy tuples
+                continue
+            eSNP_name       = SNP_tuple[1]
+            GSNP_pval       = SNP_tuple[2]
+            eSNP_pval       = SNP_tuple[3]
+            GSNP_chrom_abs  = SNP_tuple[4]
+            GSNP_chrom      = GSNP_chrom_abs[0]
+            GSNP_abs        = GSNP_chrom_abs[1]
+            eSNP_chrom_abs  = SNP_tuple[5]
+            eSNP_chrom      = eSNP_chrom_abs[0]
+            eSNP_abs        = eSNP_chrom_abs[1]
+            gene            = SNP_tuple[6]
+   
+            curr_location_pval_chrom_SNPlist_tuple = (GSNP_name,GSNP_abs,GSNP_pval,gene,"None")
+            curr_eQTL_SNPlist_tuple = (eSNP_name,eSNP_abs,eSNP_pval,"Merged","None") 
+             
+            curr_location_pval_chrom_SNPlist.append(curr_location_pval_chrom_SNPlist_tuple)
+            curr_eQTL_SNPlist.append(curr_eQTL_SNPlist_tuple)
+
+        location_pval_chrom_SNPlist_dict[pair_name] = curr_location_pval_chrom_SNPlist
+        eQTL_SNPlist_dict[pair_name] = curr_eQTL_SNPlist
+
+    return location_pval_chrom_SNPlist_dict,eQTL_SNPlist_dict
 
 @app.route('/Manhattan')
 @app.route("/Manhattan/<string:geneNames><string:pairNames><string:Manhattan_GWAS_cutoff>")
@@ -181,14 +225,16 @@ def Manhattan():
     location_pval_chrom_SNPlist_dict = {}
     Manhattan_pairNames = set()
     start_time = time.time()
+    pair_SNP_dict_with_location_all_genes = {}
     for gene in genes:
         pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
-        #pair_SNP_dict = Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff)
    
         pair_SNP_dict_with_location_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
+        pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
+
  
-        #pdb.set_trace()
         location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_Manhattan_SNP_fields_list_dict(pair_SNP_dict,gene)
+        pdb.set_trace()
         for pairName in Manhattan_pairNames_gene:
             if pairName not in Manhattan_pairNames: # if this is a new pair
                 Manhattan_pairNames.add(pairName)
@@ -213,14 +259,17 @@ def Manhattan():
 
 
     pdb.set_trace()
+
+    location_pval_chrom_SNPlist_dict_1215, eQTL_SNPlist_dict_1215 = Manhattan_debug(pair_SNP_dict_with_location_all_genes)
+
     ret = {}
-    ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict
+    ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict_1215
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
     ret['chrom_starts'] = chrom_starts
     ret['Manhattan_geneNames'] = genes
     ret['gene_location_dict'] = gene_location_dict
     ret['all_eQTL_names'] = all_eQTL_names
-    ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict
+    ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict_1215
     return jsonify(ret)
 
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3

@@ -678,8 +678,6 @@ class DAO(object):
                 # generate a new tuple in the format (GSNP_name, eSNP_name, GSNP_pval, eSNP_pval, GSNP_loc, eSNP_loc, gene)  
                 SNP_tuple_with_location = copy.deepcopy(SNP_tuple)
                 SNP_tuple_with_location = SNP_tuple_with_location + (GSNP_location, eSNP_location,gene)    
-                #SNP_tuple_with_location.append(GSNP_location)
-                #SNP_tuple_with_location.append(eSNP_location)
                 
                 # add this new tuple in new list
                 SNP_tuple_list_with_location.append(SNP_tuple_with_location)
@@ -721,6 +719,7 @@ class DAO(object):
                 abs_location = abs_location + 3200000000 # put unkown snps at the end
                    
             snp_location_dict[name] = (chrom,abs_location)
+            #snp_location_dict[name] = abs_location
         #build_query
         Manhattan_SNP_fields_list_new = []  # in the format (GSNP_name,abs_location,GSNP_pval,gene_chrom)
         for snp in Manhattan_SNP_fields_list:
