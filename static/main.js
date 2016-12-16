@@ -506,7 +506,7 @@ function createGraph() {
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 40, between: 20};
+    var margin = {top: 50, right: 20, bottom: 30, left: 40, between: 50};
     var total_width  = 1000;
     var total_height = 120; 
     var Manhattan_width = total_width - margin.left - margin.right; // should not be null, because at least one gene has SNPs
