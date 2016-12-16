@@ -514,7 +514,7 @@ function createGraph() {
     var xScaleMax = 3500000000;
     var yScaleMax = 8;
     var yScaleMax_eQTL = 16;
-    var recteQTL_size = 2;
+    var recteQTL_size = 5;
 
     // setup x 
     var xValue = function(d) { return d[1];}, // data -> value
@@ -794,8 +794,12 @@ function createGraph() {
           .attr("height",recteQTL_size)
           .attr("x", xMap_eQTL)
           .attr("y", yMap_eQTL)
-          .style("fill", function(d) {return "black";})
-          .style("fill-opacity",0.1)
+          //.style("fill", function(d) {return "black";})
+          .style("fill", function(d) {
+            var gene = cValue(d);
+            return color(gene);                 //gene
+            }) 
+          .style("fill-opacity",0.9)
           .style("stroke",function(d){return "black"})
           .style("stroke-opacity",0.1)
           .style("stoke-width",function(d){return 5}) 

@@ -191,7 +191,7 @@ def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
             gene            = SNP_tuple[6]
    
             curr_location_pval_chrom_SNPlist_tuple = (GSNP_name,GSNP_abs,GSNP_pval,gene,GSNP_chrom)
-            curr_eQTL_SNPlist_tuple = (eSNP_name,eSNP_abs,eSNP_pval,"Merged",eSNP_chrom) 
+            curr_eQTL_SNPlist_tuple = (eSNP_name,eSNP_abs,eSNP_pval,gene,eSNP_chrom) 
              
             curr_location_pval_chrom_SNPlist.append(curr_location_pval_chrom_SNPlist_tuple)
             curr_eQTL_SNPlist.append(curr_eQTL_SNPlist_tuple)
@@ -247,8 +247,6 @@ def Manhattan():
     location_pval_chrom_SNPlist_dict_1215, eQTL_SNPlist_dict_1215 = Manhattan_debug(pair_SNP_dict_with_location_all_genes)
 
     Manhattan_pairNames = location_pval_chrom_SNPlist_dict_1215.keys()
-
-    pdb.set_trace()
 
     ret = {}
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict_1215
