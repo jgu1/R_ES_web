@@ -758,7 +758,7 @@ function createGraph() {
 
         }
         }
-        svg.selectAll(".dot")
+        svg.append("g").selectAll(".dot")
           .data(curr_pair_name_x_y)
         .enter().append("circle")
           .attr("class", "dot")
@@ -799,7 +799,7 @@ function createGraph() {
                 }
             }
             //draw eQTLs
-            svg.selectAll(".recteQTL")
+            svg.append("g").selectAll(".recteQTL")
               .data(curr_eQTLlist_for_CURR_DRAWING_GENE)
             .enter().append("rect")
               .attr("class", "recteQTL")
@@ -807,6 +807,16 @@ function createGraph() {
               .attr("height",recteQTL_size)
               .attr("x", xMap_eQTL)
               .attr("y", function(d){
+                  var gene = cValue(d);
+                  if (gene == 'GSDML'){
+                      var a = 1;
+                  }else if(gene == 'GSDMB'){
+                      var a = 1;
+                  }            
+    
+
+
+
                  var shift_within_coordinate = yMap_eQTL(d);
                  var yval = y_shift + shift_within_coordinate;
                  return (yval);
@@ -814,6 +824,12 @@ function createGraph() {
               //.style("fill", function(d) {return "black";})
               .style("fill", function(d) {
                 var gene = cValue(d);
+                if (gene == 'GSDML'){
+                    var a = 1;
+                }else if(gene == 'GSDMB'){
+                    var a = 1;
+                }            
+    
                 return color(gene);                 //gene
                 }) 
               .style("fill-opacity",0.9)
