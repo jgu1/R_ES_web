@@ -673,7 +673,6 @@ class DAO(object):
                     eSNP_location = SNP_location_dict[eSNP_name]
                 except KeyError:    # the SNP can be 'dummy'
                     a = 1
-                       
 
                 # generate a new tuple in the format (GSNP_name, eSNP_name, GSNP_pval, eSNP_pval, GSNP_loc, eSNP_loc, gene)  
                 SNP_tuple_with_location = copy.deepcopy(SNP_tuple)
