@@ -553,7 +553,8 @@ function createGraph() {
                 yScale_input = yScaleMax_eQTL;
             }
             return yScale_eQTL(yScale_input);}; // data -> display
-    var yAxis_eQTL = d3.axisRight().scale(yScale_eQTL);
+    var yAxis_eQTL = d3.axisLeft().scale(yScale_eQTL);
+    //var yAxis_eQTL = d3.axisRight().scale(yScale_eQTL);
 
 
 
@@ -729,18 +730,33 @@ function createGraph() {
           .attr("y", -6)
           .style("text-anchor", "end")
           .text("Chrom loc");
+  
+        if (i_coordinates == 0){
+            // y-axis
+            svg.append("g")
+              .attr("class", "yAxis")
+              .attr("transform", "translate(0," + y_shift + ")")
+              .call(yAxis)
+            .append("text")
+              .attr("class", "label")
+              .attr("y", 6)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("-log10(p-value)");
+        }else{
+            // y-axis
+            svg.append("g")
+              .attr("class", "yAxis_eQTL")
+              .call(yAxis_eQTL)
+              .attr("transform", "translate(0," + y_shift + ")")
+            .append("text")
+              .attr("class", "label")
+              .attr("y", 6)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("eQTL: -log10(p-value)");
 
-        // y-axis
-        svg.append("g")
-          .attr("class", "yAxis")
-          .attr("transform", "translate(0," + y_shift + ")")
-          .call(yAxis)
-        .append("text")
-          .attr("class", "label")
-          .attr("y", 6)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text("-log10(p-value)");
+        }
         }
         svg.selectAll(".dot")
           .data(curr_pair_name_x_y)
@@ -771,58 +787,60 @@ function createGraph() {
                        .style("opacity", 0);
               });
 
-
-        // y-axis
-        svg.append("g")
-          .attr("class", "yAxis_eQTL")
-          .call(yAxis_eQTL)
-          .attr("transform", "translate(" + Manhattan_width + ",0)")
-        .append("text")
-          .attr("class", "label")
-          .attr("y", 6)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text("eQTL: -log10(p-value)");
-
-        //draw eQTLs
-        svg.selectAll(".recteQTL")
-          .data(curr_eQTLlist)
-        .enter().append("rect")
-          .attr("class", "recteQTL")
-          .attr("width", recteQTL_size)
-          .attr("height",recteQTL_size)
-          .attr("x", xMap_eQTL)
-          .attr("y", yMap_eQTL)
-          //.style("fill", function(d) {return "black";})
-          .style("fill", function(d) {
-            var gene = cValue(d);
-            return color(gene);                 //gene
-            }) 
-          .style("fill-opacity",0.9)
-          .style("stroke",function(d){return "black"})
-          .style("stroke-opacity",0.1)
-          .style("stoke-width",function(d){return 5}) 
-          .on("mouseover", function(d) {
-                  tooltip.html("");
-                  tooltip.transition()
-                       .duration(200)
-                       .style("opacity", .9);
-          
-                  tooltip.style("left", (d3.event.pageX ) + "px")
-                       //.style("top", (d3.event.pageY - 60) + "px")
-                       .style("top", function(d){
-                            return (d3.event.pageY - 60) + "px"})
-                       .html(d[0] + "(" + d[4] + ")"
-                            + " <br/>pval: " + yValue(d) 
-                            + " <br/>eQTL: " + d[3]
-                            );
+        for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
+            y_shift = (Manhattan_height + margin.between) * (i_coordinates + 1); // begin with 1 shift
+            CURR_DRAWING_GENE = Manhattan_geneNames[i_coordinates]; 
+            curr_eQTLlist_for_CURR_DRAWING_GENE = new Array();
+            for (var i_eSNP = 0; i_eSNP < curr_eQTLlist.length; i_eSNP ++){
+                var curr_eSNP_tuple = curr_eQTLlist[i_eSNP]; 
+                var gene = cValue(curr_eSNP_tuple);
+                if (gene == CURR_DRAWING_GENE){
+                    curr_eQTLlist_for_CURR_DRAWING_GENE.push(curr_eSNP_tuple);
+                }
+            }
+            //draw eQTLs
+            svg.selectAll(".recteQTL")
+              .data(curr_eQTLlist_for_CURR_DRAWING_GENE)
+            .enter().append("rect")
+              .attr("class", "recteQTL")
+              .attr("width", recteQTL_size)
+              .attr("height",recteQTL_size)
+              .attr("x", xMap_eQTL)
+              .attr("y", function(d){
+                 var shift_within_coordinate = yMap_eQTL(d);
+                 var yval = y_shift + shift_within_coordinate;
+                 return (yval);
               })
-          .on("mouseout", function(d) {
-                  tooltip.transition()
-                       .duration(500)
-                       .style("opacity", 0);
+              //.style("fill", function(d) {return "black";})
+              .style("fill", function(d) {
+                var gene = cValue(d);
+                return color(gene);                 //gene
+                }) 
+              .style("fill-opacity",0.9)
+              .style("stroke",function(d){return "black"})
+              .style("stroke-opacity",0.1)
+              .style("stoke-width",function(d){return 5}) 
+              .on("mouseover", function(d) {
+                      tooltip.html("");
+                      tooltip.transition()
+                           .duration(200)
+                           .style("opacity", .9);
+              
+                      tooltip.style("left", (d3.event.pageX ) + "px")
+                           //.style("top", (d3.event.pageY - 60) + "px")
+                           .style("top", function(d){
+                                return (d3.event.pageY - 60) + "px"})
+                           .html(d[0] + "(" + d[4] + ")"
+                                + " <br/>pval: " + yValue(d) 
+                                + " <br/>eQTL: " + d[3]
+                                );
+                  })
+              .on("mouseout", function(d) {
+                      tooltip.transition()
+                           .duration(500)
+                           .style("opacity", 0);
               });
-
+      }
      // draw legend
       var legend_block_size = 10;
       /*
