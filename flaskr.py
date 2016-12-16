@@ -231,24 +231,12 @@ def Manhattan():
    
         pair_SNP_dict_with_location_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
         pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
-
- 
-        location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_Manhattan_SNP_fields_list_dict(pair_SNP_dict,gene)
-        for pairName in Manhattan_pairNames_gene:
-            if pairName not in Manhattan_pairNames: # if this is a new pair
-                Manhattan_pairNames.add(pairName)
-                location_pval_chrom_SNPlist_dict[pairName] = location_pval_chrom_SNPlist_dict_gene[pairName]
-                continue
-            else:
-                existing_list = location_pval_chrom_SNPlist_dict[pairName]
-                new_list = location_pval_chrom_SNPlist_dict_gene[pairName] + existing_list
-                location_pval_chrom_SNPlist_dict[pairName] = new_list 
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()
     
-    #pdb.set_trace()
-    location_pval_chrom_SNPlist_dict,chrom_starts = dao.Manhattan_gen_abs_location_chrom(location_pval_chrom_SNPlist_dict)
     print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
+
+    chrom_starts = dao.Manhattan_gen_chrom_starts()    
 
     eQTL_SNPlist_dict = dao.Manhattan_gen_eQTL_SNPlist(location_pval_chrom_SNPlist_dict,genes)
 
@@ -257,6 +245,10 @@ def Manhattan():
     all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
 
     location_pval_chrom_SNPlist_dict_1215, eQTL_SNPlist_dict_1215 = Manhattan_debug(pair_SNP_dict_with_location_all_genes)
+
+    Manhattan_pairNames = location_pval_chrom_SNPlist_dict_1215.keys()
+
+    pdb.set_trace()
 
     ret = {}
     ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict_1215

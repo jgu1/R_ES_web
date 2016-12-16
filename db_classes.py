@@ -792,6 +792,11 @@ class DAO(object):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
 
 
+    def Manhattan_gen_chrom_starts(self):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()       
+        chrom_starts = chrom_abs_dict.values()
+        chrom_starts.sort()
+        return chrom_starts    
 
     def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()       
