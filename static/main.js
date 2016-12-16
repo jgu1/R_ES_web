@@ -669,20 +669,24 @@ function createGraph() {
 
 
         // draw a black line to indicate the location chromosome starts
+        
         svg.selectAll(".chrom_starts").data([]).exit().remove();
-        var chrom_starts =svg.selectAll(".chrom_starts")
+        svg.selectAll(".gene_starts").data([]).exit().remove();
+        for (var i_coordinates = 0; i_coordinates <= NGENES; i_coordinates ++){
+            y_shift = (Manhattan_height + margin.between) * i_coordinates
+            var chrom_starts =svg.append("g").selectAll(".chrom_starts")
               .data(chrom_starts_data)
               .enter().append("line")
               .attr("class","chrom_starts")
               .attr("x1",function(d){return xScale(d);})
               .attr("x2",function(d){return xScale(d);})
-              .attr("y1",0)
-              .attr("y2",Manhattan_height) 
+              .attr("y1",y_shift)
+              .attr("y2",y_shift + Manhattan_height) 
               .style("opacity", .2)
               .style("stroke","black");
  
-        svg.selectAll(".gene_starts").data([]).exit().remove();
-        var gene_starts =svg.selectAll(".gene_starts")
+        
+            var gene_starts =svg.append("g").selectAll(".gene_starts")
               .data(Manhattan_geneNames)
               .enter().append("rect")
               .attr("class","gene_starts")
@@ -695,7 +699,7 @@ function createGraph() {
                 }
                 return x;
               })
-              .attr("y",0)
+              .attr("y",y_shift)
               .attr("width",function(d){
                 var chromStart_chromEnd = gene_location_dict[d]; 
                 var chromStart = chromStart_chromEnd[0];
@@ -712,7 +716,7 @@ function createGraph() {
               .attr("fill",function(d){
                 return color(d);
               });
-           
+        }   
         // x-axis
         svg.append("g")
           .attr("class", "xAxis")
