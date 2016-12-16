@@ -506,7 +506,7 @@ function createGraph() {
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 40};
+    var margin = {top: 20, right: 20, bottom: 30, left: 40, between: 20};
     var total_width  = 1000;
     var total_height = 120; 
     var Manhattan_width = total_width - margin.left - margin.right; // should not be null, because at least one gene has SNPs
@@ -573,6 +573,7 @@ function createGraph() {
 
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     Manhattan_pairNames.sort();
+    NGENES = Manhattan_geneNames.length;
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
@@ -597,7 +598,8 @@ function createGraph() {
 
         var svg = Manhattan.append("svg")
                 .attr("width", Manhattan_width + margin.left + margin.right)
-                .attr("height", Manhattan_height + margin.top + margin.bottom)
+                .attr("height", margin.top + margin.bottom + (Manhattan_height + margin.between) * (NGENES + 1)) //oneGWAS nGenes
+                //.attr("height", Manhattan_height + margin.top + margin.bottom)
               .append("g")
                 .call(zoomX)
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
