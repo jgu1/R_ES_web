@@ -716,11 +716,11 @@ function createGraph() {
               .attr("fill",function(d){
                 return color(d);
               });
-        }   
+        xAxis_shift = y_shift + Manhattan_height;
         // x-axis
         svg.append("g")
           .attr("class", "xAxis")
-          .attr("transform", "translate(0," + Manhattan_height + ")")
+          .attr("transform", "translate(0," + xAxis_shift + ")")
           //.attr("transform", "translate(0,)")
           .call(xAxis)
         .append("text")
@@ -733,6 +733,7 @@ function createGraph() {
         // y-axis
         svg.append("g")
           .attr("class", "yAxis")
+          .attr("transform", "translate(0," + y_shift + ")")
           .call(yAxis)
         .append("text")
           .attr("class", "label")
@@ -740,7 +741,7 @@ function createGraph() {
           .attr("dy", ".71em")
           .style("text-anchor", "end")
           .text("-log10(p-value)");
-
+        }
         svg.selectAll(".dot")
           .data(curr_pair_name_x_y)
         .enter().append("circle")
