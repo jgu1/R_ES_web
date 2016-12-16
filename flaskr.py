@@ -190,8 +190,8 @@ def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
             eSNP_abs        = eSNP_chrom_abs[1]
             gene            = SNP_tuple[6]
    
-            curr_location_pval_chrom_SNPlist_tuple = (GSNP_name,GSNP_abs,GSNP_pval,gene,"None")
-            curr_eQTL_SNPlist_tuple = (eSNP_name,eSNP_abs,eSNP_pval,"Merged","None") 
+            curr_location_pval_chrom_SNPlist_tuple = (GSNP_name,GSNP_abs,GSNP_pval,gene,GSNP_chrom)
+            curr_eQTL_SNPlist_tuple = (eSNP_name,eSNP_abs,eSNP_pval,"Merged",eSNP_chrom) 
              
             curr_location_pval_chrom_SNPlist.append(curr_location_pval_chrom_SNPlist_tuple)
             curr_eQTL_SNPlist.append(curr_eQTL_SNPlist_tuple)
@@ -234,7 +234,6 @@ def Manhattan():
 
  
         location_pval_chrom_SNPlist_dict_gene,Manhattan_pairNames_gene = dao.Manhattan_build_Manhattan_SNP_fields_list_dict(pair_SNP_dict,gene)
-        pdb.set_trace()
         for pairName in Manhattan_pairNames_gene:
             if pairName not in Manhattan_pairNames: # if this is a new pair
                 Manhattan_pairNames.add(pairName)
@@ -256,9 +255,6 @@ def Manhattan():
     gene_location_dict = dao.Manhattan_gen_gene_location_dict(genes) 
 
     all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
-
-
-    pdb.set_trace()
 
     location_pval_chrom_SNPlist_dict_1215, eQTL_SNPlist_dict_1215 = Manhattan_debug(pair_SNP_dict_with_location_all_genes)
 
