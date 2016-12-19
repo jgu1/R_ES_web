@@ -642,8 +642,8 @@ class DAO(object):
             if chrom in chrom_abs_dict:
                 abs_location = abs_location + chrom_abs_dict[chrom]
             else:
-                abs_location = abs_location + EMPTY_CHROM_POS # put unkown snps at the end
-                chrom = EMPTY_CHR            
+                abs_location = abs_location + self.EMPTY_CHROM_POS # put unkown snps at the end
+                chrom = self.EMPTY_CHR            
     
             snp_location_dict[name] = (chrom,abs_location)
         return snp_location_dict
