@@ -230,10 +230,14 @@ def Manhattan():
     Manhattan_pairNames = set()
     start_time = time.time()
     pair_SNP_dict_with_location_all_genes = {}
+    
+
+
     for gene in genes:
         pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
    
         pair_SNP_dict_with_location_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
+        pdb.set_trace()
         pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()

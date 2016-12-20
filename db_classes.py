@@ -591,7 +591,6 @@ class DAO(object):
     #   given a SNP list, return a dict {SNP_name : (chrom,abs_location)}
     def Manhattan_build_snp_location_dict(self,SNP_set,chrom_abs_dict):
         SNP_list_str = '( ' + ','.join(SNP_set) + ')'
-        pdb.set_trace()
         sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str + ';'
         rows = self.exec_fetch_SQL_hg19(sql_template) 
         snp_location_dict = {} 
