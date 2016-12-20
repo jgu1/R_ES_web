@@ -16,7 +16,7 @@ class DAO(object):
     display_name_GWAS_eQTL_tuple_dict = None
 
     EMPTY_CHROM_POS = 3200000000 
-    EMPTY_CHR = 'chr1'
+    EMPTY_CHR = 'CHROMOSOME NOT FOUND'
 
     def __init__(self,web_disease_list,web_eQTL_list):
         self.db = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
@@ -605,9 +605,8 @@ class DAO(object):
             if chrom in chrom_abs_dict:
                 abs_location = abs_location + chrom_abs_dict[chrom]
             else:
-                abs_location = abs_location + self.EMPTY_CHROM_POS # put unkown snps at the end
-                chrom = self.EMPTY_CHR            
-    
+                continue # one SNP can have multiple rows in snp138, skip the rows with unidentified chr to prevent overwriting previously correct dict value
+                
             snp_location_dict[name] = (chrom,abs_location)
         return snp_location_dict
 
