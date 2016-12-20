@@ -485,6 +485,7 @@ class DAO(object):
         return all_SNPs_list
 
     def fetch_chrom_chromStart_for_SNP_as_float(self,SNP):
+        pdb.set_trace()
         sql_template = ('select chrom,chromStart from snp138'
                         ' where name = "' + SNP + '";')
         cur = self.db_hg19.cursor() 
@@ -629,6 +630,7 @@ class DAO(object):
     #   given a SNP list, return a dict {SNP_name : (chrom,abs_location)}
     def Manhattan_build_snp_location_dict(self,SNP_set,chrom_abs_dict):
         SNP_list_str = '( ' + ','.join(SNP_set) + ')'
+        pdb.set_trace()
         sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str + ';'
         rows = self.exec_fetch_SQL_hg19(sql_template) 
         snp_location_dict = {} 
@@ -703,7 +705,9 @@ class DAO(object):
         for chrom in chrom_abs_dict.keys():
             chrom_list.append('"' + chrom + '"')
         chrom_list_str = '(' + ','.join(chrom_list) + ')'
-
+        
+        
+        pdb.set_trace()
         sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str+ ' and chrom in ' + chrom_list_str + ';'
         rows = self.exec_fetch_SQL_hg19(sql_template)
         snp_location_dict = {} 
