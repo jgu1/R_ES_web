@@ -480,46 +480,7 @@ class DAO(object):
             individual_SNPs.append(set(curr_SNP))
         all_SNPs = set.union(*individual_SNPs)
         all_SNPs_list = list(all_SNPs)
-        #all_SNPs_list.sort()
-        #all_SNPs_list = self.sort_SNP_by_chrom_pos(all_SNPs_list)
         return all_SNPs_list
-
-    def fetch_chrom_chromStart_for_SNP_as_float(self,SNP):
-        pdb.set_trace()
-        sql_template = ('select chrom,chromStart from snp138'
-                        ' where name = "' + SNP + '";')
-        cur = self.db_hg19.cursor() 
-        cur.execute(sql_template)
-        rows = cur.fetchall()
-        if len(rows) !=  1:   # there is an unique constraint on (Geg_id,SNP_Name)
-            print 'multiple pos found for single SNP'
-            #exit(-1)
- 
-        chrom = rows[0][0]
-        chromStart = rows[0][1]
-
-        chrom_integer_str = chrom[3:]
-        try:
-            chrom_integer = float(chrom_integer_str)
-        except ValueError:
-            if chrom_integer_str =='X' or chrom_integer_str == 'Y':
-                chrom_integer_str = '23'
-            else:
-                chrom_integer_str = '24' # map all the other odd values to 24
-        
-        SNP_float = float(chrom_integer_str + '.' + str(chromStart))
-        return SNP_float
-        
-    def sort_SNP_by_chrom_pos(self,all_SNPs_list):
-        pos_lst = [0.1] * len(all_SNPs_list)
-        for i in range(len(all_SNPs_list)):
-            pos_lst[i] = self.fetch_chrom_chromStart_for_SNP_as_float(all_SNPs_list[i])
-        pos_rank = sorted(range(len(pos_lst)), key=lambda i: pos_lst[i])
-        sorted_by_chrom_pos = [all_SNPs_list[i] for i in pos_rank]
-    
-        return sorted_by_chrom_pos       
-         
-
 
     def patch_result_dict_by_all_SNPs(self,result_dict):
         all_SNPs_list = self.get_all_SNPs(result_dict.values())
@@ -694,55 +655,6 @@ class DAO(object):
         pair_SNP_dict_with_location = self.Manhattan_enhance_SNP_tuple_with_abs_location(pair_SNP_dict,SNP_location_dict,gene) 
         return pair_SNP_dict_with_location            
 
-    def Manhattan_enhance_SNPs_with_location(self,Manhattan_SNP_fields_list,chrom_abs_dict):
-        snp_list = []   
-        for snp in Manhattan_SNP_fields_list:
-            GSNP_name = snp[0]
-            snp_list.append('"' + GSNP_name+ '"')
-        SNP_list_str = '( ' + ','.join(snp_list) + ')'
-
-        chrom_list = []
-        for chrom in chrom_abs_dict.keys():
-            chrom_list.append('"' + chrom + '"')
-        chrom_list_str = '(' + ','.join(chrom_list) + ')'
-        
-        
-        pdb.set_trace()
-        sql_template = 'select name,chrom,chromStart from snp138 where name in' + SNP_list_str+ ' and chrom in ' + chrom_list_str + ';'
-        rows = self.exec_fetch_SQL_hg19(sql_template)
-        snp_location_dict = {} 
-        for row in rows:
-            name = row[0]
-            chrom = row[1]
-            chromStart = row[2]
-            if name in snp_location_dict:
-                print 'dup SNP in snp138 for ' + name
-            abs_location = chromStart
-            if chrom in chrom_abs_dict:
-                abs_location = abs_location + chrom_abs_dict[chrom]
-            else:
-                abs_location = abs_location + EMPTY_CHROM_POS # put unkown snps at the end
-                chrom = EMPTY_CHR                   
-
-            snp_location_dict[name] = (chrom,abs_location)
-            #snp_location_dict[name] = abs_location
-        #build_query
-        Manhattan_SNP_fields_list_new = []  # in the format (GSNP_name,abs_location,GSNP_pval,gene_chrom)
-        for snp in Manhattan_SNP_fields_list:
-            GSNP_name = snp[0]
-            GSNP_pval = snp[1]
-            gene      = snp[2]
-           
-            if GSNP_name not in snp_location_dict: # can be 'dummy'
-                continue               
-
-            chrom_abs_location = snp_location_dict[GSNP_name]
-            chrom        = chrom_abs_location[0]
-            abs_location = chrom_abs_location[1]
-            new_tuple = (GSNP_name,abs_location,GSNP_pval,gene,chrom)
-            Manhattan_SNP_fields_list_new.append(new_tuple)
-        return Manhattan_SNP_fields_list_new
-
     def Manhattan_gen_gene_location_dict(self,genes):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
         gene_list = []
@@ -804,17 +716,6 @@ class DAO(object):
         chrom_starts = chrom_abs_dict.values()
         chrom_starts.sort()
         return chrom_starts    
-
-    def Manhattan_gen_abs_location_chrom(self, Manhattan_SNP_fields_list_dict):
-        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()       
-        Manhattan_SNP_fields_list_dict_new = {}
-        for pair in Manhattan_SNP_fields_list_dict.keys():
-            Manhattan_SNP_fields_list_new = self.Manhattan_enhance_SNPs_with_location(Manhattan_SNP_fields_list_dict[pair],chrom_abs_dict) 
-            Manhattan_SNP_fields_list_dict_new[pair] = Manhattan_SNP_fields_list_new
-
-        chrom_starts = chrom_abs_dict.values()
-        chrom_starts.sort()
-        return Manhattan_SNP_fields_list_dict_new,chrom_starts
 
     #Manhattan_SNP_fields in the format of  (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
     def Manhattan_build_Manhattan_SNP_fields_list_dict(self,pair_SNP_dict,gene):
