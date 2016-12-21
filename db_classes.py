@@ -17,7 +17,7 @@ class DAO(object):
 
     EMPTY_CHROM_POS = 3200000000 
     EMPTY_CHR = 'CHROMOSOME NOT FOUND'
-
+    DUMMY_SNP_NAME = 'dummy'
     def __init__(self,web_disease_list,web_eQTL_list):
         self.db = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
                     user="es", # your username
@@ -622,13 +622,53 @@ class DAO(object):
                 all_SNP_set.add(eSNP) 
         return all_SNP_set
 
+    # the GWAS_tuple and eQTL_tuple used to draw black dots in Manhattan plot
+    # format defined on 12.20.2016:
+    # (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval)
+    # (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,gene_name,GSNP_name)
+    def Manhattan_build_GWAS_tuple_and_eQTL_tuple(self,SNP_tuple):
+        GSNP_name = SNP_tuple[0]
+        eSNP_name = SNP_tuple[1]
+        GSNP_pval = SNP_tuple[2]
+        eSNP_pval = SNP_tuple[3]
+        
+        GSNP_location = SNP_tuple[4]
+        GSNP_chr = GSNP_location[0]
+        GSNP_abs = GSNP_location[1]
+            
+        eSNP_location = SNP_tuple[5]
+        eSNP_chr = eSNP_location[0]
+        eSNP_abs = eSNP_location[1]
+
+        gene_name = SNP_tuple[6]
+         
+        GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval)
+        eQTL_tuple = (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,gene_name,GSNP_name)        
+        return GWAS_tuple,eQTL_tuple
+
+    #return 3 dict:
+    # first dict: 
+        #key: GWAS_eQTL pairname
+        #value: list of tuple in the format (GSNP_name,eSNP_name,GSNP_pval,eSNP_pval,(GSNP_chr,GSNP_abs),(eSNP_chr,eSNP_abs),gene_name)
+    #second dict:
+        #key: GWAS_eQTL pairname
+        #value: list of tuple in the format (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval)
+    #third dict:
+        #key: GWAS_eQTL pairname
+        #value: list of tuple in the format (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,gene_name,GSNP_name)
     def Manhattan_enhance_SNP_tuple_with_abs_location(self,pair_SNP_dict,SNP_location_dict,gene):
         pair_SNP_dict_with_location = {}
+        GWAS_SNPlist_dict = {}
+        eQTL_SNPlist_dict_for_curr_gene = {}
         for pair_name, SNP_tuple_list in pair_SNP_dict.iteritems():
             SNP_tuple_list_with_location = []
+            GWAS_SNP_tuple_list = []
+            eQTL_SNP_tuple_list = []
             for SNP_tuple in SNP_tuple_list:
                 GSNP_name = SNP_tuple[0]
                 eSNP_name = SNP_tuple[1]
+                if GSNP_name == self.DUMMY_SNP_NAME or eSNP_name == self.DUMMY_SNP_NAME:
+                    continue    # no need for Manhattan plot to consider DUMMY SNPs
                 GSNP_location = (self.EMPTY_CHR,self.EMPTY_CHROM_POS)
                 eSNP_location = (self.EMPTY_CHR,self.EMPTY_CHROM_POS)
                 try:
@@ -643,15 +683,22 @@ class DAO(object):
                 
                 # add this new tuple in new list
                 SNP_tuple_list_with_location.append(SNP_tuple_with_location)
+                
+                # add formatted_tuple into lists
+                GWAS_tuple,eQTL_tuple = self.Manhattan_build_GWAS_tuple_and_eQTL_tuple(SNP_tuple_with_location)
+                GWAS_SNP_tuple_list.append(GWAS_tuple)
+                eQTL_SNP_tuple_list.append(eQTL_tuple)
+
             pair_SNP_dict_with_location[pair_name] = SNP_tuple_list_with_location
-        return pair_SNP_dict_with_location
+            GWAS_SNPlist_dict[pair_name] = GWAS_SNP_tuple_list
+            eQTL_SNPlist_dict_for_curr_gene[pair_name] = eQTL_SNP_tuple_list
+        return pair_SNP_dict_with_location,GWAS_SNPlist_dict,eQTL_SNPlist_dict_for_curr_gene
 
     def Manhattan_enhance_pair_SNP_dict_with_location(self, pair_SNP_dict,gene):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
         all_SNP_set = self.Manhattan_gen_SNP_set(pair_SNP_dict)        
         SNP_location_dict = self.Manhattan_build_snp_location_dict(all_SNP_set,chrom_abs_dict) 
-        pair_SNP_dict_with_location = self.Manhattan_enhance_SNP_tuple_with_abs_location(pair_SNP_dict,SNP_location_dict,gene) 
-        return pair_SNP_dict_with_location            
+        return self.Manhattan_enhance_SNP_tuple_with_abs_location(pair_SNP_dict,SNP_location_dict,gene) 
 
     def Manhattan_gen_gene_location_dict(self,genes):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()

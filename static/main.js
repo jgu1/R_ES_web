@@ -494,13 +494,14 @@ function createGraph() {
 
 
   var Manhattancallback = function(data){
-    var location_pval_chrom_SNPlist_dict = data.location_pval_chrom_SNPlist_dict; 
+    //var location_pval_chrom_SNPlist_dict = data.location_pval_chrom_SNPlist_dict; 
+    var GWAS_SNPlist_dict                = data.GWAS_SNPlist_dict
+    var eQTL_gene_SNPlist_dict           = data.eQTL_gene_SNPlist_dict
     var Manhattan_pairNames              = data.Manhattan_pairNames;    
-    var chrom_starts_data                = data.chrom_starts;
     var Manhattan_geneNames              = data.Manhattan_geneNames;
+    var chrom_starts_data                = data.chrom_starts;
     var gene_location_dict               = data.gene_location_dict;  
-    var all_eQTL_names                   = data.all_eQTL_names;
-    var eQTL_SNPlist_dict                = data.eQTL_SNPlist_dict;
+    //var eQTL_SNPlist_dict                = data.eQTL_SNPlist_dict;
 
  
     d3.select("#Manhattan").html("");
@@ -517,13 +518,13 @@ function createGraph() {
     var recteQTL_size = 5;
 
     // setup x 
-    var xValue = function(d) { return d[1];}, // data -> value
+    var xValue = function(d) { return d[2];}, // data -> value
         xScale = d3.scaleLinear().range([0, Manhattan_width]), // value -> display
         xMap = function(d) { return xScale(xValue(d));}, // data -> display
         xAxis = d3.axisBottom().scale(xScale);
 
     // setup y
-    var yValue = function(d) {  var pval = parseFloat(d[2]); 
+    var yValue = function(d) {  var pval = parseFloat(d[3]); 
                                 return -Math.log10(pval);
                              }, // data -> value
         yScale = d3.scaleLinear().range([Manhattan_height, 0]), // value -> display
@@ -577,8 +578,10 @@ function createGraph() {
     NGENES = Manhattan_geneNames.length;
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
-        curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
-        curr_eQTLlist      = eQTL_SNPlist_dict[curr_Manhattan_pairName];
+        var curr_GWAS_SNPlist = GWAS_SNPlist_dict[curr_Manhattan_pairName];
+        //curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
+        var curr_eQTL_gene_SNPlist_dict = eQTL_gene_SNP_list_dict[curr_Manhattan_pairName];
+        //curr_eQTLlist      = eQTL_SNPlist_dict[curr_Manhattan_pairName];
           
         //var zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
 
@@ -759,7 +762,7 @@ function createGraph() {
         }
         }
         svg.append("g").selectAll(".dot")
-          .data(curr_pair_name_x_y)
+          .data(curr_GWAS_SNPlist)
         .enter().append("circle")
           .attr("class", "dot")
           .attr("r", 3.5)
@@ -776,9 +779,8 @@ function createGraph() {
                        //.style("top", (d3.event.pageY - 60) + "px")
                        .style("top", function(d){
                             return (d3.event.pageY - 60) + "px"})
-                       .html(d[0] + "(" + d[4] + ")"
+                       .html(d[0] + "(" + d[1] + ")"
                             + " <br/>pval: " + yValue(d) 
-                            + " <br/>gene: " + d[3]
                             );
               })
           .on("mouseout", function(d) {
@@ -788,8 +790,10 @@ function createGraph() {
               });
 
         for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
-            y_shift = (Manhattan_height + margin.between) * (i_coordinates + 1); // begin with 1 shift
-            CURR_DRAWING_GENE = Manhattan_geneNames[i_coordinates]; 
+            var y_shift = (Manhattan_height + margin.between) * (i_coordinates + 1); // begin with 1 shift
+            var CURR_DRAWING_GENE = Manhattan_geneNames[i_coordinates]; 
+            var SNPlist_for_curr_gene = curr_eQTL_gene_SNPlist_dict[i_coordinate];
+            /*
             curr_eQTLlist_for_CURR_DRAWING_GENE = new Array();
             for (var i_eSNP = 0; i_eSNP < curr_eQTLlist.length; i_eSNP ++){
                 var curr_eSNP_tuple = curr_eQTLlist[i_eSNP]; 
@@ -798,38 +802,23 @@ function createGraph() {
                     curr_eQTLlist_for_CURR_DRAWING_GENE.push(curr_eSNP_tuple);
                 }
             }
+            */
+             
             //draw eQTLs
             svg.append("g").selectAll(".recteQTL")
-              .data(curr_eQTLlist_for_CURR_DRAWING_GENE)
+              .data(SNPlist_for_curr_gene)
             .enter().append("rect")
               .attr("class", "recteQTL")
               .attr("width", recteQTL_size)
               .attr("height",recteQTL_size)
               .attr("x", xMap_eQTL)
               .attr("y", function(d){
-                  var gene = cValue(d);
-                  if (gene == 'GSDML'){
-                      var a = 1;
-                  }else if(gene == 'GSDMB'){
-                      var a = 1;
-                  }            
-    
-
-
-
                  var shift_within_coordinate = yMap_eQTL(d);
                  var yval = y_shift + shift_within_coordinate;
                  return (yval);
               })
               //.style("fill", function(d) {return "black";})
               .style("fill", function(d) {
-                var gene = cValue(d);
-                if (gene == 'GSDML'){
-                    var a = 1;
-                }else if(gene == 'GSDMB'){
-                    var a = 1;
-                }            
-    
                 return color(gene);                 //gene
                 }) 
               .style("fill-opacity",0.9)
@@ -846,9 +835,10 @@ function createGraph() {
                            //.style("top", (d3.event.pageY - 60) + "px")
                            .style("top", function(d){
                                 return (d3.event.pageY - 60) + "px"})
-                           .html(d[0] + "(" + d[4] + ")"
+                           .html(d[0] + "(" + d[1] + ")"
                                 + " <br/>pval: " + yValue(d) 
-                                + " <br/>eQTL: " + d[3]
+                                + " <br/>gene: " + d[4]
+                                + " <br/>aligned GSNP: " + d[5]
                                 );
                   })
               .on("mouseout", function(d) {

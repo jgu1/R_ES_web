@@ -169,6 +169,52 @@ def Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_d
             
     return pair_SNP_dict_with_location_all_genes
 
+# the input 'GWAS_SNPlist_dict_for_curr_gene' is a dict, has key as 'GWAS_eQTL', value as a list of SNPs for current GWAS from curr_gene
+# this function adds all GWAS SNPs from current gene into the SNPlist of certain pair from ALL genes 
+def Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_for_curr_gene):
+    pair_names_curr_gene = GWAS_SNPlist_dict_for_curr_gene.keys()
+    
+    for pair_name in pair_names_curr_gene:
+        # each pair has a list of SNPs
+        if pair_name not in GWAS_SNPlist_dict:
+            GWAS_SNPlist_dict[pair_name] = GWAS_SNPlist_dict_for_curr_gene[pair_name]
+        else:
+            existing_SNPlist = GWAS_SNPlist_dict[pair_name]
+            GWAS_SNPlist_dict[pair_name] = existing_SNPlist + GWAS_SNPlist_dict_for_curr_gene[pair_name]
+
+    return GWAS_SNPlist_dict
+
+# the input 'eQTL_SNPlist_dict_for_curr_gene' is a dict, has key as 'GWAS_eQTL', value as a list of SNPs from current eQTL from curr_gene
+# inside the 'container' data structure eQTL_gene_SNPlist_dict, there are 2 levels of dictionary_ing
+# first level has key as 'GWAS_eQTL', value as a dict
+    # the nested dict has key as 'gene_name', value as a list of SNPS belonging to specific gene and specific eQTL
+
+# the input eQTL_SNPlist_dict_for_curr_gene has only 1 level of dictionary_ing
+# key is 'GWAS_eQTL'
+# value is a list of eQTL SNPs for this particular gene and particular eQTL
+
+# this function first untangles the first level of dict, get a 'gene_SNPlist_dict_for_curr_pair'
+    # this is a dict with key as 'gene_name',value as a list of SNPS belonging to specific gene and specific eQTL
+    # if no genes have been added to the curr pair, a empty dict is created. This happens only once for each GWAS_eQTL pair
+# then this function adds SNP_list for current gene and eQTL into 'gene_SNPlist_dict_for_curr_pair' 
+def Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_for_curr_gene,curr_gene_name):
+    pair_names_curr_gene = eQTL_SNPlist_dict_for_curr_gene.keys()
+
+    for pair_name in pair_names_curr_gene:
+        #each pair has a dict{gene:SNPlist}
+        gene_SNPlist_dict_for_curr_pair = {}
+        try:
+            gene_SNPlist_dict_for_curr_pair = eQTL_gene_SNPlist_dict[pair_name]
+
+        except KeyError:# this happens only once for each GWAS_eQTL pair
+            eQTL_gene_SNPlist_dict[pair_name] = gene_SNPlist_dict_for_curr_pair 
+            # at this moment this is simply an empty dict             
+            # use dict name instead of {} because we will add stuff into the empty dict in the immediate following code 
+        eSNP_list_for_particular_gene_and_particular_eQTL = eQTL_SNPlist_dict_for_curr_gene[pair_name]
+        gene_SNPlist_dict_for_curr_pair[curr_gene_name] = eSNP_list_for_particular_gene_and_particular_eQTL
+           
+    return eQTL_gene_SNPlist_dict
+
 def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
     location_pval_chrom_SNPlist_dict = {}
     eQTL_SNPlist_dict = {}
@@ -231,14 +277,25 @@ def Manhattan():
     start_time = time.time()
     pair_SNP_dict_with_location_all_genes = {}
     
-
+    # major dict for GWASs
+    # key:   GWAS_eQTL
+    # value: SNPlist in the format of (GSNP_name,GSNP_chrom,GSNP_abs,GSNP_pval)
+    GWAS_SNPlist_dict = {}
+    # major dict for eQTLs
+    #key:   GWAS_eQTL
+    #value: gene_SNPlist_dict:  
+            #key:   gene_name
+            #value: SNPlist in the format of (eSNP_name,eSNP_chrom,eSNP_abs,eSNP_pval,gene,aligned_GSNP_name)                   
+    eQTL_gene_SNPlist_dict = {}
+    
 
     for gene in genes:
         pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
-   
-        pair_SNP_dict_with_location_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
-        pdb.set_trace()
-        pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
+        pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
+        GWAS_SNPlist_dict = Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_curr_gene)
+        eQTL_gene_SNPlist_dict = Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_curr_gene,gene) 
+
+        #pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()
     
@@ -252,18 +309,22 @@ def Manhattan():
 
     all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
 
-    location_pval_chrom_SNPlist_dict_1215, eQTL_SNPlist_dict_1215 = Manhattan_debug(pair_SNP_dict_with_location_all_genes)
+    #location_pval_chrom_SNPlist_dict_1215, eQTL_SNPlist_dict_1215 = Manhattan_debug(pair_SNP_dict_with_location_all_genes)
 
-    Manhattan_pairNames = location_pval_chrom_SNPlist_dict_1215.keys()
+    #Manhattan_pairNames = location_pval_chrom_SNPlist_dict_1215.keys()
+    Manhattan_pairNames = GWAS_SNPlist_dict.keys()
+
+    pdb.set_trace()  
 
     ret = {}
-    ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict_1215
+    #ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict_1215
+    ret['GWAS_SNPlist_dict'] = GWAS_SNPlist_dict
+    ret['eQTL_gene_SNPlist_dict'] = eQTL_gene_SNPlist_dict
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
-    ret['chrom_starts'] = chrom_starts
     ret['Manhattan_geneNames'] = genes
+    ret['chrom_starts'] = chrom_starts
     ret['gene_location_dict'] = gene_location_dict
-    ret['all_eQTL_names'] = all_eQTL_names
-    ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict_1215
+    #ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict_1215
     return jsonify(ret)
 
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3
