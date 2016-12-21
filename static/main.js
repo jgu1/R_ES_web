@@ -560,7 +560,7 @@ function createGraph() {
 
 
     // setup fill color
-    var cValue = function(d) {return d[3]}; // color by gene
+    var cValue = function(d) {return d[4]}; // color by gene
     var color = d3.scaleOrdinal(d3.schemeCategory20);
 
     var tooltip = Manhattan.append("div")
@@ -580,7 +580,7 @@ function createGraph() {
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
         var curr_GWAS_SNPlist = GWAS_SNPlist_dict[curr_Manhattan_pairName];
         //curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
-        var curr_eQTL_gene_SNPlist_dict = eQTL_gene_SNP_list_dict[curr_Manhattan_pairName];
+        var gene_SNPlist_dict_for_curr_pair = eQTL_gene_SNPlist_dict[curr_Manhattan_pairName];
         //curr_eQTLlist      = eQTL_SNPlist_dict[curr_Manhattan_pairName];
           
         //var zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
@@ -792,7 +792,7 @@ function createGraph() {
         for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
             var y_shift = (Manhattan_height + margin.between) * (i_coordinates + 1); // begin with 1 shift
             var CURR_DRAWING_GENE = Manhattan_geneNames[i_coordinates]; 
-            var SNPlist_for_curr_gene = curr_eQTL_gene_SNPlist_dict[i_coordinate];
+            var SNPlist_for_curr_gene_and_curr_pair = gene_SNPlist_dict_for_curr_pair[CURR_DRAWING_GENE];
             /*
             curr_eQTLlist_for_CURR_DRAWING_GENE = new Array();
             for (var i_eSNP = 0; i_eSNP < curr_eQTLlist.length; i_eSNP ++){
@@ -806,7 +806,7 @@ function createGraph() {
              
             //draw eQTLs
             svg.append("g").selectAll(".recteQTL")
-              .data(SNPlist_for_curr_gene)
+              .data(SNPlist_for_curr_gene_and_curr_pair)
             .enter().append("rect")
               .attr("class", "recteQTL")
               .attr("width", recteQTL_size)
@@ -819,6 +819,7 @@ function createGraph() {
               })
               //.style("fill", function(d) {return "black";})
               .style("fill", function(d) {
+                var gene = cValue(d); 
                 return color(gene);                 //gene
                 }) 
               .style("fill-opacity",0.9)

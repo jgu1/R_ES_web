@@ -314,8 +314,6 @@ def Manhattan():
     #Manhattan_pairNames = location_pval_chrom_SNPlist_dict_1215.keys()
     Manhattan_pairNames = GWAS_SNPlist_dict.keys()
 
-    pdb.set_trace()  
-
     ret = {}
     #ret['location_pval_chrom_SNPlist_dict'] = location_pval_chrom_SNPlist_dict_1215
     ret['GWAS_SNPlist_dict'] = GWAS_SNPlist_dict
