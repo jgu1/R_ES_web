@@ -263,7 +263,6 @@ function createGraph() {
                         .text("draw Manhattan Plots")
                         .style("margin-left","600px")
                         .on("click",function(d){
-                            var Manhattan_GWAS_cutoff = document.getElementById("Manhattan_GWAS_cutoff_subcluster").value;
 
                             d3.select("#Manhattan").remove();
                             wrapper_div.append("div")
@@ -278,18 +277,9 @@ function createGraph() {
                                 }
                             });
 
-                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&Manhattan_GWAS_cutoff="+Manhattan_GWAS_cutoff,Manhattancallback);
+                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
                         ) ;
-
-    var Manhattan_GWAS_cutoff_label = wrapper_div.append("text")
-         .text("GWAS SNP pval cutoff");
-
-    var Manhattan_GWAS_cutoff = wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","Manhattan_GWAS_cutoff_subcluster");
- 
     var a = 1;  
   }
 
@@ -996,9 +986,6 @@ function createGraph() {
                     .text("draw Manhattan Plots")
                     .style("margin-left","600px")
                     .on("click",function(d){
-                       
-                        
-                        var Manhattan_GWAS_cutoff = document.getElementById("Manhattan_GWAS_cutoff_global").value;
      
                         d3.select("#Manhattan").remove();
                         chart.append("div")
@@ -1013,18 +1000,10 @@ function createGraph() {
                             }
                         });
                         
-                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&Manhattan_GWAS_cutoff="+Manhattan_GWAS_cutoff,Manhattancallback);
+                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                         }
                     ) ;
-    var Manhattan_GWAS_cutoff_label = chart.append("text")
-         .text("GWAS SNPs pval cutoff");
-
-    var Manhattan_GWAS_cutoff = chart.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","Manhattan_GWAS_cutoff_global");
- 
-
+   
                                      
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
