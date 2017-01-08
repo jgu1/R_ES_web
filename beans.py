@@ -127,8 +127,155 @@ class Chrom_fields(object):
     Chrom_len_dict['chrX']  = 155270560
     Chrom_len_dict['chrY']  = 59373566
 
+class SNP_fields_raw_row(object):
+    _id             = None
+    _gene_fields_id = None
+    _block          = None
+    _tag            = None
+    _in_DB          = None 
+    _proximity      = None
+    _chrom          = None
+    _eQTL_SNP       = None
+    _PGC            = None
+    _eQTL_location  = None
+    _eQTL_MAF       = None
+    _GWAS_SNP       = None
+    _GWAS_location  = None
+    _GWAS_MAF       = None
+    _delta          = None
+    _LD             = None
+    _eQTL_pval      = None
+    _GWAS_pval      = None
 
+    def __init__(self,DB_row):
+        self._id             = DB_row[0]
+        self._gene_fields_id = DB_row[1]
+        self._block          = DB_row[2]
+        self._tag            = DB_row[3]
+        self._in_DB          = DB_row[4] 
+        self._proximity      = DB_row[5]
+        self._chrom          = DB_row[6]
+        self._eQTL_SNP       = DB_row[7]
+        self._PGC            = DB_row[8]
+        self._eQTL_location  = DB_row[9]
+        self._eQTL_MAF       = DB_row[10]
+        self._GWAS_SNP       = DB_row[11]
+        self._GWAS_location  = DB_row[12]
+        self._GWAS_MAF       = DB_row[13]
+        self._delta          = DB_row[14]
+        self._LD             = DB_row[15]
+        self._eQTL_pval      = DB_row[16]
+        self._GWAS_pval      = DB_row[17]
 
+    def Err_msg(self,field_name):
+        print 'ERROR converting "'+ field_name +'" for ' + str(self._id)
 
+    def get_gene_fields_id(self):
+        return self._gene_fields_id
 
+    def get_block(self):
+        block = 0
+        try:
+            block = int(self._block)
+        except ValueError:
+            self.Err_msg('block')
+        return block
 
+    def get_tag(self):
+        tag = (self._tag == 'Yes')
+        return tag
+
+    def get_in_DB(self):
+        in_DB = (self._in_DB == 'Yes')
+        return in_DB
+    
+    def get_proximity(self):
+        proximity = self._proximity
+        return proximity
+      
+    def get_chrom(self):
+        chrom = self._chrom
+        return chrom
+        
+    def get_eQTL_SNP(self):
+        eQTL_SNP = self._eQTL_SNP
+        return eQTL_SNP
+
+    def get_PGC(self):
+        PGC = None
+        try:
+            PGC = int(self._PGC)
+        except ValueError:
+            self.Err_msg('PGC')
+        return PGC
+
+    def get_eQTL_location(self):
+        eQTL_location = None
+        try:
+            eQTL_location = int(self._eQTL_location) #sys.maxint = 9223372036854775807
+        except ValueError:
+            self.Err_msg('eQTL_location')       
+        return eQTL_location
+    
+    def get_eQTL_MAF(self):
+        eQTL_MAF = 0
+        try:
+            eQTL_MAF = float(self._eQTL_MAF)
+        except ValueError:
+            self.Err_msg('eQTL_MAF')
+        return eQTL_MAF
+
+    def get_GWAS_SNP(self):
+        GWAS_SNP = self._GWAS_SNP
+        if GWAS_SNP == 'NF':
+            GWAS_SNP = None
+        return GWAS_SNP
+    
+    def get_GWAS_location(self):
+        GWAS_location = None
+        try:
+            GWAS_location = int(self._GWAS_location)
+        except ValueError:
+            self.Err_msg('GWAS_location') 
+        return GWAS_location
+
+    def get_GWAS_MAF(self):
+        GWAS_MAF = 0
+        try:
+            GWAS_MAF = float(self._GWAS_MAF)
+        except ValueError:
+            self.Err_msg('GWAS_MAF')
+        return GWAS_MAF
+
+    def get_delta(self):
+        delta = 0
+        try:
+            delta = int(self._delta)
+        except ValueError:
+            self.Err_msg('delta')
+        return delta
+
+    def get_LD(self):
+        LD = 0
+        try:
+            LD = float(self._LD)
+        except ValueError:
+            self.Err_msg('LD')
+        return LD
+
+    def get_eQTL_pval(self):
+        eQTL_pval = 1
+        try:
+            eQTL_pval = float(self._eQTL_pval)  # p = float('1.85e-300') works
+        except ValueError:
+            self.Err_msg('eQTL_pval')
+        return eQTL_pval
+   
+    def get_GWAS_pval(self):
+        GWAS_pval = 1
+        try:
+            GWAS_pval = float(self._GWAS_pval)
+        except ValueError:
+            self.Err_msg('GWAS_pval')
+        return GWAS_pval
+       
