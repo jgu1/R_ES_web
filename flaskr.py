@@ -279,14 +279,16 @@ def Manhattan():
     
     # major dict for GWASs
     # key:   GWAS_eQTL
-    # value: SNPlist in the format of (GSNP_name,GSNP_chrom,GSNP_abs,GSNP_pval)
+    # value: SNPlist in the format of (GSNP_name,GSNP_chrom,GSNP_abs,GSNP_pval,aligned,tagged)
     GWAS_SNPlist_dict = {}
     # major dict for eQTLs
     #key:   GWAS_eQTL
     #value: gene_SNPlist_dict:  
             #key:   gene_name
-            #value: SNPlist in the format of (eSNP_name,eSNP_chrom,eSNP_abs,eSNP_pval,gene,aligned_GSNP_name)                   
+            #value: SNPlist in the format of (eSNP_name,eSNP_chrom,eSNP_abs,eSNP_pval,aligned,tagged,gene,aligned_GSNP_name)                   
     eQTL_gene_SNPlist_dict = {}
+
+    #pdb.set_trace()
     
     for gene in genes:
         pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 

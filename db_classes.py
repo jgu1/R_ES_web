@@ -641,9 +641,12 @@ class DAO(object):
         eSNP_abs = eSNP_location[1]
 
         gene_name = SNP_tuple[6]
-         
-        GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval)
-        eQTL_tuple = (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,gene_name,GSNP_name)        
+        
+        aligned = True
+        tagged = True
+ 
+        GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
+        eQTL_tuple = (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,aligned,tagged,gene_name,GSNP_name)        
         return GWAS_tuple,eQTL_tuple
 
     #return 3 dict:
