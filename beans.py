@@ -278,4 +278,12 @@ class SNP_fields_raw_row(object):
         except ValueError:
             self.Err_msg('GWAS_pval')
         return GWAS_pval
-       
+    
+    def is_aligned(self):
+        aligned = False
+        if GWAS_SNP is not None:
+            aligned = True
+        return aligned
+
+    def is_tagged(self):
+        return self.tag 

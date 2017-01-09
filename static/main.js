@@ -550,8 +550,11 @@ function createGraph() {
 
 
     // setup fill color
-    var cValue = function(d) {return d[4]}; // color by gene
+    var cValue = function(d) {return d[6]}; // color by gene    
     var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+    var alignedValue = function(d){return d[4]};
+    var taggedValue  = function(d){return d[5]};
 
     var tooltip = Manhattan.append("div")
         .attr("class", "tooltip")
@@ -807,6 +810,8 @@ function createGraph() {
                  var yval = y_shift + shift_within_coordinate;
                  return (yval);
               })
+              .attr("aligned",alignedValue)
+              .attr("tagged",taggedValue)
               //.style("fill", function(d) {return "black";})
               .style("fill", function(d) {
                 var gene = cValue(d); 
@@ -828,8 +833,8 @@ function createGraph() {
                                 return (d3.event.pageY - 60) + "px"})
                            .html(d[0] + "(" + d[1] + ")"
                                 + " <br/>pval: " + yValue(d) 
-                                + " <br/>gene: " + d[4]
-                                + " <br/>aligned GSNP: " + d[5]
+                                + " <br/>gene: " + d[6]
+                                + " <br/>aligned GSNP: " + d[7]
                                 );
                   })
               .on("mouseout", function(d) {

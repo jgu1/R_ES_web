@@ -288,7 +288,6 @@ def Manhattan():
             #value: SNPlist in the format of (eSNP_name,eSNP_chrom,eSNP_abs,eSNP_pval,gene,aligned_GSNP_name)                   
     eQTL_gene_SNPlist_dict = {}
     
-
     for gene in genes:
         pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
         pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
