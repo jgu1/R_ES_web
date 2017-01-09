@@ -528,6 +528,33 @@ class DAO(object):
        
         return patched_dict,all_SNPs_list
 
+    def fetch_pair_SNP_raw(self,web_disease_list,web_eQTL_list,gene):
+        Merged_name = 'Merged_08212015_pruned_LD02'
+        GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
+        eQTLs = web_eQTL_list.strip().split()
+
+        if 'merged_pickle' in eQTLs:
+            eQTLs.remove('merged_pickle')
+            eQTLs.append(Merged_name)
+
+
+        result_dict = {}
+        for i in range(len(GWASs)):
+            for j in range(len(eQTLs)):
+                GWAS = GWASs[i]
+                eQTL = eQTLs[j]
+                result = self.fetch_SNP_list_by_GWAS_eQTL_gene(GWAS,eQTL,gene)
+                #result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
+                if len(result) > 0:
+                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                    result_dict[display_name] = result
+        
+        patched_dict,all_SNPs_list = self.patch_result_dict_by_all_SNPs(result_dict)        
+       
+        return patched_dict,all_SNPs_list
+
+
+
 
 #detail manipulation
     def fetch_detail(self,GWAS,eQTL,gene):
@@ -645,7 +672,7 @@ class DAO(object):
         aligned = True
         tagged = True
  
-        GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
+        GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval)
         eQTL_tuple = (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,aligned,tagged,gene_name,GSNP_name)        
         return GWAS_tuple,eQTL_tuple
 
