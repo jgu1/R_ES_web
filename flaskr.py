@@ -279,7 +279,7 @@ def Manhattan():
     
     # major dict for GWASs
     # key:   GWAS_eQTL
-    # value: SNPlist in the format of (GSNP_name,GSNP_chrom,GSNP_abs,GSNP_pval,aligned,tagged)
+    # value: SNPlist in the format of (GSNP_name,GSNP_chrom,GSNP_abs,GSNP_pval)
     GWAS_SNPlist_dict = {}
     # major dict for eQTLs
     #key:   GWAS_eQTL
@@ -291,8 +291,14 @@ def Manhattan():
     #pdb.set_trace()
     
     for gene in genes:
-        pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
-        pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
+
+        # fetch pair_SNP_dict with only name and pval, then add location information
+        #pair_SNP_dict = Manhattan_gen_pair_SNP_dict(web_disease_list,web_eQTL_list,pairNames,gene) 
+        #pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
+        
+        # directly generate GWAS_SNPlist and eQTL_SNPlist for current gene across all GWAS_eQTL pairs 
+        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene)
+
         GWAS_SNPlist_dict = Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_curr_gene)
         eQTL_gene_SNPlist_dict = Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_curr_gene,gene) 
 

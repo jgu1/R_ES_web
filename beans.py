@@ -100,7 +100,9 @@ class SNP_manhattan(object):
         self.epval  = epval 
 
 class Chrom_fields(object):
-    Chrom_len_dict = None
+    Chrom_name_list = ['chr1' ,'chr2' ,'chr3' ,'chr4' ,'chr5' ,'chr6' ,'chr7' ,'chr8' ,'chr9' ,'chr10',
+                       'chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20',
+                       'chr20','chr21','chr22','chrX' ,'chrY' ]
     Chrom_len_dict = {}
     Chrom_len_dict['chr1']  = 249250621 
     Chrom_len_dict['chr2']  = 243199373
@@ -126,8 +128,17 @@ class Chrom_fields(object):
     Chrom_len_dict['chr22'] = 51304566
     Chrom_len_dict['chrX']  = 155270560
     Chrom_len_dict['chrY']  = 59373566
+    
+    @staticmethod
+    def calc_chr_start(chr_name):
+        chr_start = 0
+        chr_idx = Chrom_fields.Chrom_name_list.index(chr_name) 
+        for idx in range(chr_idx):
+            preceeding_chr_name = Chrom_fields.Chrom_name_list[idx]  # add the length of all preceeding chr 
+            chr_start = chr_start + Chrom_fields.Chrom_len_dict[preceeding_chr_name]        
+        return chr_start
 
-class SNP_fields_raw_row(object):
+class SNP_fields_raw_row_obj(object):
     _id             = None
     _gene_fields_id = None
     _block          = None
@@ -169,6 +180,9 @@ class SNP_fields_raw_row(object):
 
     def Err_msg(self,field_name):
         print 'ERROR converting "'+ field_name +'" for ' + str(self._id)
+
+    def get_id(self):
+        return self._id
 
     def get_gene_fields_id(self):
         return self._gene_fields_id
@@ -281,9 +295,41 @@ class SNP_fields_raw_row(object):
     
     def is_aligned(self):
         aligned = False
-        if GWAS_SNP is not None:
+        if self.get_GWAS_SNP() is not None:
             aligned = True
         return aligned
 
     def is_tagged(self):
-        return self.tag 
+        return self.get_tag() 
+
+
+    def gen_GWAS_tuple(self):
+        GWAS_tuple = None
+        
+        GSNP_name       = self.get_GWAS_SNP()
+        if GSNP_name is not None:   # return None if no aligned GWAS_SNP is found
+            GSNP_chr        = self.get_chrom()
+            GWAS_location   = self.get_GWAS_location()
+            GSNP_pval       = self.get_GWAS_pval()
+            aligned         = self.is_aligned()
+            tagged          = self.is_tagged()
+
+            GSNP_abs        = Chrom_fields.calc_chr_start(GSNP_chr) + GWAS_location
+           
+            GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
+        return GWAS_tuple
+
+    def gen_eQTL_tuple(self,gene_name):
+        eSNP_name           = self.get_eQTL_SNP()
+        eSNP_chr            = self.get_chrom()
+        eSNP_location       = self.get_eQTL_location()
+        eSNP_pval           = self.get_eQTL_pval()
+        aligned             = self.is_aligned()
+        tagged              = self.is_tagged()
+        GSNP_name           = self.get_GWAS_SNP()
+
+        eSNP_abs            = Chrom_fields.calc_chr_start(eSNP_chr) + eSNP_location
+
+        eQTL_tuple = (eSNP_name,eSNP_chr,eSNP_abs,eSNP_pval,aligned,tagged,gene_name,GSNP_name)
+        return eQTL_tuple
+

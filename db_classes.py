@@ -9,6 +9,7 @@ import copy_reg,types
 import psutil
 import copy
 from beans import Chrom_fields
+from beans import SNP_fields_raw_row_obj
 class DAO(object):
     db = None
     db_hg19 = None
@@ -449,6 +450,27 @@ class DAO(object):
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail        
 
+#Manhattan manipulation
+    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
+        sql_template = ('select SNP_fields_raw.* from SNP_fields_raw,gene_fields'
+                        ' where gene_fields.GWAS = "' + GWAS + '"'
+                        ' and gene_fields.eQTL = "' + eQTL + '"'
+                        ' and gene_fields.gene = "' + gene + '"'
+                        ' and SNP_fields_raw.gene_fields_id = gene_fields.id;'  
+                        )
+        
+        SNP_fields_raw_rows = self.exec_fetch_SQL(sql_template)
+        GWAS_SNPlist = []
+        eQTL_SNPlist = []
+        for row in SNP_fields_raw_rows:
+            curr_SNP_fields_raw_row_obj = SNP_fields_raw_row_obj(row)   #convert a DB row into a row object
+            GWAS_tuple = curr_SNP_fields_raw_row_obj.gen_GWAS_tuple()
+            eQTL_tuple = curr_SNP_fields_raw_row_obj.gen_eQTL_tuple(gene)
+            if GWAS_tuple is not None:
+                GWAS_SNPlist.append(GWAS_tuple)
+            eQTL_SNPlist.append(eQTL_tuple)   
+        return GWAS_SNPlist,eQTL_SNPlist 
+
     def get_comm_SNPs(self,result_lists):
         individual_SNPs = []
         for result in result_lists:
@@ -537,21 +559,23 @@ class DAO(object):
             eQTLs.remove('merged_pickle')
             eQTLs.append(Merged_name)
 
-
         result_dict = {}
+
+        GWAS_SNPlist_dict_curr_gene = {}
+        eQTL_SNPlist_dict_curr_gene = {}
+
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
                 GWAS = GWASs[i]
                 eQTL = eQTLs[j]
-                result = self.fetch_SNP_list_by_GWAS_eQTL_gene(GWAS,eQTL,gene)
-                #result = self.fetch_gene_p_q_by_GWAS_eQTL(GWAS,eQTL)
-                if len(result) > 0:
-                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-                    result_dict[display_name] = result
-        
-        patched_dict,all_SNPs_list = self.patch_result_dict_by_all_SNPs(result_dict)        
-       
-        return patched_dict,all_SNPs_list
+                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                
+                GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene)
+                
+                GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+                eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+
+        return GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene
 
 
 
