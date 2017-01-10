@@ -284,27 +284,57 @@ function createGraph() {
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
 
-    var hide_unaligned_btn = wrapper_div.append('button')
-                             .attr("type","button")
-                             .text("hide un-aligned SNPs")
-                             .on("click",function(d){
-                               // var recteQTL_unaligned = 
-                                d3.selectAll(".recteQTL")
-                                    .filter(function(d) {
-                                        var aligned = alignedValue(d);     
-                                        return !aligned;
-                                    })
-                                    .style("opacity", 0);
-                                    
-                                
-                                //var recteQTL_all = d3.selectAll(".recteQTL");
+    wrapper_div.append("text")
+         .text("show unaligned SNPs")
+    wrapper_div.append("input")
+         .attr("type","checkbox")
+         .attr("checked",true)
+         .attr("id","show_unaligned_SNPs")
+         .on("change",function(d){
+           if (this.checked){ 
+                d3.selectAll(".recteQTL").style("opacity",0.9);
+           }else{ 
+                d3.selectAll(".recteQTL")
+                    .filter(function(d) {
+                        var aligned = alignedValue(d);     
+                        return !aligned;
+                    })
+                    .style("opacity", 0);
+            }
+
+         });
+
+
+    wrapper_div.append("text")
+         .text("show untagged SNPs")
+    wrapper_div.append("input")
+         .attr("type","checkbox")
+         .attr("checked",true)
+         .attr("id","show_untagged_SNPs")
+         .on("change",function(d){
+           if (this.checked){ 
+                d3.selectAll(".recteQTL").style("opacity",0.9);
+                d3.selectAll(".dotGWAS") .style("opacity",1);
+           }else{ 
+                d3.selectAll(".recteQTL")
+                    .filter(function(d) {
+                        var tagged = taggedValue(d);     
+                        return !tagged;
+                    })
+                    .style("opacity", 0);
+                d3.selectAll(".dotGWAS")
+                    .filter(function(d){
+                        var tagged = taggedValue(d);
+                        return !tagged;
+                    })
+                    .style("opacity",1);
+            }
+
+         });
 
 
 
 
-                                var a = 1;
-
-                              });
 
 
     var a = 1;  
