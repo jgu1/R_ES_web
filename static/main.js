@@ -280,6 +280,33 @@ function createGraph() {
                             d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
                         ) ;
+
+    var alignedValue = function(d){return d[4]};
+    var taggedValue  = function(d){return d[5]};
+
+    var hide_unaligned_btn = wrapper_div.append('button')
+                             .attr("type","button")
+                             .text("hide un-aligned SNPs")
+                             .on("click",function(d){
+                               // var recteQTL_unaligned = 
+                                d3.selectAll(".recteQTL")
+                                    .filter(function(d) {
+                                        var aligned = alignedValue(d);     
+                                        return !aligned;
+                                    })
+                                    .style("opacity", 0);
+                                    
+                                
+                                //var recteQTL_all = d3.selectAll(".recteQTL");
+
+
+
+
+                                var a = 1;
+
+                              });
+
+
     var a = 1;  
   }
 
@@ -754,10 +781,10 @@ function createGraph() {
 
         }
         }
-        svg.append("g").selectAll(".dot")
+        svg.append("g").selectAll(".dotGWAS")
           .data(curr_GWAS_SNPlist)
         .enter().append("circle")
-          .attr("class", "dot")
+          .attr("class", "dotGWAS")
           .attr("r", 3.5)
           .attr("cx", xMap)
           .attr("cy", yMap)
