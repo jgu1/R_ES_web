@@ -761,6 +761,8 @@ function createGraph() {
           .attr("r", 3.5)
           .attr("cx", xMap)
           .attr("cy", yMap)
+          .attr("aligned",alignedValue)
+          .attr("tagged",taggedValue)
           .style("fill","black") 
           .on("mouseover", function(d) {
                   tooltip.html("");
@@ -835,6 +837,8 @@ function createGraph() {
                                 + " <br/>pval: " + yValue(d) 
                                 + " <br/>gene: " + d[6]
                                 + " <br/>aligned GSNP: " + d[7]
+                                + " <br/>aligned: " + alignedValue(d)
+                                + " <br/>tagged: " + taggedValue(d)
                                 );
                   })
               .on("mouseout", function(d) {
