@@ -676,7 +676,7 @@ function createGraph() {
             var y = gx2.domain()[1];
             console.log("gx2: x,y:"+x+ ' '+ y + ' ')
             console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
-            Manhattan.selectAll(".Manhattan_group").selectAll(".dot")
+            Manhattan.selectAll(".Manhattan_group").selectAll(".dotGWAS")
                 .attr("cx",xcoord);
 
             Manhattan.selectAll(".Manhattan_group").selectAll(".recteQTL")
