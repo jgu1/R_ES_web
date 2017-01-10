@@ -327,7 +327,7 @@ function createGraph() {
                         var tagged = taggedValue(d);
                         return !tagged;
                     })
-                    .style("opacity",1);
+                    .style("opacity",0);
             }
 
          });
@@ -1116,7 +1116,7 @@ function createGraph() {
                         var tagged = taggedValue(d);
                         return !tagged;
                     })
-                    .style("opacity",1);
+                    .style("opacity",0);
             }
 
          });
