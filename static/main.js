@@ -285,7 +285,7 @@ function createGraph() {
     var taggedValue  = function(d){return d[5]};
 
     wrapper_div.append("text")
-         .text("show unaligned SNPs")
+         .text("unaligned")
     wrapper_div.append("input")
          .attr("type","checkbox")
          .attr("checked",true)
@@ -306,7 +306,7 @@ function createGraph() {
 
 
     wrapper_div.append("text")
-         .text("show untagged SNPs")
+         .text("untagged")
     wrapper_div.append("input")
          .attr("type","checkbox")
          .attr("checked",true)
@@ -1069,7 +1069,64 @@ function createGraph() {
                         d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                         }
                     ) ;
-   
+  
+    var alignedValue = function(d){return d[4]};
+    var taggedValue  = function(d){return d[5]};
+
+    chart.append("text")
+         .text("unaligned")
+    chart.append("input")
+         .attr("type","checkbox")
+         .attr("checked",true)
+         .attr("id","show_unaligned_SNPs")
+         .on("change",function(d){
+           if (this.checked){ 
+                d3.selectAll(".recteQTL").style("opacity",0.9);
+           }else{ 
+                d3.selectAll(".recteQTL")
+                    .filter(function(d) {
+                        var aligned = alignedValue(d);     
+                        return !aligned;
+                    })
+                    .style("opacity", 0);
+            }
+
+         });
+
+
+    chart.append("text")
+         .text("untagged")
+    chart.append("input")
+         .attr("type","checkbox")
+         .attr("checked",true)
+         .attr("id","show_untagged_SNPs")
+         .on("change",function(d){
+           if (this.checked){ 
+                d3.selectAll(".recteQTL").style("opacity",0.9);
+                d3.selectAll(".dotGWAS") .style("opacity",1);
+           }else{ 
+                d3.selectAll(".recteQTL")
+                    .filter(function(d) {
+                        var tagged = taggedValue(d);     
+                        return !tagged;
+                    })
+                    .style("opacity", 0);
+                d3.selectAll(".dotGWAS")
+                    .filter(function(d){
+                        var tagged = taggedValue(d);
+                        return !tagged;
+                    })
+                    .style("opacity",1);
+            }
+
+         });
+
+
+
+
+
+
+ 
                                      
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
