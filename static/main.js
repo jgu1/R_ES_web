@@ -280,7 +280,6 @@ function createGraph() {
                             d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
                         ) ;
-    append_Manhattan_checkboxes(wrapper_div);
     var a = 1;  
   }
 
@@ -553,7 +552,8 @@ function createGraph() {
  
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
-
+    append_Manhattan_checkboxes(Manhattan);
+    
     var margin = {top: 50, right: 20, bottom: 30, left: 40, between: 50};
     var total_width  = 1000;
     var total_height = 180; 
@@ -1069,7 +1069,6 @@ function createGraph() {
                         d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                         }
                     ) ;
-    append_Manhattan_checkboxes(chart);
                                      
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
