@@ -280,44 +280,64 @@ function createGraph() {
                             d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
                         ) ;
+    append_Manhattan_checkboxes(wrapper_div);
+    var a = 1;  
+  }
 
+  function append_Manhattan_checkboxes(parentNode){
+    d3.select("#show_unaligned_SNPs").remove();
+    d3.select("#txt_show_unaligned_SNPs").remove();
+    d3.select("#show_untagged_SNPs") .remove();
+    d3.select("#txt_show_untagged_SNPs").remove();
+
+ 
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
 
-    wrapper_div.append("text")
+    parentNode.append("text")
          .text("unaligned")
-    wrapper_div.append("input")
+         .attr("id","txt_show_unaligned_SNPs");
+    parentNode.append("input")
          .attr("type","checkbox")
          .attr("checked",true)
          .attr("id","show_unaligned_SNPs")
          .on("change",function(d){
-           if (this.checked){
+           // the affected SNPs are all unaligned and hence untagged, 
+           // brought them back to display only when showing untagged SNPs
+           if (this.checked && document.getElementById("show_untagged_SNPs").checked){  
                 d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0.9);
-           }else{ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0);
-           }
+           }else{
+                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}).style("opacity",0);
+                }
+
          });
 
-
-    wrapper_div.append("text")
+    parentNode.append("text")
          .text("untagged")
-    wrapper_div.append("input")
+         .attr("id","txt_show_untagged_SNPs");
+    parentNode.append("input")
          .attr("type","checkbox")
          .attr("checked",true)
          .attr("id","show_untagged_SNPs")
          .on("change",function(d){
            if (this.checked){ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}) .style("opacity",0.9);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}) .style("opacity",1);
-              
- 
-            }else{
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}) .style("opacity",0);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}) .style("opacity",0);
-            }
+                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}).style("opacity",0.9);
+                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",1);
+           
+                // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
+                // when showing unaligned_SNPs, both should be brought back to display
+                // BUT when "NOT showing unalinged_SNPs", only untagged_aligned should be brought back to display
+                if ( ! document.getElementById("show_unaligned_SNPs").checked){
+                    d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0);
+                }                
 
+            
+            }else{ 
+                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}).style("opacity", 0);
+                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",0);
+            }
          });
-    var a = 1;  
+
   }
 
 
@@ -1049,58 +1069,7 @@ function createGraph() {
                         d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                         }
                     ) ;
-  
-    var alignedValue = function(d){return d[4]};
-    var taggedValue  = function(d){return d[5]};
-
-    chart.append("text")
-         .text("unaligned")
-    chart.append("input")
-         .attr("type","checkbox")
-         .attr("checked",true)
-         .attr("id","show_unaligned_SNPs")
-         .on("change",function(d){
-           // the affected SNPs are all unaligned and hence untagged, 
-           // brought them back to display only when showing untagged SNPs
-           if (this.checked && document.getElementById("show_untagged_SNPs").checked){  
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0.9);
-           }else{
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}).style("opacity",0);
-                }
-
-         });
-
-    chart.append("text")
-         .text("untagged")
-    chart.append("input")
-         .attr("type","checkbox")
-         .attr("checked",true)
-         .attr("id","show_untagged_SNPs")
-         .on("change",function(d){
-           if (this.checked){ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}).style("opacity",0.9);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",1);
-           
-                // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
-                // when showing unaligned_SNPs, both should be brought back to display
-                // BUT when "NOT showing unalinged_SNPs", only untagged_aligned should be brought back to display
-                if ( ! document.getElementById("show_unaligned_SNPs").checked){
-                    d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0);
-                }                
-
-            
-            }else{ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}).style("opacity", 0);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",0);
-            }
-         });
-
-
-
-
-
-
- 
+    append_Manhattan_checkboxes(chart);
                                      
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
