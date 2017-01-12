@@ -295,7 +295,8 @@ function createGraph() {
 
     parentNode.append("text")
          .text("unaligned")
-         .attr("id","txt_show_unaligned_SNPs");
+         .attr("id","txt_show_unaligned_SNPs")
+         .style("margin-left","600px");
     parentNode.append("input")
          .attr("type","checkbox")
          .attr("checked",true)
@@ -336,7 +337,9 @@ function createGraph() {
                 d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",0);
             }
          });
-
+    
+    parentNode.append("div")
+        .html("<br/>");
   }
 
 
