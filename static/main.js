@@ -292,6 +292,9 @@ function createGraph() {
  
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
+    var dotGWAS_size = 3.5;
+    var recteQTL_size = 5;
+    var invisible_size = 0.1;
 
     parentNode.append("text")
          .text("unaligned")
@@ -305,9 +308,13 @@ function createGraph() {
            // the affected SNPs are all unaligned and hence untagged, 
            // brought them back to display only when showing untagged SNPs
            if (this.checked && document.getElementById("show_untagged_SNPs").checked){  
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0.9);
+                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
+                    .style("opacity",0.9)
+                    .attr("width",  recteQTL_size).attr("height", recteQTL_size);
            }else{
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}).style("opacity",0);
+                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);})
+                    .style("opacity",0)
+                    .attr("width", invisible_size).attr("height",invisible_size);
                 }
 
          });
@@ -321,20 +328,30 @@ function createGraph() {
          .attr("id","show_untagged_SNPs")
          .on("change",function(d){
            if (this.checked){ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}).style("opacity",0.9);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",1);
+                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
+                    .style("opacity",0.9)
+                    .attr("width", recteQTL_size).attr("height",recteQTL_size);
+                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
+                    .style("opacity",1)
+                    .attr("r",dotGWAS_size);
            
                 // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
                 // when showing unaligned_SNPs, both should be brought back to display
                 // BUT when "NOT showing unalinged_SNPs", only untagged_aligned should be brought back to display
                 if ( ! document.getElementById("show_unaligned_SNPs").checked){
-                    d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) .style("opacity",0);
+                    d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
+                    .style("opacity",0)
+                    .attr("width",invisible_size).attr("height",invisible_size);
                 }                
 
             
             }else{ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);}).style("opacity", 0);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);}).style("opacity",0);
+                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
+                    .style("opacity",0)
+                    .attr("width",invisible_size).attr("height",invisible_size);
+                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
+                    .style("opacity",0)
+                    .attr("r",invisible_size);
             }
          });
     
@@ -565,6 +582,7 @@ function createGraph() {
     var xScaleMax = 3500000000;
     var yScaleMax = 8;
     var yScaleMax_eQTL = 16;
+    var dotGWAS_size = 3.5;
     var recteQTL_size = 5;
 
     // setup x 
@@ -818,7 +836,7 @@ function createGraph() {
           .data(curr_GWAS_SNPlist)
         .enter().append("circle")
           .attr("class", "dotGWAS")
-          .attr("r", 3.5)
+          .attr("r", dotGWAS_size)
           .attr("cx", xMap)
           .attr("cy", yMap)
           .attr("aligned",alignedValue)
