@@ -347,8 +347,12 @@ function createGraph() {
                 // BUT when "NOT showing unalinged_SNPs", only untagged_aligned should be brought back to display
                 if ( ! document.getElementById("show_unaligned_SNPs").checked){
                     d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
-                    .style("opacity",0)
-                    .attr("width",invisible_size).attr("height",invisible_size);
+                        .style("opacity",0)
+                        .attr("width",invisible_size).attr("height",invisible_size);
+                    
+                    d3.selectAll(".dotGWAS").filter(function(d) {return !alignedValue(d);}) 
+                        .style("opacity",0)
+                        .attr("r",invisible_size);
                 }                
 
             
@@ -860,7 +864,10 @@ function createGraph() {
                        .style("top", function(d){
                             return (d3.event.pageY - 60) + "px"})
                        .html(d[0] + "(" + d[1] + ")"
-                            + " <br/>pval: " + yValue(d) 
+                            + " <br/>pval: " + yValue(d)
+                            + " <br/>aligned: " + alignedValue(d)
+                            + " <br/>tagged: " + taggedValue(d)
+
                             );
               })
           .on("mouseout", function(d) {
