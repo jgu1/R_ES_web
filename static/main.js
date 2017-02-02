@@ -311,10 +311,17 @@ function createGraph() {
                 d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
                     .style("opacity",0.9)
                     .attr("width",  recteQTL_size).attr("height", recteQTL_size);
+                d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
+                    .style("opacity",1)
+                    .attr("r",dotGWAS_size);
+
            }else{
                 d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);})
                     .style("opacity",0)
                     .attr("width", invisible_size).attr("height",invisible_size);
+                d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
+                    .style("opacity",0)
+                    .attr("r",invisible_size);
                 }
 
          });
