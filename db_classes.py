@@ -450,8 +450,37 @@ class DAO(object):
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail        
 
+    def fetch_all_SNP_list_for_GWAS(self,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+        start_time = time.time() 
+        sql_template = ('select snp,pval,chrom,location from GWAS_raw '
+                        ' where GWAS = "' + GWAS + '" '
+                        ' and cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
+                        )
+        rows = self.exec_fetch_SQL(sql_template)
+        print 'fetching rows with pvalcutoff takes ' + str(time.time() -start_time) + ' seconds'
+        start_time = time.time()
+        for row in rows:
+            GSNP_name = row[0]
+            GSNP_pval = float(row[1])
+            GSNP_chr = row[2]
+            GSNP_location = int(row[3])
+            try:
+                GSNP_abs = Chrom_fields.calc_chr_start(GSNP_chr) + GSNP_location
+            except ValueError:  # this will happen when 'GSNP_chr' is 'missing'
+                continue    
+            aligned = False
+            tagged  = False
+            if GSNP_name in aligned_dict:
+                aligned = True
+                tagged  = aligned_dict[GSNP_name]
+            GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
+            GWAS_SNPlist_full.append(GWAS_tuple)
+        
+        print 'converting rows with GSNP_abs takes ' + str(time.time() -start_time) + ' seconds'
+        return GWAS_SNPlist_full
 #Manhattan manipulation
     def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
+        #pval_cutoff = 0.001
         sql_template = ('select SNP_fields_raw.* from SNP_fields_raw,gene_fields'
                         ' where gene_fields.GWAS = "' + GWAS + '"'
                         ' and gene_fields.eQTL = "' + eQTL + '"'
@@ -462,13 +491,26 @@ class DAO(object):
         SNP_fields_raw_rows = self.exec_fetch_SQL(sql_template)
         GWAS_SNPlist = []
         eQTL_SNPlist = []
+
+        aligned_GWAS_SNP_dict = {}
         for row in SNP_fields_raw_rows:
             curr_SNP_fields_raw_row_obj = SNP_fields_raw_row_obj(row)   #convert a DB row into a row object
+        #    GWAS_pval = curr_SNP_fields_raw_row_obj.get_GWAS_pval()
+        #    if GWAS_pval > pval_cutoff:
+        #        continue
+
             GWAS_tuple = curr_SNP_fields_raw_row_obj.gen_GWAS_tuple()
             eQTL_tuple = curr_SNP_fields_raw_row_obj.gen_eQTL_tuple(gene)
             if GWAS_tuple is not None:
                 GWAS_SNPlist.append(GWAS_tuple)
+                GWAS_SNP = curr_SNP_fields_raw_row_obj.get_GWAS_SNP()
+                tagged   = curr_SNP_fields_raw_row_obj.is_tagged()
+                aligned_GWAS_SNP_dict[GWAS_SNP] = tagged
             eQTL_SNPlist.append(eQTL_tuple)   
+       
+        GSNP_pval_cutoff = 1e-3 
+        #include all unaligned GWAS SNPs that pass certain p-value cutoff 
+        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(GWAS,aligned_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
         return GWAS_SNPlist,eQTL_SNPlist 
 
     def get_comm_SNPs(self,result_lists):

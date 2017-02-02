@@ -131,6 +131,8 @@ class Chrom_fields(object):
     
     @staticmethod
     def calc_chr_start(chr_name):
+        if chr_name not in Chrom_fields.Chrom_name_list:
+            raise ValueError('invalid chromosome name')
         chr_start = 0
         chr_idx = Chrom_fields.Chrom_name_list.index(chr_name) 
         for idx in range(chr_idx):
