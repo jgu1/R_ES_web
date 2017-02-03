@@ -451,13 +451,22 @@ class DAO(object):
         return list_detail        
 
     def fetch_all_SNP_list_for_GWAS(self,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+        if GSNP_pval_cutoff is None:
+            return GWAS_SNPlist_full
         start_time = time.time() 
         sql_template = ('select snp,pval,chrom,location from GWAS_raw '
                         ' where GWAS = "' + GWAS + '" '
                         ' and cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
                         )
+        #sql_template = ('select snp,pval,chrom,location from single_GWAS '
+        #                ' where cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
+        #                )
+
+
+
+
         rows = self.exec_fetch_SQL(sql_template)
-        print 'fetching rows with pvalcutoff takes ' + str(time.time() -start_time) + ' seconds'
+        print 'fetching rows with pvalcutoff for ' +GWAS+' takes ' + str(time.time() -start_time) + ' seconds'
         start_time = time.time()
         for row in rows:
             GSNP_name = row[0]
@@ -479,7 +488,7 @@ class DAO(object):
         print 'converting rows with GSNP_abs takes ' + str(time.time() -start_time) + ' seconds'
         return GWAS_SNPlist_full
 #Manhattan manipulation
-    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene):
+    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
         #pval_cutoff = 0.001
         sql_template = ('select SNP_fields_raw.* from SNP_fields_raw,gene_fields'
                         ' where gene_fields.GWAS = "' + GWAS + '"'
@@ -508,7 +517,7 @@ class DAO(object):
                 aligned_GWAS_SNP_dict[GWAS_SNP] = tagged
             eQTL_SNPlist.append(eQTL_tuple)   
        
-        GSNP_pval_cutoff = 1e-3 
+        #GSNP_pval_cutoff = 1e-3 
         #include all unaligned GWAS SNPs that pass certain p-value cutoff 
         GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(GWAS,aligned_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
         return GWAS_SNPlist,eQTL_SNPlist 
@@ -592,7 +601,7 @@ class DAO(object):
        
         return patched_dict,all_SNPs_list
 
-    def fetch_pair_SNP_raw(self,web_disease_list,web_eQTL_list,gene):
+    def fetch_pair_SNP_raw(self,web_disease_list,web_eQTL_list,gene,GSNP_cutoff):
         Merged_name = 'Merged_08212015_pruned_LD02'
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
@@ -612,7 +621,7 @@ class DAO(object):
                 eQTL = eQTLs[j]
                 display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
                 
-                GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene)
+                GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
                 
                 GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
                 eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist

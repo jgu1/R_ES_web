@@ -256,8 +256,6 @@ function createGraph() {
                     .selectAll(".gene")
                     .attr("x", function(d,i) { return sorted.indexOf(i)*size; });
     }  
-
-
     var Manhattan_btn = wrapper_div.append('button')
                         .attr("type","button")
                         .text("draw Manhattan Plots")
@@ -268,6 +266,8 @@ function createGraph() {
                             wrapper_div.append("div")
                                 .attr("id","Manhattan")
 
+                            var GSNP_cutoff = document.getElementById("GSNP_cutoff_sub").value;
+
                             var selected_geneNames = columnText._groups[0].map(function(text){
                                 var oH = text.outerHTML;
                                 var selectedTag = 'fill="' + selectedTextColor+'"'; 
@@ -277,9 +277,20 @@ function createGraph() {
                                 }
                             });
 
-                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
+                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
                             }
                         ) ;
+
+    //d3.select("label_GSNP_cutoff").remove();
+    //d3.select("GSNP_cutoff").remove();
+
+    wrapper_div.append("text")
+         .text("GSNP_cutoff");
+    wrapper_div.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","GSNP_cutoff_sub");
+
     var a = 1;  
   }
 
@@ -1092,6 +1103,8 @@ function createGraph() {
                         chart.append("div")
                             .attr("id","Manhattan")
 
+                        var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
+                    
                         var selected_geneNames = columnText._groups[0].map(function(text){
                             var oH = text.outerHTML;
                             var selectedTag = 'fill="' + selectedTextColor+'"'; 
@@ -1101,10 +1114,17 @@ function createGraph() {
                             }
                         });
                         
-                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
+                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
                         }
                     ) ;
-                                     
+ 
+    chart.append("text")
+         .text("GSNP_cutoff");
+    var GSNP_cutoff = chart.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","GSNP_cutoff_global");
+                           
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
                                             .style("margin-left", 5* margin + "px");

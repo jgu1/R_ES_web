@@ -252,17 +252,18 @@ def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
     return location_pval_chrom_SNPlist_dict,eQTL_SNPlist_dict
 
 @app.route('/Manhattan')
-@app.route("/Manhattan/<string:geneNames><string:pairNames><string:Manhattan_GWAS_cutoff>")
+@app.route("/Manhattan/<string:geneNames><string:pairNames><string:GSNP_cutoff>")
 def Manhattan():
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
-    Manhattan_GWAS_cutoff_str = request.args.get('Manhattan_GWAS_cutoff','empty')
+    GSNP_cutoff_str = request.args.get('GSNP_cutoff','empty')
 
-    Manhattan_GWAS_cutoff = 1
+    GSNP_cutoff = None
     try:
-        Manhattan_GWAS_cutoff = float(Manhattan_GWAS_cutoff_str)
+        GSNP_cutoff = float(GSNP_cutoff_str)
     except ValueError:
         a = 1  # placeholder 
+
 
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
@@ -297,7 +298,7 @@ def Manhattan():
         #pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
         
         # directly generate GWAS_SNPlist and eQTL_SNPlist for current gene across all GWAS_eQTL pairs 
-        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene)
+        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,GSNP_cutoff)
 
         GWAS_SNPlist_dict = Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_curr_gene)
         eQTL_gene_SNPlist_dict = Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_curr_gene,gene) 
