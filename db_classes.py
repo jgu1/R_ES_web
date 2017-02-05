@@ -30,6 +30,12 @@ class DAO(object):
                     passwd="detective",
                     db="hg19")
 
+        self.db_GWAS_raw = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
+                    user="es",
+                    passwd="detective",
+                    db="GWAS_raw")
+
+
         #self.db = MySQLdb.connect(host="localhost", # your host, usually localhost
         #            user="root", # your username
         #            passwd="genome", # your password
@@ -76,6 +82,12 @@ class DAO(object):
 
     def exec_fetch_SQL_hg19(self,sql_template):
         cur = self.db_hg19.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        return list(rows) 
+
+    def exec_fetch_SQL_GWAS_raw(self,sql_template):
+        cur = self.db_GWAS_raw.cursor()
         cur.execute(sql_template)
         rows = cur.fetchall()
         return list(rows) 
@@ -450,23 +462,35 @@ class DAO(object):
         list_detail = self.exec_fetch_SQL(sql_template)
         return list_detail        
 
-    def fetch_all_SNP_list_for_GWAS(self,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
-        if GSNP_pval_cutoff is None:
-            return GWAS_SNPlist_full
-        start_time = time.time() 
+    def table_name(self,GWAS_name):
+        table_name = GWAS_name.replace('.','_').replace('-','_')
+        return table_name
+
+    def fetch_rows_from_GWAS_raw_database(self,GWAS,GSNP_pval_cutoff):
+        GWAS_table_name = self.table_name(GWAS)
+        sql_template = ('select snp,pval,chrom,location from ' + GWAS_table_name + ' ' 
+                        ' where cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
+                        )
+        rows = self.exec_fetch_SQL_GWAS_raw(sql_template)
+        return rows
+
+    def fetch_rows_from_ES_OUTPUT_GWAS_raw_table(self,GWAS,GSNP_pval_cutoff):
         sql_template = ('select snp,pval,chrom,location from GWAS_raw '
                         ' where GWAS = "' + GWAS + '" '
                         ' and cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
                         )
-        #sql_template = ('select snp,pval,chrom,location from single_GWAS '
-        #                ' where cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
-        #                )
-
-
-
 
         rows = self.exec_fetch_SQL(sql_template)
-        print 'fetching rows with pvalcutoff for ' +GWAS+' takes ' + str(time.time() -start_time) + ' seconds'
+        return rows
+
+
+    def fetch_all_SNP_list_for_GWAS(self,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+        if GSNP_pval_cutoff is None:
+            return GWAS_SNPlist_full
+        start_time = time.time() 
+        #rows = self.fetch_rows_from_ES_OUTPUT_GWAS_raw_table(GWAS,GSNP_pval_cutoff)
+        rows = self.fetch_rows_from_GWAS_raw_database(GWAS,GSNP_pval_cutoff)       
+        print '###fetching rows with pvalcutoff for ' +GWAS+' takes ' + str(time.time() -start_time) + ' seconds'
         start_time = time.time()
         for row in rows:
             GSNP_name = row[0]
@@ -615,6 +639,8 @@ class DAO(object):
         GWAS_SNPlist_dict_curr_gene = {}
         eQTL_SNPlist_dict_curr_gene = {}
 
+
+        start_time = time.time()
         for i in range(len(GWASs)):
             for j in range(len(eQTLs)):
                 GWAS = GWASs[i]
@@ -625,6 +651,8 @@ class DAO(object):
                 
                 GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
                 eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+
+        print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
 
         return GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene
 

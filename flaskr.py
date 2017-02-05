@@ -254,6 +254,7 @@ def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
 @app.route('/Manhattan')
 @app.route("/Manhattan/<string:geneNames><string:pairNames><string:GSNP_cutoff>")
 def Manhattan():
+    start_time_Manhattan = time.time()
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
     GSNP_cutoff_str = request.args.get('GSNP_cutoff','empty')
@@ -275,7 +276,6 @@ def Manhattan():
     dao = getattr(g, 'dao', None)
     location_pval_chrom_SNPlist_dict = {}
     Manhattan_pairNames = set()
-    start_time = time.time()
     pair_SNP_dict_with_location_all_genes = {}
     
     # major dict for GWASs
@@ -291,6 +291,7 @@ def Manhattan():
 
     #pdb.set_trace()
     
+    start_time = time.time()
     for gene in genes:
 
         # fetch pair_SNP_dict with only name and pval, then add location information
@@ -307,8 +308,6 @@ def Manhattan():
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()
     
-    print 'generate abs_location and chrome takes {} seconds'.format(time.time() - start_time)
-
     chrom_starts = dao.Manhattan_gen_chrom_starts()    
 
     eQTL_SNPlist_dict = dao.Manhattan_gen_eQTL_SNPlist(location_pval_chrom_SNPlist_dict,genes)
@@ -331,6 +330,7 @@ def Manhattan():
     ret['chrom_starts'] = chrom_starts
     ret['gene_location_dict'] = gene_location_dict
     #ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict_1215
+    print 'Manhattan backend takes ' + str(time.time() - start_time_Manhattan) + ' seconds'
     return jsonify(ret)
 
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3
