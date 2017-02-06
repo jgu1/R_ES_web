@@ -10,6 +10,7 @@ import psutil
 import copy
 from beans import Chrom_fields
 from beans import SNP_fields_raw_row_obj
+import concurrent.futures
 class DAO(object):
     db = None
     db_hg19 = None
@@ -53,6 +54,22 @@ class DAO(object):
         if web_disease_list is not None and web_eQTL_list is not None:
             self.gen_display_name_GWAS_eQTL_tuple_dict(web_disease_list,web_eQTL_list)
 
+    #multithreading 10 worker threads
+    def concurrent_run(self,target_func,args_list):
+        args_result_dict = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            futures_to_args_dict = {executor.submit(target_func, args): args for args in args_list}
+            for future in concurrent.futures.as_completed(futures_to_args_dict):
+                args = futures_to_args_dict[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    print('%r generated an exception: %s' % (args, exc))
+                else:
+                    #print 'x = ' + str(data[0]) + '  x2^2 = ' + str(data[1])
+                    args_result_dict[args] = result
+        return args_result_dict
+
     def gen_display_name_GWAS_eQTL_tuple_dict(self,web_disease_list,web_eQTL_list):
         Merged_name = 'Merged_08212015_pruned_LD02'
 
@@ -80,6 +97,13 @@ class DAO(object):
         rows = cur.fetchall()
         return list(rows) 
 
+    def exec_fetch_SQL_given_cnx(self,cnx,sql_template):
+        cur = cnx.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        return list(rows) 
+
+
     def exec_fetch_SQL_hg19(self,sql_template):
         cur = self.db_hg19.cursor()
         cur.execute(sql_template)
@@ -91,6 +115,13 @@ class DAO(object):
         cur.execute(sql_template)
         rows = cur.fetchall()
         return list(rows) 
+
+    def exec_fetch_SQL_GWAS_raw_given_cnx(self,cnx,sql_template):
+        cur = cnx.cursor()
+        cur.execute(sql_template)
+        rows = cur.fetchall()
+        return list(rows) 
+
 
 
     def exec_fetch_SQL_GWAS(self,sql_template):
@@ -466,12 +497,12 @@ class DAO(object):
         table_name = GWAS_name.replace('.','_').replace('-','_')
         return table_name
 
-    def fetch_rows_from_GWAS_raw_database(self,GWAS,GSNP_pval_cutoff):
+    def fetch_rows_from_GWAS_raw_database(self,curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff):
         GWAS_table_name = self.table_name(GWAS)
         sql_template = ('select snp,pval,chrom,location from ' + GWAS_table_name + ' ' 
                         ' where cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
                         )
-        rows = self.exec_fetch_SQL_GWAS_raw(sql_template)
+        rows = self.exec_fetch_SQL_GWAS_raw_given_cnx(curr_cnx_GWAS_raw,sql_template)
         return rows
 
     def fetch_rows_from_ES_OUTPUT_GWAS_raw_table(self,GWAS,GSNP_pval_cutoff):
@@ -484,12 +515,12 @@ class DAO(object):
         return rows
 
 
-    def fetch_all_SNP_list_for_GWAS(self,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
         if GSNP_pval_cutoff is None:
             return GWAS_SNPlist_full
         start_time = time.time() 
         #rows = self.fetch_rows_from_ES_OUTPUT_GWAS_raw_table(GWAS,GSNP_pval_cutoff)
-        rows = self.fetch_rows_from_GWAS_raw_database(GWAS,GSNP_pval_cutoff)       
+        rows = self.fetch_rows_from_GWAS_raw_database(curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff)       
         print '###fetching rows with pvalcutoff for ' +GWAS+' takes ' + str(time.time() -start_time) + ' seconds'
         start_time = time.time()
         for row in rows:
@@ -512,8 +543,26 @@ class DAO(object):
         print 'converting rows with GSNP_abs takes ' + str(time.time() -start_time) + ' seconds'
         return GWAS_SNPlist_full
 #Manhattan manipulation
-    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
-        #pval_cutoff = 0.001
+    #def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
+    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,args):
+        GWAS             = args[0]
+        eQTL             = args[1]
+        gene             = args[2]
+        GSNP_pval_cutoff = args[3]
+        
+        # give each thread a new database connection
+        curr_cnx_ES_OUTPUT = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
+            user="es", # your username
+            passwd="detective", # your password
+            db="ES_OUTPUT") # name of the data base
+ 
+        curr_cnx_GWAS_raw = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
+            user="es",
+            passwd="detective",
+            db="GWAS_raw")
+
+
+        
         sql_template = ('select SNP_fields_raw.* from SNP_fields_raw,gene_fields'
                         ' where gene_fields.GWAS = "' + GWAS + '"'
                         ' and gene_fields.eQTL = "' + eQTL + '"'
@@ -521,7 +570,7 @@ class DAO(object):
                         ' and SNP_fields_raw.gene_fields_id = gene_fields.id;'  
                         )
         
-        SNP_fields_raw_rows = self.exec_fetch_SQL(sql_template)
+        SNP_fields_raw_rows = self.exec_fetch_SQL_given_cnx(curr_cnx_ES_OUTPUT,sql_template)
         GWAS_SNPlist = []
         eQTL_SNPlist = []
 
@@ -543,7 +592,10 @@ class DAO(object):
        
         #GSNP_pval_cutoff = 1e-3 
         #include all unaligned GWAS SNPs that pass certain p-value cutoff 
-        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(GWAS,aligned_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
+        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,GWAS,aligned_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
+        
+        curr_cnx_ES_OUTPUT.close()
+        curr_cnx_GWAS_raw.close()
         return GWAS_SNPlist,eQTL_SNPlist 
 
     def get_comm_SNPs(self,result_lists):
@@ -641,24 +693,44 @@ class DAO(object):
 
 
         start_time = time.time()
+        if False:
+            for i in range(len(GWASs)):
+                for j in range(len(eQTLs)):
+                    GWAS = GWASs[i]
+                    eQTL = eQTLs[j]
+                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                    
+                    GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
+                    
+                    GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+                    eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+            
+        #building args_list
+        args_list = []
         for i in range(len(GWASs)):
+            GWAS = GWASs[i]
             for j in range(len(eQTLs)):
-                GWAS = GWASs[i]
-                eQTL = eQTLs[j]
-                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-                
-                GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
-                
-                GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
-                eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+                eQTL = eQTLs[j]  
+                args = (GWAS,eQTL,gene,GSNP_cutoff)          
+                args_list.append(args)        
+
+        #concurrently run the function
+        args_result_dict = self.concurrent_run(self.fetch_SNP_list_raw_by_GWAS_eQTL_gene,args_list)
+
+        #insert result with display_name
+        for args in args_result_dict:
+            GWAS = args[0]
+            eQTL = args[1] 
+            display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+            result = args_result_dict[args]
+            GWAS_SNPlist = result[0]
+            eQTL_SNPlist = result[1]
+            GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+            eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
 
         print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
 
         return GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene
-
-
-
-
 #detail manipulation
     def fetch_detail(self,GWAS,eQTL,gene):
         #sql_template = ('select GSNP,eSNP,Gpval from Geg, SNP_fields'
