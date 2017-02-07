@@ -514,6 +514,32 @@ class DAO(object):
         rows = self.exec_fetch_SQL(sql_template)
         return rows
 
+    # for each SNP, finding the name for next closest gene
+    def append_next_gene_for_SNP(self,GWAS_SNPlist_full,location_SNP_dict):
+        location_gene_dict = self.location_gene_dict
+        all_location = location_gene_dict.keys() + location_SNP_dict.keys()
+        all_location.sort()
+       
+        GWAS_SNPlist_full_closest = []
+        for SNP_tuple in GWAS_SNPlist_full:
+            #GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
+            GSNP_abs = SNP_tuple[2]
+            idx_of_SNP = all_location.index(GSNP_abs) 
+            # start from this locaiton, look for closest downstream gene
+            closest_downstream_gene = None
+            closest_downstream_gene_location = None
+            for idx_downstream in range(idx_of_SNP,len(all_location)):
+                if all_location[idx_downstream] in location_gene_dict:
+                    closest_downstream_gene_location = all_location[idx_downstream]
+                    closest_downstream_gene = location_gene_dict[closest_downstream_gene_location]
+                    break
+            
+            tuple_with_closest_gene = tuple(list(SNP_tuple) + [closest_downstream_gene,closest_downstream_gene_location])
+            GWAS_SNPlist_full_closest.append(tuple_with_closest_gene)
+        return GWAS_SNPlist_full_closest 
+
+
+
     #curr_cnx_GWAS_raw is used for multithreading
     # GWAS is the GWAS string
     # tagged_dict including all GWAS SNPs that has a aligned eQTL SNP, but not necessarily tagged
@@ -527,6 +553,7 @@ class DAO(object):
         rows = self.fetch_rows_from_GWAS_raw_database(curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff)       
         print '###fetching rows with pvalcutoff for ' +GWAS+' takes ' + str(time.time() -start_time) + ' seconds'
         start_time = time.time()
+
         for row in rows:
             GSNP_name = row[0]
             GSNP_pval = float(row[1])
@@ -543,16 +570,27 @@ class DAO(object):
                 tagged  = tagged_dict[GSNP_name]
             GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
             GWAS_SNPlist_full.append(GWAS_tuple)
+       
+        # need to loop again instead of inside previous loop because
+        # some aligned GWAS SNPs doesn't satisfy the GSNP_pval_cutoff 
+        location_SNP_dict = {}
+        for GWAS_tuple in GWAS_SNPlist_full:
+            GSNP_name = GWAS_tuple[0]
+            GSNP_abs  = GWAS_tuple[2]  
+            location_SNP_dict[GSNP_abs] = GSNP_name
+
+        GWAS_SNPlist_full_closest_gene = self.append_next_gene_for_SNP(GWAS_SNPlist_full,location_SNP_dict) 
         
         print 'converting rows with GSNP_abs takes ' + str(time.time() -start_time) + ' seconds'
-        return GWAS_SNPlist_full
+        #return GWAS_SNPlist_full
+        return GWAS_SNPlist_full_closest_gene
 #Manhattan manipulation
-    #def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
-    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,args):
-        GWAS             = args[0]
-        eQTL             = args[1]
-        gene             = args[2]
-        GSNP_pval_cutoff = args[3]
+    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
+    #def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,args):
+    #    GWAS             = args[0]
+    #    eQTL             = args[1]
+    #    gene             = args[2]
+    #    GSNP_pval_cutoff = args[3]
         
         # give each thread a new database connection
         curr_cnx_ES_OUTPUT = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
@@ -697,40 +735,41 @@ class DAO(object):
 
 
         start_time = time.time()
-        if False:
-            for i in range(len(GWASs)):
-                for j in range(len(eQTLs)):
-                    GWAS = GWASs[i]
-                    eQTL = eQTLs[j]
-                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-                    
-                    GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
-                    
-                    GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
-                    eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
-            
-        #building args_list
-        args_list = []
+        #if False:
         for i in range(len(GWASs)):
-            GWAS = GWASs[i]
             for j in range(len(eQTLs)):
-                eQTL = eQTLs[j]  
-                args = (GWAS,eQTL,gene,GSNP_cutoff)          
-                args_list.append(args)        
+                GWAS = GWASs[i]
+                eQTL = eQTLs[j]
+                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                
+                GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
+                
+                GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+                eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+        
+        #building args_list
+        if False:
+            args_list = []
+            for i in range(len(GWASs)):
+                GWAS = GWASs[i]
+                for j in range(len(eQTLs)):
+                    eQTL = eQTLs[j]  
+                    args = (GWAS,eQTL,gene,GSNP_cutoff)          
+                    args_list.append(args)        
 
-        #concurrently run the function
-        args_result_dict = self.concurrent_run(self.fetch_SNP_list_raw_by_GWAS_eQTL_gene,args_list)
+            #concurrently run the function
+            args_result_dict = self.concurrent_run(self.fetch_SNP_list_raw_by_GWAS_eQTL_gene,args_list)
 
-        #insert result with display_name
-        for args in args_result_dict:
-            GWAS = args[0]
-            eQTL = args[1] 
-            display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-            result = args_result_dict[args]
-            GWAS_SNPlist = result[0]
-            eQTL_SNPlist = result[1]
-            GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
-            eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+            #insert result with display_name
+            for args in args_result_dict:
+                GWAS = args[0]
+                eQTL = args[1] 
+                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                result = args_result_dict[args]
+                GWAS_SNPlist = result[0]
+                eQTL_SNPlist = result[1]
+                GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+                eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
 
         print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
 
@@ -943,6 +982,25 @@ class DAO(object):
                 gene_location_dict[curr_gene] = (None,None)
 
         return gene_location_dict
+
+    def Manhattan_gen_all_location_gene_dict(self):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
+        sql_template = 'select gene,chrom,chromStart from gene_location;'
+        rows = self.exec_fetch_SQL(sql_template) 
+        location_gene_dict = {}
+        for row in rows:
+            gene        = row[0]
+            chrom       = row[1]
+            chromStart  = row[2]
+            if chromStart is None:
+                print 'gene "' + gene + '" has chromStart NULL'
+                chromStart = 0
+                continue
+            chrom_abs_start = chrom_abs_dict[chrom] + chromStart
+            location_gene_dict[chrom_abs_start] = gene
+        self.location_gene_dict = location_gene_dict 
+        return location_gene_dict
+
 
     def Manhattan_gen_chrom_abs_dict(self):
         # build chrom_name -> abs_location diction
