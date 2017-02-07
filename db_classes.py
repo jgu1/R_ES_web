@@ -514,8 +514,12 @@ class DAO(object):
         rows = self.exec_fetch_SQL(sql_template)
         return rows
 
-
-    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,GWAS,aligned_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+    #curr_cnx_GWAS_raw is used for multithreading
+    # GWAS is the GWAS string
+    # tagged_dict including all GWAS SNPs that has a aligned eQTL SNP, but not necessarily tagged
+    # GWAS_SNPlist_full as input contains all aligned GWAS SNPs, during the function add unaligned GWAS SNPs
+    # GSNP_pval_cutoff is the cutoff deciding whether to show this GWAS SNP on web-interface 
+    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
         if GSNP_pval_cutoff is None:
             return GWAS_SNPlist_full
         start_time = time.time() 
@@ -534,9 +538,9 @@ class DAO(object):
                 continue    
             aligned = False
             tagged  = False
-            if GSNP_name in aligned_dict:
+            if GSNP_name in tagged_dict:
                 aligned = True
-                tagged  = aligned_dict[GSNP_name]
+                tagged  = tagged_dict[GSNP_name]
             GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
             GWAS_SNPlist_full.append(GWAS_tuple)
         
@@ -574,7 +578,7 @@ class DAO(object):
         GWAS_SNPlist = []
         eQTL_SNPlist = []
 
-        aligned_GWAS_SNP_dict = {}
+        tagged_GWAS_SNP_dict = {}
         for row in SNP_fields_raw_rows:
             curr_SNP_fields_raw_row_obj = SNP_fields_raw_row_obj(row)   #convert a DB row into a row object
         #    GWAS_pval = curr_SNP_fields_raw_row_obj.get_GWAS_pval()
@@ -587,12 +591,12 @@ class DAO(object):
                 GWAS_SNPlist.append(GWAS_tuple)
                 GWAS_SNP = curr_SNP_fields_raw_row_obj.get_GWAS_SNP()
                 tagged   = curr_SNP_fields_raw_row_obj.is_tagged()
-                aligned_GWAS_SNP_dict[GWAS_SNP] = tagged
+                tagged_GWAS_SNP_dict[GWAS_SNP] = tagged
             eQTL_SNPlist.append(eQTL_tuple)   
        
         #GSNP_pval_cutoff = 1e-3 
         #include all unaligned GWAS SNPs that pass certain p-value cutoff 
-        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,GWAS,aligned_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
+        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,GWAS,tagged_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
         
         curr_cnx_ES_OUTPUT.close()
         curr_cnx_GWAS_raw.close()
