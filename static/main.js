@@ -878,7 +878,8 @@ function createGraph() {
                             + " <br/>pval: " + yValue(d)
                             + " <br/>aligned: " + alignedValue(d)
                             + " <br/>tagged: " + taggedValue(d)
-
+                            + " <br/>closeast gene: " + d[6] 
+                            + "(" + d[7] + ")"
                             );
               })
           .on("mouseout", function(d) {

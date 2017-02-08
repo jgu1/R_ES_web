@@ -288,8 +288,9 @@ def Manhattan():
             #key:   gene_name
             #value: SNPlist in the format of (eSNP_name,eSNP_chrom,eSNP_abs,eSNP_pval,aligned,tagged,gene,aligned_GSNP_name)                   
     eQTL_gene_SNPlist_dict = {}
-   
+  
     location_gene_dict = dao.Manhattan_gen_all_location_gene_dict()
+
  
     start_time = time.time()
     for gene in genes:
