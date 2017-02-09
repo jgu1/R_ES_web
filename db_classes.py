@@ -534,86 +534,11 @@ class DAO(object):
 
         return SNP_gene_dict
 
-    # for each SNP, finding the name for next closest gene
-    def append_next_gene_for_SNP_cannot_handle_SNPs_with_same_location(self,GWAS_SNPlist_full):
-        location_SNP_dict = {}
-        for GWAS_tuple in GWAS_SNPlist_full:
-            GSNP_name = GWAS_tuple[0]
-            GSNP_abs  = GWAS_tuple[2]  
-            if GSNP_abs in location_SNP_dict:
-                pdb.set_trace()
-                a = 1
-            location_SNP_dict[GSNP_abs] = GSNP_name
-
-        location_gene_dict = self.location_gene_dict
-
-        SNP_gene_dict = self.gen_SNP_gene_dict(location_SNP_dict,location_gene_dict)
-
-        GWAS_SNPlist_full_closest = []
-        for SNP_tuple in GWAS_SNPlist_full:
-            #GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
-            GSNP_name = SNP_tuple[0]
-            if GSNP_name not in SNP_gene_dict:
-                pdb.set_trace()
-                a = 1
-            
-            tuple_with_closest_gene = tuple(list(SNP_tuple) + SNP_gene_dict[GSNP_name])
-            GWAS_SNPlist_full_closest.append(tuple_with_closest_gene)
-        return GWAS_SNPlist_full_closest 
-
-
-    # for each SNP, finding the name for next closest gene
-    def append_closest_gene_for_SNP(self,GWAS_SNPlist_full):
-        location_SNP_dict = {}
-        for GWAS_tuple in GWAS_SNPlist_full:
-            GSNP_name = GWAS_tuple[0]
-            GSNP_abs  = GWAS_tuple[2]  
-            location_SNP_dict[GSNP_abs] = GSNP_name
-
-        location_gene_dict = self.location_gene_dict
-        all_location = location_gene_dict.keys() + location_SNP_dict.keys()
-        all_location.sort()
-       
-      
-
-        GWAS_SNPlist_full_closest = []
-        for SNP_tuple in GWAS_SNPlist_full:
-            #GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
-            GSNP_abs = SNP_tuple[2]
-            idx_of_SNP = all_location.index(GSNP_abs) 
-            # start from this locaiton, look for closest downstream gene
-            closest_downstream_gene = None
-            closest_downstream_gene_location = None
-            for idx_downstream in range(idx_of_SNP,len(all_location)):
-                if all_location[idx_downstream] in location_gene_dict:
-                    closest_downstream_gene_location = all_location[idx_downstream]
-                    closest_downstream_gene = location_gene_dict[closest_downstream_gene_location]
-                    distance_downstream = closest_downstream_gene_location - GSNP_abs
-                    break
-
-            for idx_upstream in range(idx_of_SNP,-1,-1): #range(5,-1,-1) -> [5, 4, 3, 2, 1, 0]
-                if all_location[idx_upstream] in location_gene_dict:
-                    closest_upstream_gene_location = all_location[idx_upstream]
-                    closest_upstream_gene = location_gene_dict[closest_upstream_gene_location]
-                    distance_upstream = GSNP_abs - closest_upstream_gene_location
-                    break
-
-            closest_gene = closest_downstream_gene
-            closest_gene_location = closest_downstream_gene_location
-            if distance_downstream > distance_upstream:
-                closest_gene = closest_upstream_gene
-                closest_gene_location = closest_upstream_gene_location
-            
-            tuple_with_closest_gene = tuple(list(SNP_tuple) + [closest_gene,closest_gene_location])
-            GWAS_SNPlist_full_closest.append(tuple_with_closest_gene)
-        return GWAS_SNPlist_full_closest 
-
-
-    def fetch_closest_gene_for_snp_list(self,snp_list):
+    def fetch_closest_gene_for_snp_list(self,curr_cnx_ES_OUTPUT,snp_list):
         snp_gene_dict = {}
         snp_list_str = '","'.join(snp_list)
         sql_template = 'select snp,gene,gene_pos from SNP_gene_dict where snp in ("'+snp_list_str+'");' 
-        rows = self.exec_fetch_SQL(sql_template)
+        rows = self.exec_fetch_SQL_given_cnx(curr_cnx_ES_OUTPUT,sql_template)
         for row in rows:
             snp     = row[0]
             gene    = row[1]
@@ -621,14 +546,14 @@ class DAO(object):
             snp_gene_dict[snp] = (gene,gene_pos)
         return snp_gene_dict
  
-    def append_closest_gene_for_SNP_using_db(self,GWAS_SNPlist_full):
+    def append_closest_gene_for_SNP_using_db(self,curr_cnx_ES_OUTPUT,GWAS_SNPlist_full):
         snp_list = [] 
         for SNP_tuple in GWAS_SNPlist_full:
             #GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
             snp = SNP_tuple[0]
             snp_list.append(snp)
        
-        snp_gene_dict = self.fetch_closest_gene_for_snp_list(snp_list)
+        snp_gene_dict = self.fetch_closest_gene_for_snp_list(curr_cnx_ES_OUTPUT,snp_list)
         
         ret = []    # list of GWAS SNPs with closest gene, (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged,gene,gene_pos)     
         for SNP_tuple in GWAS_SNPlist_full:
@@ -647,9 +572,9 @@ class DAO(object):
     # tagged_dict including all GWAS SNPs that has a aligned eQTL SNP, but not necessarily tagged
     # GWAS_SNPlist_full as input contains all aligned GWAS SNPs, during the function add unaligned GWAS SNPs
     # GSNP_pval_cutoff is the cutoff deciding whether to show this GWAS SNP on web-interface 
-    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
         if GSNP_pval_cutoff is None:
-            GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(GWAS_SNPlist_full)
+            GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(curr_cnx_ES_OUTPUT,GWAS_SNPlist_full)
             #return GWAS_SNPlist_full
             return GWAS_SNPlist_full_closest_gene
         start_time = time.time() 
@@ -677,18 +602,18 @@ class DAO(object):
        
         # need to loop again instead of inside previous loop because
         # some aligned GWAS SNPs doesn't satisfy the GSNP_pval_cutoff 
-        GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(GWAS_SNPlist_full) 
+        GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(curr_cnx_ES_OUTPUT,GWAS_SNPlist_full) 
         
         print 'converting rows with GSNP_abs takes ' + str(time.time() -start_time) + ' seconds'
         #return GWAS_SNPlist_full
         return GWAS_SNPlist_full_closest_gene
 #Manhattan manipulation
-    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
-    #def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,args):
-    #    GWAS             = args[0]
-    #    eQTL             = args[1]
-    #    gene             = args[2]
-    #    GSNP_pval_cutoff = args[3]
+    #def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,GWAS,eQTL,gene,GSNP_pval_cutoff):
+    def fetch_SNP_list_raw_by_GWAS_eQTL_gene(self,args):
+        GWAS             = args[0]
+        eQTL             = args[1]
+        gene             = args[2]
+        GSNP_pval_cutoff = args[3]
         
         # give each thread a new database connection
         curr_cnx_ES_OUTPUT = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
@@ -732,7 +657,7 @@ class DAO(object):
        
         #GSNP_pval_cutoff = 1e-3 
         #include all unaligned GWAS SNPs that pass certain p-value cutoff 
-        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,GWAS,tagged_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
+        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
         
         curr_cnx_ES_OUTPUT.close()
         curr_cnx_GWAS_raw.close()
@@ -833,41 +758,41 @@ class DAO(object):
 
 
         start_time = time.time()
-        #if False:
-        for i in range(len(GWASs)):
-            for j in range(len(eQTLs)):
-                GWAS = GWASs[i]
-                eQTL = eQTLs[j]
-                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-                
-                GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
-                
-                GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
-                eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
-        
-        #building args_list
         if False:
-            args_list = []
             for i in range(len(GWASs)):
+                for j in range(len(eQTLs)):
                     GWAS = GWASs[i]
-                    for j in range(len(eQTLs)):
-                        eQTL = eQTLs[j]  
-                        args = (GWAS,eQTL,gene,GSNP_cutoff)          
-                        args_list.append(args)        
+                    eQTL = eQTLs[j]
+                    display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+                    
+                    GWAS_SNPlist,eQTL_SNPlist = self.fetch_SNP_list_raw_by_GWAS_eQTL_gene(GWAS,eQTL,gene,GSNP_cutoff)
+                    
+                    GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+                    eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+        
+        #if False:
+        #building args_list
+        args_list = []
+        for i in range(len(GWASs)):
+                GWAS = GWASs[i]
+                for j in range(len(eQTLs)):
+                    eQTL = eQTLs[j]  
+                    args = (GWAS,eQTL,gene,GSNP_cutoff)          
+                    args_list.append(args)        
 
-                #concurrently run the function
-            args_result_dict = self.concurrent_run(self.fetch_SNP_list_raw_by_GWAS_eQTL_gene,args_list)
+            #concurrently run the function
+        args_result_dict = self.concurrent_run(self.fetch_SNP_list_raw_by_GWAS_eQTL_gene,args_list)
 
-            #insert result with display_name
-            for args in args_result_dict:
-                GWAS = args[0]
-                eQTL = args[1] 
-                display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
-                result = args_result_dict[args]
-                GWAS_SNPlist = result[0]
-                eQTL_SNPlist = result[1]
-                GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
-                eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
+        #insert result with display_name
+        for args in args_result_dict:
+            GWAS = args[0]
+            eQTL = args[1] 
+            display_name = self.gen_display_name_from_GWAS_eQTL(GWAS_disease_dict,GWAS,eQTL,Merged_name)
+            result = args_result_dict[args]
+            GWAS_SNPlist = result[0]
+            eQTL_SNPlist = result[1]
+            GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
+            eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
 
             print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
 
