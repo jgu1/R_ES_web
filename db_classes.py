@@ -609,6 +609,38 @@ class DAO(object):
         return GWAS_SNPlist_full_closest 
 
 
+    def fetch_closest_gene_for_snp_list(self,snp_list):
+        snp_gene_dict = {}
+        snp_list_str = '","'.join(snp_list)
+        sql_template = 'select snp,gene,gene_pos from SNP_gene_dict where snp in ("'+snp_list_str+'");' 
+        rows = self.exec_fetch_SQL(sql_template)
+        for row in rows:
+            snp     = row[0]
+            gene    = row[1]
+            gene_pos= row[2]
+            snp_gene_dict[snp] = (gene,gene_pos)
+        return snp_gene_dict
+ 
+    def append_closest_gene_for_SNP_using_db(self,GWAS_SNPlist_full):
+        snp_list = [] 
+        for SNP_tuple in GWAS_SNPlist_full:
+            #GWAS_tuple = (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged)
+            snp = SNP_tuple[0]
+            snp_list.append(snp)
+       
+        snp_gene_dict = self.fetch_closest_gene_for_snp_list(snp_list)
+        
+        ret = []    # list of GWAS SNPs with closest gene, (GSNP_name,GSNP_chr,GSNP_abs,GSNP_pval,aligned,tagged,gene,gene_pos)     
+        for SNP_tuple in GWAS_SNPlist_full:
+            snp = SNP_tuple[0]
+            tuple_with_gene = None
+            if snp in snp_gene_dict:
+                tuple_with_gene = SNP_tuple + snp_gene_dict[snp]
+            else:
+                tuple_with_gene = SNP_tuple + ('NOT FOUND','NOT FOUND')
+            ret.append(tuple_with_gene)
+
+        return ret 
 
     #curr_cnx_GWAS_raw is used for multithreading
     # GWAS is the GWAS string
@@ -617,7 +649,7 @@ class DAO(object):
     # GSNP_pval_cutoff is the cutoff deciding whether to show this GWAS SNP on web-interface 
     def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
         if GSNP_pval_cutoff is None:
-            GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP(GWAS_SNPlist_full)
+            GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(GWAS_SNPlist_full)
             #return GWAS_SNPlist_full
             return GWAS_SNPlist_full_closest_gene
         start_time = time.time() 
@@ -645,7 +677,7 @@ class DAO(object):
        
         # need to loop again instead of inside previous loop because
         # some aligned GWAS SNPs doesn't satisfy the GSNP_pval_cutoff 
-        GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP(GWAS_SNPlist_full) 
+        GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(GWAS_SNPlist_full) 
         
         print 'converting rows with GSNP_abs takes ' + str(time.time() -start_time) + ' seconds'
         #return GWAS_SNPlist_full
