@@ -560,7 +560,10 @@ class DAO(object):
             snp = SNP_tuple[0]
             tuple_with_gene = None
             if snp in snp_gene_dict:
-                tuple_with_gene = SNP_tuple + snp_gene_dict[snp]
+                (gene,gene_pos) = snp_gene_dict[snp]
+                GSNP_abs = int(SNP_tuple[2])
+                distance = GSNP_abs - int(gene_pos)
+                tuple_with_gene = SNP_tuple + (gene,distance)
             else:
                 tuple_with_gene = SNP_tuple + ('NOT FOUND','NOT FOUND')
             ret.append(tuple_with_gene)
