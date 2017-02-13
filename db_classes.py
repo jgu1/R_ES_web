@@ -975,41 +975,6 @@ class DAO(object):
         SNP_location_dict = self.Manhattan_build_snp_location_dict(all_SNP_set,chrom_abs_dict) 
         return self.Manhattan_enhance_SNP_tuple_with_abs_location(pair_SNP_dict,SNP_location_dict,gene) 
 
-    def Manhattan_gen_gene_location_dict_given_genes(self,genes):
-        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
-        gene_list = []
-        for gene in genes:
-            gene_list.append('"' + gene + '"')
-        gene_list_str = '(' + ','.join(gene_list) + ')'
-        sql_template = 'select gene,chrom,chromStart,chromEnd from gene_location where gene in ' + gene_list_str + ';'
-        rows = self.exec_fetch_SQL(sql_template) 
-        gene_location_dict_available_in_db = {} #some gene may not in db
-        for row in rows:
-            gene        = row[0]
-            chrom       = row[1]
-            chromStart  = row[2]
-            chromEnd    = row[3]
-            if chromStart is None:
-                print 'gene "' + gene + '" has chromStart NULL'
-                chromStart = 0
-            if chromEnd is None:
-                print 'gene "' + gene + '" has chromEnd NULL'
-                chromEnd = 0 
-            chrom_abs_start = chrom_abs_dict[chrom] + chromStart
-            chrom_abs_end   = chrom_abs_dict[chrom] + chromEnd
-            gene_location_dict_available_in_db[gene] = (chrom_abs_start,chrom_abs_end)
-
-        gene_location_dict = {} #for those gene not in db, assign(None,None) for location
-        genes.sort()
-        for i_gene in range(len(genes)):
-            curr_gene = genes[i_gene]
-            if curr_gene in gene_location_dict_available_in_db:
-                gene_location_dict[curr_gene] = gene_location_dict_available_in_db[curr_gene]
-            else:
-                gene_location_dict[curr_gene] = (None,None)
-
-        return gene_location_dict
-
     def Manhattan_gen_all_location_gene_dict(self):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
         sql_template = 'select gene,chrom,chromStart from gene_location;'

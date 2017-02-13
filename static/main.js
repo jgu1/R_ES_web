@@ -928,11 +928,11 @@ function createGraph() {
                             + " <br/>aligned: " + alignedValue(d)
                             + " <br/>tagged: " + taggedValue(d)
                             + " <br/>closest gene: " + d[6] 
-                            + "(" + d[7] + ")"
+                            //+ "(" + d[7] + ")"
                             );
-
+                  var closest_geneName = d[6];
+                /*
                 var x1 = xScale(d[7]);
-
                 var closest_gene =svg.append("line")
                   .attr("class","closest_gene")
                   .attr("x1",xScale(d[7]))
@@ -941,11 +941,19 @@ function createGraph() {
                   .attr("y2",Manhattan_height) 
                   .style("opacity", 1)
                   .style("stroke","black");
+                */
+              
+                  d3.selectAll(".all_gene_pos").filter(function(d) {
+                        return d == closest_geneName; 
+                    }) 
+                    .style("opacity",1);
               })
           .on("mouseout", function(d) {
                   tooltip.transition()
                        .duration(500)
                        .style("opacity", 0);
+
+                  d3.selectAll(".all_gene_pos").style("opacity",0);
               });
 
         for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
