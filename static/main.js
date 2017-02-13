@@ -588,6 +588,7 @@ function createGraph() {
     var Manhattan_pairNames              = data.Manhattan_pairNames;    
     var Manhattan_geneNames              = data.Manhattan_geneNames;
     var chrom_starts_data                = data.chrom_starts;
+    var all_geneNames                    = data.all_geneNames;
     var gene_location_dict               = data.gene_location_dict;  
     //var eQTL_SNPlist_dict                = data.eQTL_SNPlist_dict;
 
@@ -753,7 +754,25 @@ function createGraph() {
                  return width;
               });
  
-
+            Manhattan.selectAll(".Manhattan_group").selectAll(".all_gene_pos")
+                .attr("x1",function(d){
+                  var chromStart_chromEnd = gene_location_dict[d]; 
+                  var chromStart = chromStart_chromEnd[0];
+                  var x = 0;
+                  if (chromStart != null){
+                    x = gx2(chromStart);
+                  }
+                  return x;
+                })
+                .attr("x2",function(d){
+                  var chromStart_chromEnd = gene_location_dict[d]; 
+                  var chromStart = chromStart_chromEnd[0];
+                  var x = 0;
+                  if (chromStart != null){
+                    x = gx2(chromStart);
+                  }
+                  return x;
+                });
             
         };
 
@@ -781,7 +800,37 @@ function createGraph() {
               .attr("y2",y_shift + Manhattan_height) 
               .style("opacity", .2)
               .style("stroke","black");
- 
+            
+            if (i_coordinates == 0){ 
+                var all_gene_pos_dict = svg.append("g").selectAll(".all_gene_pos")
+                  .data(all_geneNames)
+                  .enter().append("line")
+                  .attr("class","all_gene_pos")
+                  .attr("geneName",function(d){return d;})
+                  .attr("x1",function(d){
+                    var chromStart_chromEnd = gene_location_dict[d]; 
+                    var chromStart = chromStart_chromEnd[0];
+                    var x = 0;
+                    if (chromStart != null){
+                        x = xScale(chromStart);
+                    }
+                    return x;
+                  })
+                  .attr("x2",function(d){
+                    var chromStart_chromEnd = gene_location_dict[d]; 
+                    var chromStart = chromStart_chromEnd[0];
+                    var x = 0;
+                    if (chromStart != null){
+                        x = xScale(chromStart);
+                    }
+                    return x;
+                  })
+                  .attr("y1",y_shift)
+                  .attr("y2",y_shift + Manhattan_height) 
+                  .style("opacity", 0)
+                  .style("stroke","black")
+                  ;
+            }
         
             var gene_starts =svg.append("g").selectAll(".gene_starts")
               .data(Manhattan_geneNames)
@@ -878,9 +927,20 @@ function createGraph() {
                             + " <br/>pval: " + yValue(d)
                             + " <br/>aligned: " + alignedValue(d)
                             + " <br/>tagged: " + taggedValue(d)
-                            + " <br/>closeast gene: " + d[6] 
+                            + " <br/>closest gene: " + d[6] 
                             + "(" + d[7] + ")"
                             );
+
+                var x1 = xScale(d[7]);
+
+                var closest_gene =svg.append("line")
+                  .attr("class","closest_gene")
+                  .attr("x1",xScale(d[7]))
+                  .attr("x2",xScale(d[7]))
+                  .attr("y1",0)
+                  .attr("y2",Manhattan_height) 
+                  .style("opacity", 1)
+                  .style("stroke","black");
               })
           .on("mouseout", function(d) {
                   tooltip.transition()

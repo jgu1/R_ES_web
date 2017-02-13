@@ -560,10 +560,11 @@ class DAO(object):
             snp = SNP_tuple[0]
             tuple_with_gene = None
             if snp in snp_gene_dict:
-                (gene,gene_pos) = snp_gene_dict[snp]
-                GSNP_abs = int(SNP_tuple[2])
-                distance = GSNP_abs - int(gene_pos)
-                tuple_with_gene = SNP_tuple + (gene,distance)
+                #(gene,gene_pos) = snp_gene_dict[snp]
+                #GSNP_abs = int(SNP_tuple[2])
+                #distance = GSNP_abs - int(gene_pos)
+                #tuple_with_gene = SNP_tuple + (gene,distance)
+                tuple_with_gene = SNP_tuple + snp_gene_dict[snp]
             else:
                 tuple_with_gene = SNP_tuple + ('NOT FOUND','NOT FOUND')
             ret.append(tuple_with_gene)
@@ -974,7 +975,7 @@ class DAO(object):
         SNP_location_dict = self.Manhattan_build_snp_location_dict(all_SNP_set,chrom_abs_dict) 
         return self.Manhattan_enhance_SNP_tuple_with_abs_location(pair_SNP_dict,SNP_location_dict,gene) 
 
-    def Manhattan_gen_gene_location_dict(self,genes):
+    def Manhattan_gen_gene_location_dict_given_genes(self,genes):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
         gene_list = []
         for gene in genes:
@@ -1054,6 +1055,29 @@ class DAO(object):
         chrom_starts = chrom_abs_dict.values()
         chrom_starts.sort()
         return chrom_starts    
+
+    def Manhattan_gen_gene_location_dict(self):
+        chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
+        sql_template = 'select gene,chrom,chromStart,chromEnd from gene_location;'
+        rows = self.exec_fetch_SQL(sql_template) 
+        gene_location_dict_available_in_db = {} #some gene may not in db
+        for row in rows:
+            gene        = row[0]
+            chrom       = row[1]
+            chromStart  = row[2]
+            chromEnd    = row[3]
+            if chromStart is None:
+                print 'gene "' + gene + '" has chromStart NULL'
+                chromStart = 0
+            if chromEnd is None:
+                print 'gene "' + gene + '" has chromEnd NULL'
+                chromEnd = 0 
+            chrom_abs_start = chrom_abs_dict[chrom] + chromStart
+            chrom_abs_end   = chrom_abs_dict[chrom] + chromEnd
+            gene_location_dict_available_in_db[gene] = (chrom_abs_start,chrom_abs_end)
+        return gene_location_dict_available_in_db
+
+
 
     #Manhattan_SNP_fields in the format of  (GSNP_name,abs_location,GSNP_pval,gene,chrom) 
     def Manhattan_build_Manhattan_SNP_fields_list_dict(self,pair_SNP_dict,gene):

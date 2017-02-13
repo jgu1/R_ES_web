@@ -308,12 +308,11 @@ def Manhattan():
         #pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
     start_time = time.time()
-    
     chrom_starts = dao.Manhattan_gen_chrom_starts()    
-
+   
     eQTL_SNPlist_dict = dao.Manhattan_gen_eQTL_SNPlist(location_pval_chrom_SNPlist_dict,genes)
 
-    gene_location_dict = dao.Manhattan_gen_gene_location_dict(genes) 
+    gene_location_dict = dao.Manhattan_gen_gene_location_dict() 
 
     all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
 
@@ -329,6 +328,7 @@ def Manhattan():
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
     ret['Manhattan_geneNames'] = genes
     ret['chrom_starts'] = chrom_starts
+    ret['all_geneNames'] = gene_location_dict.keys() 
     ret['gene_location_dict'] = gene_location_dict
     #ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict_1215
     print 'Manhattan backend takes ' + str(time.time() - start_time_Manhattan) + ' seconds'
