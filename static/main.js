@@ -929,32 +929,30 @@ function createGraph() {
                             + " <br/>aligned: " + alignedValue(d)
                             + " <br/>tagged: " + taggedValue(d)
                             + " <br/>closest gene: " + d[6] 
-                            //+ "(" + d[7] + ")"
                             );
                   var closest_geneName = d[6];
-                /*
-                var x1 = xScale(d[7]);
-                var closest_gene =svg.append("line")
-                  .attr("class","closest_gene")
-                  .attr("x1",xScale(d[7]))
-                  .attr("x2",xScale(d[7]))
-                  .attr("y1",0)
-                  .attr("y2",Manhattan_height) 
-                  .style("opacity", 1)
-                  .style("stroke","black");
-                */
-              
-                  d3.selectAll(".all_gene_pos").filter(function(d) {
-                        return d == closest_geneName; 
-                    }) 
-                    .style("opacity",1);
-              })
+                  var closest_gene_chromStart = d[7];
+                    
+                    var closest_gene =svg.append("line")
+                      .attr("id","closest_gene")
+                      .attr("x1",gx2(closest_gene_chromStart))
+                      .attr("x2",gx2(closest_gene_chromStart))
+                      .attr("y1",0)
+                      .attr("y2",Manhattan_height) 
+                      .style("opacity", 1)
+                      .style("stroke","black");
+                  
+                      d3.selectAll(".all_gene_pos").filter(function(d) {
+                            return d == closest_geneName; 
+                        }) 
+                        .style("opacity",1);
+                  })
           .on("mouseout", function(d) {
                   tooltip.transition()
                        .duration(500)
                        .style("opacity", 0);
 
-                  d3.selectAll(".all_gene_pos").style("opacity",0);
+                  d3.select("#closest_gene").remove();
               });
 
         for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
