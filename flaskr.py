@@ -328,7 +328,6 @@ def Manhattan():
     ret['Manhattan_pairNames'] = list(Manhattan_pairNames)
     ret['Manhattan_geneNames'] = genes
     ret['chrom_starts'] = chrom_starts
-    ret['all_geneNames'] = gene_location_dict.keys() 
     ret['gene_location_dict'] = gene_location_dict
     #ret['eQTL_SNPlist_dict'] = eQTL_SNPlist_dict_1215
     print 'Manhattan backend takes ' + str(time.time() - start_time_Manhattan) + ' seconds'
