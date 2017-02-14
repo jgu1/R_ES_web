@@ -718,8 +718,8 @@ function createGraph() {
             gx2 = tr.rescaleX(gx1);
             var x = gx2.domain()[0];
             var y = gx2.domain()[1];
-            console.log("gx2: x,y:"+x+ ' '+ y + ' ')
-            console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
+            //console.log("gx2: x,y:"+x+ ' '+ y + ' ')
+            //console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
             Manhattan.selectAll(".Manhattan_group").selectAll(".dotGWAS")
                 .attr("cx",xcoord);
 
@@ -800,7 +800,7 @@ function createGraph() {
               .attr("y2",y_shift + Manhattan_height) 
               .style("opacity", .2)
               .style("stroke","black");
-            
+            /*
             if (i_coordinates == 0){ 
                 var all_gene_pos_dict = svg.append("g").selectAll(".all_gene_pos")
                   .data(all_geneNames)
@@ -831,6 +831,7 @@ function createGraph() {
                   .style("stroke","black")
                   ;
             }
+            */
         
             var gene_starts =svg.append("g").selectAll(".gene_starts")
               .data(Manhattan_geneNames)
