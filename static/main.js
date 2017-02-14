@@ -933,7 +933,8 @@ function createGraph() {
                   var closest_geneName = d[6];
                   var closest_gene_chromStart = d[7];
                     
-                    var closest_gene =svg.append("line")
+                    //var closest_gene =svg.append("line")
+                    var closest_gene =d3.selectAll(".Manhattan_group").append("line")
                       .attr("class","closest_gene")
                       .attr("x1",gx2(closest_gene_chromStart))
                       .attr("x2",gx2(closest_gene_chromStart))
