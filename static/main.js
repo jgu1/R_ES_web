@@ -934,7 +934,7 @@ function createGraph() {
                   var closest_gene_chromStart = d[7];
                     
                     var closest_gene =svg.append("line")
-                      .attr("id","closest_gene")
+                      .attr("class","closest_gene")
                       .attr("x1",gx2(closest_gene_chromStart))
                       .attr("x2",gx2(closest_gene_chromStart))
                       .attr("y1",0)
@@ -952,7 +952,7 @@ function createGraph() {
                        .duration(500)
                        .style("opacity", 0);
 
-                  d3.select("#closest_gene").remove();
+                  d3.selectAll(".closest_gene").data([]).exit().remove();
               });
 
         for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
