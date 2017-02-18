@@ -798,7 +798,7 @@ class DAO(object):
             GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
             eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
 
-            print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
+        print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
 
         return GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene
 #detail manipulation

@@ -596,6 +596,14 @@ function createGraph() {
     var Manhattan = d3.select("#Manhattan");
     append_Manhattan_checkboxes(Manhattan);
     
+    //d3.select("#show_unaligned_SNPs").property("checked",false);
+    //d3.select("#show_untagged_SNPs").property("checked",false);   
+
+    //d3.select("#show_unaligned_SNPs").node().checked = false;
+    //d3.select("#show_untagged_SNPs").node().checked = false;   
+
+
+ 
     var margin = {top: 50, right: 20, bottom: 30, left: 40, between: 50};
     var total_width  = 1000;
     var total_height = 180; 
@@ -669,16 +677,7 @@ function createGraph() {
     var xMin = -1,xMax = -1,yMin = -1,yMax = -1;
     Manhattan_pairNames.sort();
     NGENES = Manhattan_geneNames.length;
-    for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
-        var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
-        var curr_GWAS_SNPlist = GWAS_SNPlist_dict[curr_Manhattan_pairName];
-        //curr_pair_name_x_y = location_pval_chrom_SNPlist_dict[curr_Manhattan_pairName];
-        var gene_SNPlist_dict_for_curr_pair = eQTL_gene_SNPlist_dict[curr_Manhattan_pairName];
-        //curr_eQTLlist      = eQTL_SNPlist_dict[curr_Manhattan_pairName];
-          
-        //var zoom = d3.zoom().scaleExtent([1, 8]).on("zoom", zoomed);
-
-        //Zoom in v4
+   
         var gx1 = d3.scaleLinear()
             .range([0,Manhattan_width]);
 
@@ -693,30 +692,17 @@ function createGraph() {
         var zoomX = d3.zoom().scaleExtent([0.2, 2000000]).on("zoom", zoomedX);
         //Zoom in v4
 
-        var svg = Manhattan.append("svg")
-                .attr("width", Manhattan_width + margin.left + margin.right)
-                .attr("height", margin.top + margin.bottom + (Manhattan_height + margin.between) * (NGENES + 1)) //oneGWAS nGenes
-                //.attr("height", Manhattan_height + margin.top + margin.bottom)
-              .append("g")
-                .call(zoomX)
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-                .attr("class","Manhattan_group");
-            
-        svg.append("rect")
-                .attr("width", Manhattan_width)
-                .attr("height", Manhattan_height)
-                .style("fill", "none")
-                .style("pointer-events", "all");
-        svg.append("g")
-          .attr("class","Manhattan_pairName")
-         .append("text")
-          .text(curr_Manhattan_pairName);
+        var tr = null;
 
         function zoomedX(){
+            var e = d3.event;
+
             var tr = d3.event.transform;
             gx2 = tr.rescaleX(gx1);
-            var x = gx2.domain()[0];
-            var y = gx2.domain()[1];
+            
+            //gx2 = tr.rescaleX(gx1);
+            var zoom_min = gx2.domain()[0];
+            var zoom_max = gx2.domain()[1];
             //console.log("gx2: x,y:"+x+ ' '+ y + ' ')
             //console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
             Manhattan.selectAll(".Manhattan_group").selectAll(".dotGWAS")
@@ -763,6 +749,45 @@ function createGraph() {
         //Zoom in v4
 
 
+    var Manhattan_svg_width = Manhattan_width + margin.left + margin.right;
+    // the height reserved for each GWAS-eQTL pair,including one GWAS and NGENES eQTL
+    var Manhattan_svg_height_single_pair = margin.top + margin.bottom + (Manhattan_height + margin.between) * (NGENES + 1);
+    var Manhattan_svg_height = Manhattan_svg_height_single_pair * Manhattan_pairNames.length;
+
+    // the centralized svg to catch zooming action
+    var Manhattan_svg_container = Manhattan.append("svg")
+                                  .attr("width",Manhattan_svg_width)
+                                  .attr("height",Manhattan_svg_height)
+                                  .call(zoomX)
+
+
+    for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
+        var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
+        var curr_GWAS_SNPlist = GWAS_SNPlist_dict[curr_Manhattan_pairName];
+        var gene_SNPlist_dict_for_curr_pair = eQTL_gene_SNPlist_dict[curr_Manhattan_pairName];
+         
+        // the shift due to each previous GWAS-eQTL pair 
+        var shift_for_pair = i_pair * Manhattan_svg_height_single_pair;
+        var shift_tot      = shift_for_pair + margin.top;
+
+        // "svg" is a bad name, it's actually a svg group
+        // append each svg group to the svg container, the svg containter receives zooming action
+        var svg = Manhattan_svg_container.append("g")
+                .attr("transform", "translate(" + margin.left + "," +  shift_tot + ")")
+                .attr("class","Manhattan_group");
+          
+        var svg_transform = d3.zoomTransform(svg);
+        var t = d3.zoomIdentity.translate(35,60).scale(2);
+ 
+        svg.append("rect")
+                .attr("width", Manhattan_width)
+                .attr("height", Manhattan_height)
+                .style("fill", "none")
+                .style("pointer-events", "all");
+        svg.append("g")
+          .attr("class","Manhattan_pairName")
+         .append("text")
+          .text(curr_Manhattan_pairName);
         // draw a black line to indicate the location chromosome starts
         
         svg.selectAll(".chrom_starts").data([]).exit().remove();
@@ -897,7 +922,7 @@ function createGraph() {
 
                   d3.selectAll(".closest_gene").data([]).exit().remove();
               });
-
+       
         for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
             var y_shift = (Manhattan_height + margin.between) * (i_coordinates + 1); // begin with 1 shift
             var CURR_DRAWING_GENE = Manhattan_geneNames[i_coordinates]; 
@@ -1403,9 +1428,26 @@ function addDisease(e){
     selected_value = e.value;
     var disease_input_text = document.getElementById("disease_input_text");
     curr_text = disease_input_text.value
+
     if (curr_text.trim() == ""){
         disease_input_text.value = selected_value;    
-    }else if( curr_text.indexOf(selected_value) < 0){
+    }
+    
+    //else if( curr_text.indexOf(selected_value) < 0){  
+    // allow duplicate because new value can be part of existing value
+    // for example,  curr_text = "EXTREME_HEIGHT" and selected_value = "HEIGHT" 
+    else{ 
         disease_input_text.value =  disease_input_text.value + ",    " + selected_value;
-    } 
+    }
+    //} 
+
+    /*    
+    disease_array = curr_text.trim().split("\\s*,\\s");
+    new_disease = selected_value.trim();
+    
+    if (disease_array.indexOf(new_disease) < 0){
+        disease_array.push(new_disease);
+    }
+    disease_input_text.value = disease_array.join(); 
+    */
 }
