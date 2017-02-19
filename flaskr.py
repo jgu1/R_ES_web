@@ -333,6 +333,37 @@ def Manhattan():
     print 'Manhattan backend takes ' + str(time.time() - start_time_Manhattan) + ' seconds'
     return jsonify(ret)
 
+@app.route('/Manhattan_appendGenes')
+@app.route("/Manhattan_appendGenes/<string:zoom_domain_min><string:zoom_domain_max><string:zoom_range_min><string:zoom_range_max><string:Manhattan_height>")
+def Manhattan_appendGenes():
+    zoom_domain_min     = int(request.args.get('zoom_domain_min', 'empty'))
+    zoom_domain_max     = int(request.args.get('zoom_domain_max', 'empty'))
+    zoom_range_min      = int(request.args.get('zoom_range_min', 'empty'))
+    zoom_range_max      = int(request.args.get('zoom_range_max', 'empty'))
+    Manhattan_height    = request.args.get('Manhattan_height','empty')
+
+    dao = getattr(g, 'dao', None)
+    gene_location_dict = dao.Manhattan_gen_gene_location_dict()
+    geneNames = [] 
+    gene_location_dict_within_domain = {}
+    for gene,location_tuple in gene_location_dict.iteritems():
+        chromStart = location_tuple[0]
+        if chromStart >= zoom_domain_min and chromStart <= zoom_domain_max:
+            geneNames.append(gene)
+            gene_location_dict_within_domain[gene] = chromStart
+
+    ret = {}
+    ret['zoom_domain_min']      = zoom_domain_min
+    ret['zoom_domain_max']      = zoom_domain_max
+    ret['zoom_range_min']       = zoom_range_min
+    ret['zoom_range_max']       = zoom_range_max
+    ret['Manhattan_height']      = Manhattan_height
+    ret['geneNames']            = geneNames
+    ret['gene_location_dict']   = gene_location_dict_within_domain
+    
+    return jsonify(ret) 
+ 
+
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3
 def Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff):
     pair_SNP_dict_filtered = {}

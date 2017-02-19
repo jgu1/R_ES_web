@@ -382,17 +382,26 @@ function createGraph() {
          .text("show_all_genes")
          .attr("id","txt_show_all_genes");
     parentNode.append("input")
-         .attr("type","checkbox")
-         .attr("checked",true)
-         .attr("id","show_all_genes")
-          .on("change",function(d){
-            // zoom_min and zoom_max defines the Manhattan graph current display boundary, 
-            // only dotGWAS and gene_pos within this boundary will be displayed  
-            var zoom_min = parentNode.attr("zoom_min");
-            var zoom_max = parentNode.attr("zoom_max");
-           if (this.checked){ 
-            }else{ 
-            }
+        .attr("type","checkbox")
+        .attr("checked",true)
+        .attr("id","show_all_genes")
+        .on("change",function(d){
+        if (this.checked){
+            var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
+            var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
+            var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
+            var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
+            var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
+
+
+            d3.json("/Manhattan_appendGenes?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height,Manhattan_appendGenes_callback);
+
+     
+            //var closest_gene =svg.append("line")
+                    
+        }else{
+            d3.selectAll(".gene_within_domain").remove(); 
+        }
          });
    
     parentNode.append("div")
@@ -627,6 +636,7 @@ function createGraph() {
     var total_height = 180; 
     var Manhattan_width = total_width - margin.left - margin.right; // should not be null, because at least one gene has SNPs
     var Manhattan_height = total_height - margin.top  - margin.bottom;
+        Manhattan.attr("Manhattan_height",Manhattan_height);
     var xScaleMax = 3500000000;
     var yScaleMax = 8;
     var yScaleMax_eQTL = 16;
@@ -716,11 +726,14 @@ function createGraph() {
             var tr = d3.event.transform;
             gx2 = tr.rescaleX(gx1);
             
-            var zoom_min = gx2.domain()[0];
-            var zoom_max = gx2.domain()[1];
-            Manhattan.attr("zoom_min",zoom_min);
-            Manhattan.attr("zoom_max",zoom_max);
-
+            var zoom_domain_min = gx2.domain()[0];
+            var zoom_domain_max = gx2.domain()[1];
+            var zoom_range_min  = gx2.range()[0];
+            var zoom_range_max  = gx2.range()[1];
+            Manhattan.attr("zoom_domain_min",zoom_domain_min);
+            Manhattan.attr("zoom_domain_max",zoom_domain_max);
+            Manhattan.attr("zoom_range_min",zoom_range_min);
+            Manhattan.attr("zoom_range_max",zoom_range_max); 
 
             //console.log("gx2: x,y:"+x+ ' '+ y + ' ')
             //console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
@@ -1041,6 +1054,33 @@ function createGraph() {
 
   }
 
+  var Manhattan_appendGenes_callback = function(data){
+    var zoom_domain_min         = data.zoom_domain_min;
+    var zoom_domain_max         = data.zoom_domain_max;
+    var zoom_range_min          = data.zoom_range_min;    
+    var zoom_range_max          = data.zoom_range_max;
+    var geneNames               = data.geneNames;
+    var Manhattan_height        = data.Manhattan_height;
+    var gene_location_dict      = data.gene_location_dict;
+
+    var gx2 = d3.scaleLinear()
+                .range([zoom_range_min,zoom_range_max]);
+        gx2.domain([zoom_domain_min, zoom_domain_max]).nice();
+
+    d3.selectAll(".Manhattan_group").append("g").selectAll(".gene_within_domain")
+          .data(geneNames)
+          .enter().append("line")
+          .attr("class","gene_within_domain")
+          .attr("x1",function(d){
+                    var gene_start = gene_location_dict[d];
+                    return gx2(gene_location_dict[d]);})
+          .attr("x2",function(d){return gx2(gene_location_dict[d]);})
+          .attr("y1",0)
+          .attr("y2",Manhattan_height) 
+          .style("opacity", 1)
+          .style("stroke","black");
+
+  }
 
   function draw_input_fields_ISA(wrapper_div){
     var ISA_input_wrapper_div = wrapper_div.append("div")
