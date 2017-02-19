@@ -299,7 +299,8 @@ function createGraph() {
     d3.select("#txt_show_unaligned_SNPs").remove();
     d3.select("#show_untagged_SNPs") .remove();
     d3.select("#txt_show_untagged_SNPs").remove();
-
+    d3.select("#show_all_genes").remove();
+    d3.select("#txt_show_all_genes").remove();
  
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
@@ -376,7 +377,24 @@ function createGraph() {
                     .attr("r",invisible_size);
             }
          });
-    
+ 
+    parentNode.append("text")
+         .text("show_all_genes")
+         .attr("id","txt_show_all_genes");
+    parentNode.append("input")
+         .attr("type","checkbox")
+         .attr("checked",true)
+         .attr("id","show_all_genes")
+          .on("change",function(d){
+            // zoom_min and zoom_max defines the Manhattan graph current display boundary, 
+            // only dotGWAS and gene_pos within this boundary will be displayed  
+            var zoom_min = parentNode.attr("zoom_min");
+            var zoom_max = parentNode.attr("zoom_max");
+           if (this.checked){ 
+            }else{ 
+            }
+         });
+   
     parentNode.append("div")
         .html("<br/>");
   }
@@ -692,17 +710,18 @@ function createGraph() {
         var zoomX = d3.zoom().scaleExtent([0.2, 2000000]).on("zoom", zoomedX);
         //Zoom in v4
 
-        var tr = null;
 
         function zoomedX(){
-            var e = d3.event;
 
             var tr = d3.event.transform;
             gx2 = tr.rescaleX(gx1);
             
-            //gx2 = tr.rescaleX(gx1);
             var zoom_min = gx2.domain()[0];
             var zoom_max = gx2.domain()[1];
+            Manhattan.attr("zoom_min",zoom_min);
+            Manhattan.attr("zoom_max",zoom_max);
+
+
             //console.log("gx2: x,y:"+x+ ' '+ y + ' ')
             //console.log("###gx1: x,y:"+gx1.domain()[0]+ ' '+ gx1.domain()[1])
             Manhattan.selectAll(".Manhattan_group").selectAll(".dotGWAS")
@@ -738,7 +757,7 @@ function createGraph() {
                  if (width < 1){ width = 1;}
                  return width;
               });
- 
+             
         };
 
         //Zoom in v4
