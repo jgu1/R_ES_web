@@ -770,7 +770,19 @@ function createGraph() {
                  if (width < 1){ width = 1;}
                  return width;
               });
-             
+            
+            Manhattan.selectAll(".Manhattan_group").selectAll(".gene_within_domain")
+                .attr("x1",function(d){
+                    var chromStart_chromEnd = gene_location_dict[d]; 
+                    var chromStart = chromStart_chromEnd[0];
+                    return gx2(chromStart);
+                    })
+                .attr("x2",function(d){
+                    var chromStart_chromEnd = gene_location_dict[d]; 
+                    var chromStart = chromStart_chromEnd[0];
+                    return gx2(chromStart);
+                    });
+
         };
 
         //Zoom in v4
