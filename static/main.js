@@ -263,7 +263,7 @@ function createGraph() {
                         .on("click",function(d){
 
                             d3.select("#Manhattan").remove();
-                            wrapper_div.append("div")
+                            var Manhattan = wrapper_div.append("div")
                                 .attr("id","Manhattan")
 
                             var GSNP_cutoff = document.getElementById("GSNP_cutoff_sub").value;
@@ -276,6 +276,8 @@ function createGraph() {
                                     return geneName;
                                 }
                             });
+                            Manhattan.attr("geneNames",selected_geneNames)
+                            Manhattan.attr("pairNames",pairNames)
 
                             d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
                             }
@@ -320,6 +322,18 @@ function createGraph() {
            // the affected SNPs are all unaligned and hence untagged, 
            // brought them back to display only when showing untagged SNPs
            if (this.checked && document.getElementById("show_untagged_SNPs").checked){  
+     
+                var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
+                var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
+                var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
+                var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
+                var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
+                var geneNames       = parentNode.attr("geneNames");
+                var pairNames       = parentNode.attr("pairNames");
+                var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
+                
+                d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
+                
                 d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
                     .style("opacity",0.9)
                     .attr("width",  recteQTL_size).attr("height", recteQTL_size);
@@ -347,6 +361,20 @@ function createGraph() {
          .attr("id","show_untagged_SNPs")
          .on("change",function(d){
            if (this.checked){ 
+               
+                var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
+                var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
+                var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
+                var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
+                var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
+                var geneNames       = parentNode.attr("geneNames");
+                var pairNames       = parentNode.attr("pairNames");
+                var GSNP_cutoff     = parentNode.attr("GSNP_cutoff");
+
+
+
+
+
                 d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
                     .style("opacity",0.9)
                     .attr("width", recteQTL_size).attr("height",recteQTL_size);
@@ -710,11 +738,9 @@ function createGraph() {
             .range([0,Manhattan_width]);
 
         var gx2 = d3.scaleLinear()
-         
             .range([0,Manhattan_width]);
 
         gx1.domain([0, xScaleMax]).nice();
-         
         gx2.domain([0, xScaleMax]).nice();
 
         var zoomX = d3.zoom().scaleExtent([0.2, 2000000]).on("zoom", zoomedX);
@@ -818,8 +844,9 @@ function createGraph() {
         // append each svg group to the svg container, the svg containter receives zooming action
         var svg = Manhattan_svg_container.append("g")
                 .attr("transform", "translate(" + margin.left + "," +  shift_tot + ")")
-                .attr("class","Manhattan_group");
-          
+                .attr("class","Manhattan_group")
+                .attr("pairName",curr_Manhattan_pairName);
+ 
         var svg_transform = d3.zoomTransform(svg);
         var t = d3.zoomIdentity.translate(35,60).scale(2);
  
@@ -1068,7 +1095,7 @@ function createGraph() {
 
   var Manhattan_appendGenes_callback = function(data){
     var zoom_domain_min         = data.zoom_domain_min;
-    var zoom_domain_max         = data.zoom_domain_max;
+   var zoom_domain_max         = data.zoom_domain_max;
     var zoom_range_min          = data.zoom_range_min;    
     var zoom_range_max          = data.zoom_range_max;
     var geneNames               = data.geneNames;
@@ -1091,6 +1118,98 @@ function createGraph() {
           .attr("y2",Manhattan_height) 
           .style("opacity", 1)
           .style("stroke","black");
+
+  }
+
+  var Manhattan_appendSNPs_callback = function(data){
+    var zoom_domain_min         = data.zoom_domain_min;
+    var zoom_domain_max         = data.zoom_domain_max;
+    var zoom_range_min          = data.zoom_range_min;    
+    var zoom_range_max          = data.zoom_range_max;
+    var Manhattan_height        = data.Manhattan_height;
+    var GWAS_SNPlist_dict       = data.GWAS_SNPlist_dict
+
+    var gx2 = d3.scaleLinear()
+                .range([zoom_range_min,zoom_range_max]);
+        gx2.domain([zoom_domain_min, zoom_domain_max]).nice();
+    var xValue = function(d) { return d[2];}, // data -> value
+        xMap = function(d) { return gx2(xValue(d));} // data -> display
+
+    // setup y
+    var yScaleMax = 8;
+    var yValue = function(d) {  var pval = parseFloat(d[3]); 
+                                return -Math.log10(pval);
+                             }, // data -> value
+        yScale = d3.scaleLinear().range([Manhattan_height, 0]), // value -> display
+        yMap = function(d) {
+            var yValue_direct = yValue(d);
+            var yScale_input  = yValue_direct;
+            if (yScale_input > yScaleMax){  // if pval is too large, it will go beyond plot, truncate it
+                yScale_input = yScaleMax;
+            }
+            return yScale(yScale_input);} // data -> display
+    var alignedValue = function(d){return d[4]};
+    var taggedValue  = function(d){return d[5]};
+
+    var Manhattan_groups = document.getElementsByClassName("Manhattan_group");
+    /*
+    for (var i = 0; i < Manhattan_groups.length; i++) {
+        var curr_group          = Manhattan_groups[i];
+        var curr_pairName       = curr_group.attr("pairName");
+        var curr_GWAS_SNPlist   = GWAS_SNPlist_dict[curr_pairName]; 
+    }
+    */
+    d3.selectAll(".Manhattan_group")          .data(function(d){
+            var a= 1;
+          })
+         .append("g").selectAll(".dotGWAS")
+
+        .enter().append("circle")
+          .attr("class", "dotGWAS")
+          .attr("r", dotGWAS_size)
+          .attr("cx", xMap)
+          .attr("cy", yMap)
+          .attr("aligned",alignedValue)
+          .attr("tagged",taggedValue)
+          .style("fill","black") 
+          .on("mouseover", function(d) {
+                  tooltip.html("");
+                  tooltip.transition()
+                       .duration(200)
+                       .style("opacity", .9);
+          
+                  tooltip.style("left", (d3.event.pageX ) + "px")
+                       //.style("top", (d3.event.pageY - 60) + "px")
+                       .style("top", function(d){
+                            return (d3.event.pageY - 60) + "px"})
+                       .html(d[0] + "(" + d[1] + ")"
+                            + " <br/>pval: " + yValue(d)
+                            + " <br/>aligned: " + alignedValue(d)
+                            + " <br/>tagged: " + taggedValue(d)
+                            + " <br/>closest gene: " + d[6] 
+                            );
+                  var closest_geneName = d[6];
+                  var closest_gene_chromStart = d[7];
+                    
+                    //var closest_gene =svg.append("line")
+                    var closest_gene =d3.selectAll(".Manhattan_group").append("line")
+                      .attr("class","closest_gene")
+                      .attr("x1",gx2(closest_gene_chromStart))
+                      .attr("x2",gx2(closest_gene_chromStart))
+                      .attr("y1",0)
+                      .attr("y2",Manhattan_height) 
+                      .style("opacity", 1)
+                      .style("stroke","black");
+                  })
+          .on("mouseout", function(d) {
+                  tooltip.transition()
+                       .duration(500)
+                       .style("opacity", 0);
+
+                  d3.selectAll(".closest_gene").data([]).exit().remove();
+              });
+
+
 
   }
 
@@ -1207,7 +1326,7 @@ function createGraph() {
                     .on("click",function(d){
      
                         d3.select("#Manhattan").remove();
-                        chart.append("div")
+                        var Manhattan = chart.append("div")
                             .attr("id","Manhattan")
 
                         var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
@@ -1220,7 +1339,8 @@ function createGraph() {
                                 return geneName;
                             }
                         });
-                        
+                        Manhattan.attr("geneNames",selected_geneNames)
+                        Manhattan.attr("pairNames",pairNames)
                         d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
                         }
                     ) ;
