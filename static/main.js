@@ -854,24 +854,69 @@ function createGraph() {
     Manhattan_groups.selectAll(".chrom_starts").data([]).exit().remove();
     Manhattan_groups.selectAll(".gene_starts").data([]).exit().remove();
 
-    Manhattan_groups.selectAll('.GWAS_or_eQTL_group')
-                    .data(array_GWAS_genes)
-                  .enter().append("g")
-                    .attr("class","GWAS_or_eQTL_group")
-                    .attr("transform",function(d,i){
-                        var shift_for_GWAS_or_eQTL = i * (Manhattan_height + margin.between);
-                        return "translate(0," +  shift_for_GWAS_or_eQTL + ")"
-                    })
-                    .selectAll(".chrom_starts")
-                    .data(chrom_starts_data)
-                  .enter().append("line")
-                    .attr("class","chrom_starts")
-                    .attr("x1",function(d){return xScale(d);})
-                    .attr("x2",function(d){return xScale(d);})
-                    .attr("y1",0)
-                    .attr("y2",Manhattan_height)
-                    .style("opacity", .2)
-                    .style("stroke","black");
+    
+    var GWAS_or_eQTL_groups = Manhattan_groups.selectAll('.GWAS_or_eQTL_group')
+            .data(array_GWAS_genes)
+          .enter().append("g")
+            .attr("class","GWAS_or_eQTL_group")
+            .attr("transform",function(d,i){
+                var shift_for_GWAS_or_eQTL = i * (Manhattan_height + margin.between);
+                return "translate(0," +  shift_for_GWAS_or_eQTL + ")"
+            });
+
+    GWAS_or_eQTL_groups.selectAll(".chrom_starts")
+            .data(chrom_starts_data)
+          .enter().append("line")
+            .attr("class","chrom_starts")
+            .attr("x1",function(d){return xScale(d);})
+            .attr("x2",function(d){return xScale(d);})
+            .attr("y1",0)
+            .attr("y2",Manhattan_height)
+            .style("opacity", .2)
+            .style("stroke","black");
+    
+    GWAS_or_eQTL_groups.selectAll(".gene_starts")
+            .data(Manhattan_geneNames)
+          .enter().append("rect")
+            .attr("class","gene_starts")
+            .attr("x",function(d){
+                var chromStart_chromEnd = gene_location_dict[d]; 
+                var chromStart = chromStart_chromEnd[0];
+                var x = 0;
+                if (chromStart != null){
+                    x = xScale(chromStart);
+                }
+                return x;
+            })
+            .attr("y",0)
+            .attr("width",function(d){
+                var chromStart_chromEnd = gene_location_dict[d]; 
+                var chromStart = chromStart_chromEnd[0];
+                var chromEnd   = chromStart_chromEnd[1];
+                var diff       = chromEnd - chromStart;
+                var width = 1;
+                if (chromStart != null && chromEnd != null){
+                    width = xScale(chromEnd) -xScale(chromStart);
+                }
+                if (width < 1){ width = 1;}
+                return width;
+            })
+            .attr("height",Manhattan_height)
+            .attr("fill",function(d){
+                return color(d);
+            });
+
+    GWAS_or_eQTL_groups.append("g")
+          .attr("class", "xAxis")
+          .attr("transform", "translate(0," + Manhattan_height + ")")
+          .call(xAxis)
+        .append("text")
+          .attr("class", "label")
+          .attr("x", Manhattan_width)
+          .attr("y", -6)
+          .style("text-anchor", "end")
+          .text("Chrom loc");
+  
 
     /*
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
