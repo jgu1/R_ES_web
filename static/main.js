@@ -916,8 +916,57 @@ function createGraph() {
           .attr("y", -6)
           .style("text-anchor", "end")
           .text("Chrom loc");
-  
+ 
 
+    GWAS_or_eQTL_groups.filter(function(d){return d == "GWAS"})
+          .append("g")
+          .attr("class","yAxis") 
+          .call(yAxis)
+        .append("text")
+          .attr("class", "label")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("-log10(p-value)");
+
+    GWAS_or_eQTL_groups.filter(function(d){return d != "GWAS"})
+          .append("g")
+          .attr("class","yAxis_eQTL") 
+          .call(yAxis_eQTL)
+        .append("text")
+          .attr("class", "label")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("-log10(p-value)");
+/*
+if (i_coordinates == 0){
+            // y-axis
+            svg.append("g")
+              .attr("class", "yAxis")
+              .attr("transform", "translate(0," + y_shift + ")")
+              .call(yAxis)
+            .append("text")
+              .attr("class", "label")
+              .attr("y", 6)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("-log10(p-value)");
+        }else{
+            // y-axis
+            svg.append("g")
+              .attr("class", "yAxis_eQTL")
+              .call(yAxis_eQTL)
+              .attr("transform", "translate(0," + y_shift + ")")
+            .append("text")
+              .attr("class", "label")
+              .attr("y", 6)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("eQTL: -log10(p-value)");
+
+        }
+*/
     /*
     for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
         var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
