@@ -323,6 +323,10 @@ function createGraph() {
            // brought them back to display only when showing untagged SNPs
            if (this.checked && document.getElementById("show_untagged_SNPs").checked){  
      
+                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
+                    .style("opacity",0.9)
+                    .attr("width",  recteQTL_size).attr("height", recteQTL_size);
+
                 var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
                 var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
                 var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
@@ -334,20 +338,22 @@ function createGraph() {
                 
                 d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
                 
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
-                    .style("opacity",0.9)
-                    .attr("width",  recteQTL_size).attr("height", recteQTL_size);
+                                /*
                 d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
                     .style("opacity",1)
                     .attr("r",dotGWAS_size);
-
+                */
            }else{
                 d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);})
                     .style("opacity",0)
                     .attr("width", invisible_size).attr("height",invisible_size);
+                
+                d3.selectAll(".dotGWAS").data([]).exit().remove();
+                /*
                 d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
                     .style("opacity",0)
                     .attr("r",invisible_size);
+                */
                 }
 
          });
@@ -714,7 +720,7 @@ function createGraph() {
     var taggedValue  = function(d){return d[5]};
 
     var tooltip = Manhattan.append("div")
-        .attr("id", "tooltip")
+        .attr("class", "tooltip")
         .style("height",100)
         .style("width",200)
         .style("opacity", 0);
@@ -1079,10 +1085,16 @@ function createGraph() {
     var zoom_domain_max         = data.zoom_domain_max;
     var zoom_range_min          = data.zoom_range_min;    
     var zoom_range_max          = data.zoom_range_max;
-    var Manhattan_height        = data.Manhattan_height;
+    var Manhattan_height        = parseFloat(data.Manhattan_height);
     var GWAS_SNPlist_dict       = data.GWAS_SNPlist_dict;
 
-    var tooltip = d3.select("#tooltip");
+    d3.selectAll(".tooptip").data([]).exit().remove();
+    var tooltip = d3.select("#Manhattan").append("div")
+        .attr("class", "tooltip")
+        .style("height",100)
+        .style("width",200)
+        .style("opacity", 0);
+
 
     var gx2 = d3.scaleLinear()
                 .range([zoom_range_min,zoom_range_max]);
@@ -1093,6 +1105,7 @@ function createGraph() {
     // setup y
     var yScaleMax = 8;
     var dotGWAS_size = 3.5;
+
     var yValue = function(d) {  var pval = parseFloat(d[3]); 
                                 return -Math.log10(pval);
                              }, // data -> value
@@ -1104,33 +1117,24 @@ function createGraph() {
                 yScale_input = yScaleMax;
             }
             return yScale(yScale_input);} // data -> display
+    
+    yScale.domain([0,yScaleMax]);
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
 
-    var Manhattan_groups = document.getElementsByClassName("Manhattan_group");
-    /*
-    for (var i = 0; i < Manhattan_groups.length; i++) {
-        var curr_group          = Manhattan_groups[i];
-        var curr_pairName       = curr_group.attr("pairName");
-        var curr_GWAS_SNPlist   = GWAS_SNPlist_dict[curr_pairName]; 
-    }
-    */
-    var Manhattan_groups = d3.selectAll(".Manhattan_group").selectAll(".dotGWAS")
-        .data(function(d){
-            
+    d3.selectAll(".Manhattan_group").append("g").selectAll(".dotGWAS")
+          .data(function(d){
             var SNPlist_for_curr_GWAS =  GWAS_SNPlist_dict[d];
             return SNPlist_for_curr_GWAS;
-        })
-        .enter().append("circle")
-        .attr("class", "dotGWAS")
+            })
+          .enter().append("circle")
+          .attr("class","dotGWAS")
           .attr("r", dotGWAS_size)
           .attr("cx", xMap)
           .attr("cy", yMap)
           .attr("aligned",alignedValue)
           .attr("tagged",taggedValue)
           .style("fill","black"); 
-
-
   }
 
   function draw_input_fields_ISA(wrapper_div){
