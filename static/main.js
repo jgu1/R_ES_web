@@ -864,7 +864,7 @@ function createGraph() {
                 return "translate(0," +  shift_for_GWAS_or_eQTL + ")"
             });
 
-    GWAS_or_eQTL_groups.selectAll(".chrom_starts")
+    GWAS_or_eQTL_groups.append("g").selectAll(".chrom_starts")
             .data(chrom_starts_data)
           .enter().append("line")
             .attr("class","chrom_starts")
@@ -921,24 +921,114 @@ function createGraph() {
     GWAS_or_eQTL_groups.filter(function(d){return d == "GWAS"})
           .append("g")
           .attr("class","yAxis") 
-          .call(yAxis)
-        .append("text")
-          .attr("class", "label")
-          .attr("y", 6)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text("-log10(p-value)");
-
+          .call(yAxis);
+        
     GWAS_or_eQTL_groups.filter(function(d){return d != "GWAS"})
           .append("g")
           .attr("class","yAxis_eQTL") 
-          .call(yAxis_eQTL)
-        .append("text")
-          .attr("class", "label")
-          .attr("y", 6)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text("-log10(p-value)");
+          .call(yAxis_eQTL);
+
+    GWAS_or_eQTL_groups.filter(function(d){return d == "GWAS"})
+        .selectAll(".dotGWAS")    
+        .data(function(d){
+                var parent_Manhattan_group = this.parentNode;
+                var pairName = d3.select(this.parentNode).datum();
+                return GWAS_SNPlist_dict[pairName];
+            })
+        .enter().append("circle")
+          .attr("class", "dotGWAS")
+          .attr("r", dotGWAS_size)
+          .attr("cx", xMap)
+          .attr("cy", yMap)
+          .attr("aligned",alignedValue)
+          .attr("tagged",taggedValue)
+          .style("fill","black") 
+          .on("mouseover", function(d) {
+              tooltip.html("");
+              tooltip.transition()
+                   .duration(200)
+                   .style("opacity", .9);
+      
+              tooltip.style("left", (d3.event.pageX ) + "px")
+                   .style("top", function(d){
+                        return (d3.event.pageY - 60) + "px"})
+                   .html(d[0] + "(" + d[1] + ")"
+                        + " <br/>pval: " + yValue(d)
+                        + " <br/>aligned: " + alignedValue(d)
+                        + " <br/>tagged: " + taggedValue(d)
+                        + " <br/>closest gene: " + d[6] 
+                        );
+              var closest_geneName = d[6];
+              var closest_gene_chromStart = d[7];
+                
+                //var closest_gene =svg.append("line")
+                var closest_gene =d3.selectAll(".Manhattan_group").append("line")
+                  .attr("class","closest_gene")
+                  .attr("x1",gx2(closest_gene_chromStart))
+                  .attr("x2",gx2(closest_gene_chromStart))
+                  .attr("y1",0)
+                  .attr("y2",Manhattan_height) 
+                  .style("opacity", 1)
+                  .style("stroke","black");
+              })
+          .on("mouseout", function(d) {
+              tooltip.transition()
+                   .duration(500)
+                   .style("opacity", 0);
+
+              d3.selectAll(".closest_gene").data([]).exit().remove();
+              });
+     
+    GWAS_or_eQTL_groups.filter(function(d){return d != "GWAS"})
+        .selectAll(".recteQTL")    
+        .data(function(d){
+            var parent_Manhattan_group = this.parentNode;
+            var pairName = d3.select(this.parentNode).datum();
+            var gene_SNPlist_dict = eQTL_gene_SNPlist_dict[pairName];        
+            var SNPlist_for_current_gene = gene_SNPlist_dict[d]; 
+            return SNPlist_for_current_gene;
+        }).enter().append("rect")
+          .attr("class", "recteQTL")
+          .attr("width", recteQTL_size)
+          .attr("height",recteQTL_size)
+          .attr("x", xMap_eQTL)
+          .attr("y", yMap_eQTL) 
+          .attr("aligned",alignedValue)
+          .attr("tagged",taggedValue)
+          .style("fill", function(d) {
+            var gene = cValue(d); 
+            return color(gene);                 //gene
+            }) 
+          .style("fill-opacity",0.9)
+          .style("stroke",function(d){return "black"})
+          .style("stroke-opacity",0.1)
+          .style("stoke-width",function(d){return 5}) 
+          .on("mouseover", function(d) {
+                  tooltip.html("");
+                  tooltip.transition()
+                       .duration(200)
+                       .style("opacity", .9);
+          
+                  tooltip.style("left", (d3.event.pageX ) + "px")
+                       .style("top", function(d){
+                            return (d3.event.pageY - 60) + "px"})
+                       .html(d[0] + "(" + d[1] + ")"
+                            + " <br/>pval: " + yValue(d) 
+                            + " <br/>gene: " + d[6]
+                            + " <br/>aligned GSNP: " + d[7]
+                            + " <br/>aligned: " + alignedValue(d)
+                            + " <br/>tagged: " + taggedValue(d)
+                            );
+              })
+          .on("mouseout", function(d) {
+                  tooltip.transition()
+                       .duration(500)
+                       .style("opacity", 0);
+          });
+
+
+
+
 /*
 if (i_coordinates == 0){
             // y-axis
