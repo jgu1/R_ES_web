@@ -369,11 +369,6 @@ function createGraph() {
                 var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
                 var geneNames       = parentNode.attr("geneNames");
                 var pairNames       = parentNode.attr("pairNames");
-                var GSNP_cutoff     = parentNode.attr("GSNP_cutoff");
-
-
-
-
 
                 d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
                     .style("opacity",0.9)
@@ -719,7 +714,7 @@ function createGraph() {
     var taggedValue  = function(d){return d[5]};
 
     var tooltip = Manhattan.append("div")
-        .attr("class", "tooltip")
+        .attr("id", "tooltip")
         .style("height",100)
         .style("width",200)
         .style("opacity", 0);
@@ -1026,279 +1021,29 @@ function createGraph() {
                        .style("opacity", 0);
           });
 
+    var legend_block_size = 10;
+    var legend = GWAS_or_eQTL_groups.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * legend_block_size + ")"; });
 
+    // draw legend colored rectangles
+    legend.append("rect")
+      .attr("x", Manhattan_width - 10*legend_block_size)
+      //.attr("x", 0)
+      .attr("width", legend_block_size -1)
+      .attr("height", legend_block_size -1)
+      .style("fill", color);
 
+    // draw legend text
+    legend.append("text")
+      .attr("x", Manhattan_width - 9 * legend_block_size)
+      .attr("y", legend_block_size -1)
+      .style("font-size","9px")
+      .style("text-anchor", "start")
+      .text(function(d) { return d;})
 
-/*
-if (i_coordinates == 0){
-            // y-axis
-            svg.append("g")
-              .attr("class", "yAxis")
-              .attr("transform", "translate(0," + y_shift + ")")
-              .call(yAxis)
-            .append("text")
-              .attr("class", "label")
-              .attr("y", 6)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end")
-              .text("-log10(p-value)");
-        }else{
-            // y-axis
-            svg.append("g")
-              .attr("class", "yAxis_eQTL")
-              .call(yAxis_eQTL)
-              .attr("transform", "translate(0," + y_shift + ")")
-            .append("text")
-              .attr("class", "label")
-              .attr("y", 6)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end")
-              .text("eQTL: -log10(p-value)");
-
-        }
-*/
-    /*
-    for (var i_pair = 0;i_pair < Manhattan_pairNames.length; i_pair ++){
-        var curr_Manhattan_pairName = Manhattan_pairNames[i_pair];
-        var curr_GWAS_SNPlist = GWAS_SNPlist_dict[curr_Manhattan_pairName];
-        var gene_SNPlist_dict_for_curr_pair = eQTL_gene_SNPlist_dict[curr_Manhattan_pairName];
-         
-        // the shift due to each previous GWAS-eQTL pair 
-        var shift_for_pair = i_pair * Manhattan_svg_height_single_pair;
-        var shift_tot      = shift_for_pair + margin.top;
-
-        // "svg" is a bad name, it's actually a svg group
-        // append each svg group to the svg container, the svg containter receives zooming action
-        var svg = Manhattan_svg_container.append("g")
-                .attr("transform", "translate(" + margin.left + "," +  shift_tot + ")")
-                .attr("class","Manhattan_group")
-                .attr("pairName",curr_Manhattan_pairName);
- 
-        var svg_transform = d3.zoomTransform(svg);
-        var t = d3.zoomIdentity.translate(35,60).scale(2);
- 
-        svg.append("rect")
-                .attr("width", Manhattan_width)
-                .attr("height", Manhattan_height)
-                .style("fill", "none")
-                .style("pointer-events", "all");
-        svg.append("g")
-          .attr("class","Manhattan_pairName")
-         .append("text")
-          .text(curr_Manhattan_pairName);
-        // draw a black line to indicate the location chromosome starts
-        
-        svg.selectAll(".chrom_starts").data([]).exit().remove();
-        svg.selectAll(".gene_starts").data([]).exit().remove();
-        for (var i_coordinates = 0; i_coordinates <= NGENES; i_coordinates ++){
-            y_shift = (Manhattan_height + margin.between) * i_coordinates
-            var chrom_starts =svg.append("g").selectAll(".chrom_starts")
-              .data(chrom_starts_data)
-              .enter().append("line")
-              .attr("class","chrom_starts")
-              .attr("x1",function(d){return xScale(d);})
-              .attr("x2",function(d){return xScale(d);})
-              .attr("y1",y_shift)
-              .attr("y2",y_shift + Manhattan_height) 
-              .style("opacity", .2)
-              .style("stroke","black");
-                  
-            var gene_starts =svg.append("g").selectAll(".gene_starts")
-              .data(Manhattan_geneNames)
-              .enter().append("rect")
-              .attr("class","gene_starts")
-              .attr("x",function(d){
-                var chromStart_chromEnd = gene_location_dict[d]; 
-                var chromStart = chromStart_chromEnd[0];
-                var x = 0;
-                if (chromStart != null){
-                    x = xScale(chromStart);
-                }
-                return x;
-              })
-              .attr("y",y_shift)
-              .attr("width",function(d){
-                var chromStart_chromEnd = gene_location_dict[d]; 
-                var chromStart = chromStart_chromEnd[0];
-                var chromEnd   = chromStart_chromEnd[1];
-                var diff       = chromEnd - chromStart;
-                var width = 1;
-                if (chromStart != null && chromEnd != null){
-                    width = xScale(chromEnd) -xScale(chromStart);
-                }
-                if (width < 1){ width = 1;}
-                return width;
-              })
-              .attr("height",Manhattan_height)
-              .attr("fill",function(d){
-                return color(d);
-              });
-        xAxis_shift = y_shift + Manhattan_height;
-        // x-axis
-        svg.append("g")
-          .attr("class", "xAxis")
-          .attr("transform", "translate(0," + xAxis_shift + ")")
-          //.attr("transform", "translate(0,)")
-          .call(xAxis)
-        .append("text")
-          .attr("class", "label")
-          .attr("x", Manhattan_width)
-          .attr("y", -6)
-          .style("text-anchor", "end")
-          .text("Chrom loc");
-  
-        if (i_coordinates == 0){
-            // y-axis
-            svg.append("g")
-              .attr("class", "yAxis")
-              .attr("transform", "translate(0," + y_shift + ")")
-              .call(yAxis)
-            .append("text")
-              .attr("class", "label")
-              .attr("y", 6)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end")
-              .text("-log10(p-value)");
-        }else{
-            // y-axis
-            svg.append("g")
-              .attr("class", "yAxis_eQTL")
-              .call(yAxis_eQTL)
-              .attr("transform", "translate(0," + y_shift + ")")
-            .append("text")
-              .attr("class", "label")
-              .attr("y", 6)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end")
-              .text("eQTL: -log10(p-value)");
-
-        }
-        }
-        svg.append("g").selectAll(".dotGWAS")
-          .data(curr_GWAS_SNPlist)
-        .enter().append("circle")
-          .attr("class", "dotGWAS")
-          .attr("r", dotGWAS_size)
-          .attr("cx", xMap)
-          .attr("cy", yMap)
-          .attr("aligned",alignedValue)
-          .attr("tagged",taggedValue)
-          .style("fill","black") 
-          .on("mouseover", function(d) {
-                  tooltip.html("");
-                  tooltip.transition()
-                       .duration(200)
-                       .style("opacity", .9);
-          
-                  tooltip.style("left", (d3.event.pageX ) + "px")
-                       .style("top", function(d){
-                            return (d3.event.pageY - 60) + "px"})
-                       .html(d[0] + "(" + d[1] + ")"
-                            + " <br/>pval: " + yValue(d)
-                            + " <br/>aligned: " + alignedValue(d)
-                            + " <br/>tagged: " + taggedValue(d)
-                            + " <br/>closest gene: " + d[6] 
-                            );
-                  var closest_geneName = d[6];
-                  var closest_gene_chromStart = d[7];
-                    
-                    //var closest_gene =svg.append("line")
-                    var closest_gene =d3.selectAll(".Manhattan_group").append("line")
-                      .attr("class","closest_gene")
-                      .attr("x1",gx2(closest_gene_chromStart))
-                      .attr("x2",gx2(closest_gene_chromStart))
-                      .attr("y1",0)
-                      .attr("y2",Manhattan_height) 
-                      .style("opacity", 1)
-                      .style("stroke","black");
-                  })
-          .on("mouseout", function(d) {
-                  tooltip.transition()
-                       .duration(500)
-                       .style("opacity", 0);
-
-                  d3.selectAll(".closest_gene").data([]).exit().remove();
-              });
-      
-
-        for (var i_coordinates = 0; i_coordinates < NGENES; i_coordinates ++){
-            var y_shift = (Manhattan_height + margin.between) * (i_coordinates + 1); // begin with 1 shift
-            var CURR_DRAWING_GENE = Manhattan_geneNames[i_coordinates]; 
-            var SNPlist_for_curr_gene_and_curr_pair = gene_SNPlist_dict_for_curr_pair[CURR_DRAWING_GENE];
-            
-            //draw eQTLs
-            svg.append("g").selectAll(".recteQTL")
-              .data(SNPlist_for_curr_gene_and_curr_pair)
-            .enter().append("rect")
-              .attr("class", "recteQTL")
-              .attr("width", recteQTL_size)
-              .attr("height",recteQTL_size)
-              .attr("x", xMap_eQTL)
-              .attr("y", function(d){
-                 var shift_within_coordinate = yMap_eQTL(d);
-                 var yval = y_shift + shift_within_coordinate;
-                 return (yval);
-              })
-              .attr("aligned",alignedValue)
-              .attr("tagged",taggedValue)
-              .style("fill", function(d) {
-                var gene = cValue(d); 
-                return color(gene);                 //gene
-                }) 
-              .style("fill-opacity",0.9)
-              .style("stroke",function(d){return "black"})
-              .style("stroke-opacity",0.1)
-              .style("stoke-width",function(d){return 5}) 
-              .on("mouseover", function(d) {
-                      tooltip.html("");
-                      tooltip.transition()
-                           .duration(200)
-                           .style("opacity", .9);
-              
-                      tooltip.style("left", (d3.event.pageX ) + "px")
-                           .style("top", function(d){
-                                return (d3.event.pageY - 60) + "px"})
-                           .html(d[0] + "(" + d[1] + ")"
-                                + " <br/>pval: " + yValue(d) 
-                                + " <br/>gene: " + d[6]
-                                + " <br/>aligned GSNP: " + d[7]
-                                + " <br/>aligned: " + alignedValue(d)
-                                + " <br/>tagged: " + taggedValue(d)
-                                );
-                  })
-              .on("mouseout", function(d) {
-                      tooltip.transition()
-                           .duration(500)
-                           .style("opacity", 0);
-              });
-      }
-     // draw legend
-      var legend_block_size = 10;
-      var legend = svg.selectAll(".legend")
-          .data(color.domain())
-        .enter().append("g")
-          .attr("class", "legend")
-          .attr("transform", function(d, i) { return "translate(0," + i * legend_block_size + ")"; });
-     
-      // draw legend colored rectangles
-      legend.append("rect")
-          .attr("x", Manhattan_width - 10*legend_block_size)
-          //.attr("x", 0)
-          .attr("width", legend_block_size -1)
-          .attr("height", legend_block_size -1)
-          .style("fill", color);
-
-      // draw legend text
-      legend.append("text")
-          .attr("x", Manhattan_width - 9 * legend_block_size)
-          .attr("y", legend_block_size -1)
-          .style("font-size","9px")
-          .style("text-anchor", "start")
-          .text(function(d) { return d;})
-
-    }
-    */
-    
   }
 
   var Manhattan_appendGenes_callback = function(data){
@@ -1335,7 +1080,9 @@ if (i_coordinates == 0){
     var zoom_range_min          = data.zoom_range_min;    
     var zoom_range_max          = data.zoom_range_max;
     var Manhattan_height        = data.Manhattan_height;
-    var GWAS_SNPlist_dict       = data.GWAS_SNPlist_dict
+    var GWAS_SNPlist_dict       = data.GWAS_SNPlist_dict;
+
+    var tooltip = d3.select("#tooltip");
 
     var gx2 = d3.scaleLinear()
                 .range([zoom_range_min,zoom_range_max]);
@@ -1345,6 +1092,7 @@ if (i_coordinates == 0){
 
     // setup y
     var yScaleMax = 8;
+    var dotGWAS_size = 3.5;
     var yValue = function(d) {  var pval = parseFloat(d[3]); 
                                 return -Math.log10(pval);
                              }, // data -> value
@@ -1367,56 +1115,20 @@ if (i_coordinates == 0){
         var curr_GWAS_SNPlist   = GWAS_SNPlist_dict[curr_pairName]; 
     }
     */
-    d3.selectAll(".Manhattan_group")          .data(function(d){
-            var a= 1;
-          })
-         .append("g").selectAll(".dotGWAS")
-
+    var Manhattan_groups = d3.selectAll(".Manhattan_group").selectAll(".dotGWAS")
+        .data(function(d){
+            
+            var SNPlist_for_curr_GWAS =  GWAS_SNPlist_dict[d];
+            return SNPlist_for_curr_GWAS;
+        })
         .enter().append("circle")
-          .attr("class", "dotGWAS")
+        .attr("class", "dotGWAS")
           .attr("r", dotGWAS_size)
           .attr("cx", xMap)
           .attr("cy", yMap)
           .attr("aligned",alignedValue)
           .attr("tagged",taggedValue)
-          .style("fill","black") 
-          .on("mouseover", function(d) {
-                  tooltip.html("");
-                  tooltip.transition()
-                       .duration(200)
-                       .style("opacity", .9);
-          
-                  tooltip.style("left", (d3.event.pageX ) + "px")
-                       //.style("top", (d3.event.pageY - 60) + "px")
-                       .style("top", function(d){
-                            return (d3.event.pageY - 60) + "px"})
-                       .html(d[0] + "(" + d[1] + ")"
-                            + " <br/>pval: " + yValue(d)
-                            + " <br/>aligned: " + alignedValue(d)
-                            + " <br/>tagged: " + taggedValue(d)
-                            + " <br/>closest gene: " + d[6] 
-                            );
-                  var closest_geneName = d[6];
-                  var closest_gene_chromStart = d[7];
-                    
-                    //var closest_gene =svg.append("line")
-                    var closest_gene =d3.selectAll(".Manhattan_group").append("line")
-                      .attr("class","closest_gene")
-                      .attr("x1",gx2(closest_gene_chromStart))
-                      .attr("x2",gx2(closest_gene_chromStart))
-                      .attr("y1",0)
-                      .attr("y2",Manhattan_height) 
-                      .style("opacity", 1)
-                      .style("stroke","black");
-                  })
-          .on("mouseout", function(d) {
-                  tooltip.transition()
-                       .duration(500)
-                       .style("opacity", 0);
-
-                  d3.selectAll(".closest_gene").data([]).exit().remove();
-              });
-
+          .style("fill","black"); 
 
 
   }
