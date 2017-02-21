@@ -579,8 +579,8 @@ class DAO(object):
     def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
         if GSNP_pval_cutoff is None:
             GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(curr_cnx_ES_OUTPUT,GWAS_SNPlist_full)
-            #return GWAS_SNPlist_full
             return GWAS_SNPlist_full_closest_gene
+
         start_time = time.time() 
         #rows = self.fetch_rows_from_ES_OUTPUT_GWAS_raw_table(GWAS,GSNP_pval_cutoff)
         rows = self.fetch_rows_from_GWAS_raw_database(curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff)       

@@ -266,7 +266,6 @@ function createGraph() {
                             var Manhattan = wrapper_div.append("div")
                                 .attr("id","Manhattan")
 
-                            var GSNP_cutoff = document.getElementById("GSNP_cutoff_sub").value;
 
                             var selected_geneNames = columnText._groups[0].map(function(text){
                                 var oH = text.outerHTML;
@@ -279,30 +278,21 @@ function createGraph() {
                             Manhattan.attr("geneNames",selected_geneNames)
                             Manhattan.attr("pairNames",pairNames)
 
-                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
+                            d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
                             }
                         ) ;
-
-    //d3.select("label_GSNP_cutoff").remove();
-    //d3.select("GSNP_cutoff").remove();
-
-    wrapper_div.append("text")
-         .text("GSNP_cutoff");
-    wrapper_div.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","GSNP_cutoff_sub");
-
     var a = 1;  
   }
 
-  function append_Manhattan_checkboxes(parentNode){
+  function append_Manhattan_customizer(parentNode){
     d3.select("#show_unaligned_SNPs").remove();
     d3.select("#txt_show_unaligned_SNPs").remove();
     d3.select("#show_untagged_SNPs") .remove();
     d3.select("#txt_show_untagged_SNPs").remove();
     d3.select("#show_all_genes").remove();
     d3.select("#txt_show_all_genes").remove();
+    d3.select("#txt_GSNP_cutoff").remove();
+    d3.select("#GSNP_cutoff").remove();
  
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
@@ -311,9 +301,18 @@ function createGraph() {
     var invisible_size = 0.1;
 
     parentNode.append("text")
-         .text("unaligned")
-         .attr("id","txt_show_unaligned_SNPs")
+         .text("GSNP_cutoff")
+         .attr("id","txt_GSNP_cutoff")
          .style("margin-left","600px");
+    parentNode.append("input")
+         .attr("type","text")
+         .attr("size","10")
+         .attr("id","GSNP_cutoff");
+
+
+    parentNode.append("text")
+         .text("unaligned")
+         .attr("id","txt_show_unaligned_SNPs");
     parentNode.append("input")
          .attr("type","checkbox")
          .attr("checked",true)
@@ -336,7 +335,10 @@ function createGraph() {
                 var geneNames       = parentNode.attr("geneNames");
                 var pairNames       = parentNode.attr("pairNames");
                 //var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
-                var GSNP_cutoff = d3.select(".GSNP_cutoff").property("value");                
+                var GSNP_cutoff = d3.select("#GSNP_cutoff").property("value");                
+                if ( ! GSNP_cutoff.trim()){
+                    GSNP_cutoff = 0.001;    
+                }
 
                 d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
                 
@@ -408,10 +410,15 @@ function createGraph() {
                     .attr("r",invisible_size);
             }
          });
- 
+  
+    parentNode.append("div")
+        .html("<br/>");
+
+
     parentNode.append("text")
          .text("show_all_genes")
-         .attr("id","txt_show_all_genes");
+         .attr("id","txt_show_all_genes")
+         .style("margin-left","600px");
     parentNode.append("input")
         .attr("type","checkbox")
         .attr("checked",true)
@@ -671,7 +678,7 @@ function createGraph() {
     Manhattan.attr("zoom_range_min",0);
     Manhattan.attr("zoom_range_max",Manhattan_width);
 
-    append_Manhattan_checkboxes(Manhattan);
+    append_Manhattan_customizer(Manhattan);
    
     // setup x 
     var xValue = function(d) { return d[2];}, // data -> value
@@ -1257,7 +1264,7 @@ function createGraph() {
                         var Manhattan = chart.append("div")
                             .attr("id","Manhattan")
 
-                        var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
+                        //var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
                     
                         var selected_geneNames = columnText._groups[0].map(function(text){
                             var oH = text.outerHTML;
@@ -1269,17 +1276,11 @@ function createGraph() {
                         });
                         Manhattan.attr("geneNames",selected_geneNames)
                         Manhattan.attr("pairNames",pairNames)
-                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
+                        d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames,Manhattancallback);
+                        //d3.json("/Manhattan?geneNames="+selected_geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattancallback);
                         }
                     ) ;
- 
-    chart.append("text")
-         .text("GSNP_cutoff");
-    var GSNP_cutoff = chart.append("input")
-         .attr("type","text")
-         .attr("size","10")
-         .attr("id","GSNP_cutoff_global");
-                                    
+              
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
                                             .style("margin-left", 5* margin + "px");

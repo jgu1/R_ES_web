@@ -252,20 +252,12 @@ def Manhattan_debug(pair_SNP_dict_with_location_all_genes):
     return location_pval_chrom_SNPlist_dict,eQTL_SNPlist_dict
 
 @app.route('/Manhattan')
-@app.route("/Manhattan/<string:geneNames><string:pairNames><string:GSNP_cutoff>")
+@app.route("/Manhattan/<string:geneNames><string:pairNames>")
 def Manhattan():
     start_time_Manhattan = time.time()
     geneNames = request.args.get('geneNames', 'empty')
     pairNames = request.args.get('pairNames','empty')
-    GSNP_cutoff_str = request.args.get('GSNP_cutoff','empty')
-
-    GSNP_cutoff = None
-    try:
-        GSNP_cutoff = float(GSNP_cutoff_str)
-    except ValueError:
-        a = 1  # placeholder 
-
-
+    
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
 
@@ -300,7 +292,7 @@ def Manhattan():
         #pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
         
         # directly generate GWAS_SNPlist and eQTL_SNPlist for current gene across all GWAS_eQTL pairs 
-        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,GSNP_cutoff)
+        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,None)
 
         GWAS_SNPlist_dict = Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_curr_gene)
         eQTL_gene_SNPlist_dict = Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_curr_gene,gene) 
@@ -412,7 +404,7 @@ def Manhattan_appendSNPs():
 
 
     GWAS_SNPlist_dict_within_domain = {}
-    for pairName,GWAS_SNPlist in GWAS_SNPlist_dict_within_domain.iteritems():
+    for pairName,GWAS_SNPlist in GWAS_SNPlist_dict.iteritems():
         GWAS_SNPlist_within_domain = []
         for GWAS_SNP_tuple in GWAS_SNPlist:
             GSNP_abs = GWAS_SNP_tuple[2]
@@ -428,8 +420,6 @@ def Manhattan_appendSNPs():
     ret['Manhattan_height']     = Manhattan_height
     ret['GWAS_SNPlist_dict']    = GWAS_SNPlist_dict_within_domain   
     return jsonify(ret) 
- 
-
 
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3
 def Manhattan_filter_pair_SNP_dict_by_GWAS_pval_cutoff(pair_SNP_dict,Manhattan_GWAS_cutoff):
