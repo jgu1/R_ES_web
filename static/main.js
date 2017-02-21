@@ -331,11 +331,13 @@ function createGraph() {
                 var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
                 var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
                 var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
+                var Manhattan_width = parseInt(parentNode.attr("Manhattan_width"));
                 var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
                 var geneNames       = parentNode.attr("geneNames");
                 var pairNames       = parentNode.attr("pairNames");
-                var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
-                
+                //var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
+                var GSNP_cutoff = d3.select(".GSNP_cutoff").property("value");                
+
                 d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
                 
                                 /*
@@ -662,6 +664,7 @@ function createGraph() {
  
     d3.select("#Manhattan").html("");
     var Manhattan = d3.select("#Manhattan");
+    Manhattan.attr("Manhattan_width",Manhattan_width);
     Manhattan.attr("Manhattan_height",Manhattan_height);
     Manhattan.attr("zoom_domain_min",0);
     Manhattan.attr("zoom_domain_max",xScaleMax);
@@ -809,7 +812,6 @@ function createGraph() {
                     });
 
         };
-
         //Zoom in v4
         var xcoord = function(d){
             return gx2(xValue(d));
@@ -1105,7 +1107,6 @@ function createGraph() {
     // setup y
     var yScaleMax = 8;
     var dotGWAS_size = 3.5;
-
     var yValue = function(d) {  var pval = parseFloat(d[3]); 
                                 return -Math.log10(pval);
                              }, // data -> value
@@ -1122,10 +1123,13 @@ function createGraph() {
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
 
-    d3.selectAll(".Manhattan_group").append("g").selectAll(".dotGWAS")
+    d3.selectAll(".Manhattan_group").selectAll(".GWAS_or_eQTL_group").filter(function(d){return d == "GWAS"})
+            .selectAll(".dotGWAS")
           .data(function(d){
-            var SNPlist_for_curr_GWAS =  GWAS_SNPlist_dict[d];
-            return SNPlist_for_curr_GWAS;
+                var parent_Manhattan_group = this.parentNode;
+                var pairName = d3.select(this.parentNode).datum();
+                var SNPlist_for_curr_GWAS = GWAS_SNPlist_dict[pairName];
+                return SNPlist_for_curr_GWAS;
             })
           .enter().append("circle")
           .attr("class","dotGWAS")
@@ -1275,7 +1279,7 @@ function createGraph() {
          .attr("type","text")
          .attr("size","10")
          .attr("id","GSNP_cutoff_global");
-                           
+                                    
     var clustering_algs_input_wrapper_div = chart.append("div")
                                             .attr("id","clustering_algs_input_wrapper_div")
                                             .style("margin-left", 5* margin + "px");
