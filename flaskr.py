@@ -339,17 +339,18 @@ def Manhattan_appendGenes():
     geneNames = [] 
     gene_location_dict_within_domain = {}
     for gene,location_tuple in gene_location_dict.iteritems():
-        chromStart = location_tuple[0]
+    #location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
+        chromStart = location_tuple[2]    
         if chromStart >= zoom_domain_min and chromStart <= zoom_domain_max:
             geneNames.append(gene)
-            gene_location_dict_within_domain[gene] = chromStart
+            gene_location_dict_within_domain[gene] = location_tuple
 
     ret = {}
     ret['zoom_domain_min']      = zoom_domain_min
     ret['zoom_domain_max']      = zoom_domain_max
     ret['zoom_range_min']       = zoom_range_min
     ret['zoom_range_max']       = zoom_range_max
-    ret['Manhattan_height']      = Manhattan_height
+    ret['Manhattan_height']     = Manhattan_height
     ret['geneNames']            = geneNames
     ret['gene_location_dict']   = gene_location_dict_within_domain
     
@@ -371,7 +372,6 @@ def Manhattan_appendSNPs():
         GSNP_cutoff = float(GSNP_cutoff_str)
     except ValueError:
         a = 1  # placeholder 
-
 
     web_disease_list = session['web_disease_list']
     web_eQTL_list = session['web_eQTL_list']
@@ -402,7 +402,6 @@ def Manhattan_appendSNPs():
         #pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
 
-
     GWAS_SNPlist_dict_within_domain = {}
     for pairName,GWAS_SNPlist in GWAS_SNPlist_dict.iteritems():
         GWAS_SNPlist_within_domain = []
@@ -412,13 +411,30 @@ def Manhattan_appendSNPs():
                 GWAS_SNPlist_within_domain.append(GWAS_SNP_tuple)
         GWAS_SNPlist_dict_within_domain[pairName] = GWAS_SNPlist_within_domain
 
+
+
+    eQTL_gene_SNPlist_dict_within_domain = {}
+    for pairName,gene_SNPlist_dict in eQTL_gene_SNPlist_dict.iteritems():
+        gene_SNPlist_dict_within_domain = {}
+        for gene in gene_SNPlist_dict:
+            SNP_list_for_curr_gene_within_domain = []
+            SNP_list_for_curr_gene = gene_SNPlist_dict[gene]
+            for SNP_tuple in SNP_list_for_curr_gene:
+                eSNP_abs = SNP_tuple[2]
+                if eSNP_abs >= zoom_domain_min and eSNP_abs <= zoom_domain_max:
+                    SNP_list_for_curr_gene_within_domain.append(SNP_tuple)
+            gene_SNPlist_dict_within_domain[gene] = SNP_list_for_curr_gene_within_domain
+        eQTL_gene_SNPlist_dict_within_domain[pairName] = gene_SNPlist_dict_within_domain
+
+
     ret = {}
-    ret['zoom_domain_min']      = zoom_domain_min
-    ret['zoom_domain_max']      = zoom_domain_max
-    ret['zoom_range_min']       = zoom_range_min
-    ret['zoom_range_max']       = zoom_range_max
-    ret['Manhattan_height']     = Manhattan_height
-    ret['GWAS_SNPlist_dict']    = GWAS_SNPlist_dict_within_domain   
+    ret['zoom_domain_min']          = zoom_domain_min
+    ret['zoom_domain_max']          = zoom_domain_max
+    ret['zoom_range_min']           = zoom_range_min
+    ret['zoom_range_max']           = zoom_range_max
+    ret['Manhattan_height']         = Manhattan_height
+    ret['GWAS_SNPlist_dict']        = GWAS_SNPlist_dict_within_domain   
+    ret['eQTL_gene_SNPlist_dict']   = eQTL_gene_SNPlist_dict_within_domain   
     return jsonify(ret) 
 
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3

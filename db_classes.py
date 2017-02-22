@@ -1039,7 +1039,8 @@ class DAO(object):
                 chromEnd = 0 
             chrom_abs_start = chrom_abs_dict[chrom] + chromStart
             chrom_abs_end   = chrom_abs_dict[chrom] + chromEnd
-            gene_location_dict_available_in_db[gene] = (chrom_abs_start,chrom_abs_end)
+            location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
+            gene_location_dict_available_in_db[gene] = location_tuple
         return gene_location_dict_available_in_db
 
 

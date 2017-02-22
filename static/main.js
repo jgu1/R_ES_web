@@ -787,11 +787,8 @@ function createGraph() {
                 .attr("x2",function(d){
                     var location_tuple = gene_location_dict[d];
                     return gx2(xValue(location_tuple))
-                });
-
-
-
-                /*
+                })
+                              /*
                 .attr("x1",function(d){
                     var chromStart_chromEnd = gene_location_dict[d]; 
                     var chromStart = chromStart_chromEnd[0];
@@ -1059,6 +1056,14 @@ function createGraph() {
                 .range([zoom_range_min,zoom_range_max]);
         gx2.domain([zoom_domain_min, zoom_domain_max]).nice();
 
+    d3.selectAll(".tooptip").data([]).exit().remove();
+    var tooltip = d3.select("#Manhattan").append("div")
+        .attr("class", "tooltip")
+        .style("height",100)
+        .style("width",200)
+        .style("opacity", 0);
+
+
     d3.selectAll(".Manhattan_group").append("g").selectAll(".gene_within_domain")
           .data(geneNames)
           .enter().append("line")
@@ -1078,9 +1083,26 @@ function createGraph() {
           .attr("x2",function(d){return gx2(gene_location_dict[d]);})
           */
           .attr("y1",0)
-          .attr("y2",Manhattan_height) 
-          .style("opacity", 1)
-          .style("stroke","black");
+          .attr("y2",Manhattan_height / 2) 
+          .style("opacity",0.2 )
+          .style("stroke","black")
+          .on("mouseover", function(d) {
+                  tooltip.html("");
+                  tooltip.transition()
+                       .duration(200)
+                       .style("opacity", .9);
+          
+                  tooltip.style("left", (d3.event.pageX ) + "px")
+                       .style("top", function(d){
+                            return (d3.event.pageY - 60) + "px"})
+                       .html(  " <br/>geneName: " + d
+                             + " <br/>chrom: " + gene_location_dict[d][1]
+                             + " <br/>chromStart:" + gene_location_dict[d][4]   
+                             + " <br/>chromEnd:"   + gene_location_dict[d][5]   
+                        );
+     
+          });
+
 
   }
 
