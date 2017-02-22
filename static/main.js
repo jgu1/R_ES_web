@@ -318,48 +318,24 @@ function createGraph() {
          .attr("checked",true)
          .attr("id","show_unaligned_SNPs")
          .on("change",function(d){
-           // the affected SNPs are all unaligned and hence untagged, 
-           // brought them back to display only when showing untagged SNPs
-           if (this.checked && document.getElementById("show_untagged_SNPs").checked){  
-     
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
-                    .style("opacity",0.9)
-                    .attr("width",  recteQTL_size).attr("height", recteQTL_size);
+            d3.selectAll(".dotGWAS") .data([]).exit().remove();
+            d3.selectAll(".recteQTL").data([]).exit().remove();
 
-                var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
-                var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
-                var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
-                var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
-                var Manhattan_width = parseInt(parentNode.attr("Manhattan_width"));
-                var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
-                var geneNames       = parentNode.attr("geneNames");
-                var pairNames       = parentNode.attr("pairNames");
-                //var GSNP_cutoff = document.getElementById("GSNP_cutoff_global").value;
-                var GSNP_cutoff = d3.select("#GSNP_cutoff").property("value");                
-                if ( ! GSNP_cutoff.trim()){
-                    GSNP_cutoff = 0.001;    
-                }
+            var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
+            var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
+            var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
+            var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
+            var Manhattan_width = parseInt(parentNode.attr("Manhattan_width"));
+            var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
+            var geneNames       = parentNode.attr("geneNames");
+            var pairNames       = parentNode.attr("pairNames");
+            var GSNP_cutoff = d3.select("#GSNP_cutoff").property("value");                
+            if ( ! GSNP_cutoff.trim()){
+                GSNP_cutoff = 0.001;    
+            }
 
-                d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
-                
-                                /*
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
-                    .style("opacity",1)
-                    .attr("r",dotGWAS_size);
-                */
-           }else{
-                d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);})
-                    .style("opacity",0)
-                    .attr("width", invisible_size).attr("height",invisible_size);
-                
-                d3.selectAll(".dotGWAS").data([]).exit().remove();
-                /*
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
-                    .style("opacity",0)
-                    .attr("r",invisible_size);
-                */
-                }
-
+            d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
+            
          });
 
     parentNode.append("text")
@@ -370,47 +346,26 @@ function createGraph() {
          .attr("checked",true)
          .attr("id","show_untagged_SNPs")
          .on("change",function(d){
-           if (this.checked){ 
-               
-                var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
-                var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
-                var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
-                var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
-                var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
-                var geneNames       = parentNode.attr("geneNames");
-                var pairNames       = parentNode.attr("pairNames");
+            d3.selectAll(".dotGWAS") .data([]).exit().remove();
+            d3.selectAll(".recteQTL").data([]).exit().remove();
 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
-                    .style("opacity",0.9)
-                    .attr("width", recteQTL_size).attr("height",recteQTL_size);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
-                    .style("opacity",1)
-                    .attr("r",dotGWAS_size);
-           
-                // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
-                // when showing unaligned_SNPs, both should be brought back to display
-                // BUT when "NOT showing unalinged_SNPs", only untagged_aligned should be brought back to display
-                if ( ! document.getElementById("show_unaligned_SNPs").checked){
-                    d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
-                        .style("opacity",0)
-                        .attr("width",invisible_size).attr("height",invisible_size);
-                    
-                    d3.selectAll(".dotGWAS").filter(function(d) {return !alignedValue(d);}) 
-                        .style("opacity",0)
-                        .attr("r",invisible_size);
-                }                
-
-            
-            }else{ 
-                d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
-                    .style("opacity",0)
-                    .attr("width",invisible_size).attr("height",invisible_size);
-                d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
-                    .style("opacity",0)
-                    .attr("r",invisible_size);
+            var zoom_domain_min = parseInt(parentNode.attr("zoom_domain_min"));
+            var zoom_domain_max = parseInt(parentNode.attr("zoom_domain_max"));
+            var zoom_range_min  = parseInt(parentNode.attr("zoom_range_min"));
+            var zoom_range_max  = parseInt(parentNode.attr("zoom_range_max"));
+            var Manhattan_width = parseInt(parentNode.attr("Manhattan_width"));
+            var Manhattan_height= parseInt(parentNode.attr("Manhattan_height"));
+            var geneNames       = parentNode.attr("geneNames");
+            var pairNames       = parentNode.attr("pairNames");
+            var GSNP_cutoff = d3.select("#GSNP_cutoff").property("value");                
+            if ( ! GSNP_cutoff.trim()){
+                GSNP_cutoff = 0.001;    
             }
+            d3.json("/Manhattan_appendSNPs?zoom_domain_min="+zoom_domain_min+"&zoom_domain_max="+zoom_domain_max+"&zoom_range_min="+zoom_range_min+"&zoom_range_max="+zoom_range_max+"&Manhattan_height="+Manhattan_height+"&geneNames="+geneNames+"&pairNames="+pairNames+"&GSNP_cutoff="+GSNP_cutoff,Manhattan_appendSNPs_callback);
+            
          });
-  
+
+
     parentNode.append("div")
         .html("<br/>");
 
@@ -786,6 +741,23 @@ function createGraph() {
 
             Manhattan.selectAll(".Manhattan_group").selectAll(".gene_starts")
                 .attr("x",function(d){
+                    var location_tuple = gene_location_dict[d];
+                    return gx2(xValue(location_tuple))
+                })
+                .attr("width",function(d){
+                  //location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
+                  var location_tuple = gene_location_dict[d];
+                  var width = 1;
+                  chrom_abs_start = location_tuple[2]
+                  chrom_abs_end   = location_tuple[3]
+                  if (chrom_abs_start != null && chrom_abs_end != null){
+                    width = gx2(chrom_abs_end) - gx2(chrom_abs_start);
+                  }
+                  if (width < 1){ width = 1;}
+                  return width;
+                });
+                /*
+                .attr("x",function(d){
                   var chromStart_chromEnd = gene_location_dict[d]; 
                   var chromStart = chromStart_chromEnd[0];
                   var x = 0;
@@ -805,8 +777,21 @@ function createGraph() {
                  if (width < 1){ width = 1;}
                  return width;
               });
+                */
             
             Manhattan.selectAll(".Manhattan_group").selectAll(".gene_within_domain")
+                .attr("x1",function(d){
+                    var location_tuple = gene_location_dict[d];
+                    return gx2(xValue(location_tuple))
+                })
+                .attr("x2",function(d){
+                    var location_tuple = gene_location_dict[d];
+                    return gx2(xValue(location_tuple))
+                });
+
+
+
+                /*
                 .attr("x1",function(d){
                     var chromStart_chromEnd = gene_location_dict[d]; 
                     var chromStart = chromStart_chromEnd[0];
@@ -817,6 +802,7 @@ function createGraph() {
                     var chromStart = chromStart_chromEnd[0];
                     return gx2(chromStart);
                     });
+                */
 
         };
         //Zoom in v4
@@ -890,27 +876,22 @@ function createGraph() {
           .enter().append("rect")
             .attr("class","gene_starts")
             .attr("x",function(d){
-                var chromStart_chromEnd = gene_location_dict[d]; 
-                var chromStart = chromStart_chromEnd[0];
-                var x = 0;
-                if (chromStart != null){
-                    x = xScale(chromStart);
-                }
-                return x;
+                var location_tuple = gene_location_dict[d];
+                return xMap(location_tuple)
             })
-            .attr("y",0)
             .attr("width",function(d){
-                var chromStart_chromEnd = gene_location_dict[d]; 
-                var chromStart = chromStart_chromEnd[0];
-                var chromEnd   = chromStart_chromEnd[1];
-                var diff       = chromEnd - chromStart;
+                //location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
+                var location_tuple = gene_location_dict[d];
                 var width = 1;
-                if (chromStart != null && chromEnd != null){
-                    width = xScale(chromEnd) -xScale(chromStart);
+                chrom_abs_start = location_tuple[2]
+                chrom_abs_end   = location_tuple[3]
+                if (chrom_abs_start != null && chrom_abs_end != null){
+                width = gx2(chrom_abs_end) - gx2(chrom_abs_start);
                 }
                 if (width < 1){ width = 1;}
                 return width;
             })
+            .attr("y",0)
             .attr("height",Manhattan_height)
             .attr("fill",function(d){
                 return color(d);
@@ -1063,12 +1044,16 @@ function createGraph() {
 
   var Manhattan_appendGenes_callback = function(data){
     var zoom_domain_min         = data.zoom_domain_min;
-   var zoom_domain_max         = data.zoom_domain_max;
+    var zoom_domain_max         = data.zoom_domain_max;
     var zoom_range_min          = data.zoom_range_min;    
     var zoom_range_max          = data.zoom_range_max;
     var geneNames               = data.geneNames;
     var Manhattan_height        = data.Manhattan_height;
     var gene_location_dict      = data.gene_location_dict;
+
+    var xValue = function(d) { return d[2];}, // data -> value
+        xMap = function(d) { return gx2(xValue(d));} // data -> display
+
 
     var gx2 = d3.scaleLinear()
                 .range([zoom_range_min,zoom_range_max]);
@@ -1079,9 +1064,19 @@ function createGraph() {
           .enter().append("line")
           .attr("class","gene_within_domain")
           .attr("x1",function(d){
+                    var location_tuple = gene_location_dict[d];
+                    return gx2(xValue(location_tuple))
+                })
+          .attr("x2",function(d){
+                    var location_tuple = gene_location_dict[d];
+                    return gx2(xValue(location_tuple))
+                })
+          /*
+          .attr("x1",function(d){
                     var gene_start = gene_location_dict[d];
                     return gx2(gene_location_dict[d]);})
           .attr("x2",function(d){return gx2(gene_location_dict[d]);})
+          */
           .attr("y1",0)
           .attr("y2",Manhattan_height) 
           .style("opacity", 1)
@@ -1096,6 +1091,7 @@ function createGraph() {
     var zoom_range_max          = data.zoom_range_max;
     var Manhattan_height        = parseFloat(data.Manhattan_height);
     var GWAS_SNPlist_dict       = data.GWAS_SNPlist_dict;
+    var eQTL_gene_SNPlist_dict  = data.eQTL_gene_SNPlist_dict;
 
     d3.selectAll(".tooptip").data([]).exit().remove();
     var tooltip = d3.select("#Manhattan").append("div")
@@ -1104,6 +1100,10 @@ function createGraph() {
         .style("width",200)
         .style("opacity", 0);
 
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    var cValue = function(d) {return d[6]}; // color by gene    
+    var alignedValue = function(d){return d[4]};
+    var taggedValue  = function(d){return d[5]};
 
     var gx2 = d3.scaleLinear()
                 .range([zoom_range_min,zoom_range_max]);
@@ -1114,6 +1114,7 @@ function createGraph() {
     // setup y
     var yScaleMax = 8;
     var dotGWAS_size = 3.5;
+    var recteQTL_size = 5;
     var yValue = function(d) {  var pval = parseFloat(d[3]); 
                                 return -Math.log10(pval);
                              }, // data -> value
@@ -1145,8 +1146,163 @@ function createGraph() {
           .attr("cy", yMap)
           .attr("aligned",alignedValue)
           .attr("tagged",taggedValue)
-          .style("fill","black"); 
+          .style("fill","black")
+          .on("mouseover", function(d) {
+              tooltip.html("");
+              tooltip.transition()
+                   .duration(200)
+                   .style("opacity", .9);
+      
+              tooltip.style("left", (d3.event.pageX ) + "px")
+                   .style("top", function(d){
+                        return (d3.event.pageY - 60) + "px"})
+                   .html(d[0] + "(" + d[1] + ")"
+                        + " <br/>pval: " + yValue(d)
+                        + " <br/>aligned: " + alignedValue(d)
+                        + " <br/>tagged: " + taggedValue(d)
+                        + " <br/>closest gene: " + d[6] 
+                        );
+              var closest_geneName = d[6];
+              var closest_gene_chromStart = d[7];
+                
+                //var closest_gene =svg.append("line")
+                var closest_gene =d3.selectAll(".Manhattan_group").append("line")
+                  .attr("class","closest_gene")
+                  .attr("x1",gx2(closest_gene_chromStart))
+                  .attr("x2",gx2(closest_gene_chromStart))
+                  .attr("y1",0)
+                  .attr("y2",Manhattan_height) 
+                  .style("opacity", 1)
+                  .style("stroke","black");
+              })
+          .on("mouseout", function(d) {
+              tooltip.transition()
+                   .duration(500)
+                   .style("opacity", 0);
+
+              d3.selectAll(".closest_gene").data([]).exit().remove();
+              });
+     
+
+    d3.selectAll(".Manhattan_group").selectAll(".GWAS_or_eQTL_group").filter(function(d){return d != "GWAS"})
+            .selectAll(".recteQTL")
+          .data(function(d){
+                var parent_Manhattan_group = this.parentNode;
+                var pairName = d3.select(this.parentNode).datum();
+                var gene_SNPlist_dict = eQTL_gene_SNPlist_dict[pairName];
+                var SNPlist_for_curr_gene = gene_SNPlist_dict[d];
+                return SNPlist_for_curr_gene;
+            })
+          .enter().append("rect")
+          .attr("class", "recteQTL")
+          .attr("width", recteQTL_size)
+          .attr("height",recteQTL_size)
+          .attr("x", xMap)
+          .attr("y", yMap) 
+          .attr("aligned",alignedValue)
+          .attr("tagged",taggedValue)
+          .style("fill", function(d) {
+            var gene = cValue(d); 
+            return color(gene);                 //gene
+            }) 
+          .style("fill-opacity",0.9)
+          .style("stroke",function(d){return "black"})
+          .style("stroke-opacity",0.1)
+          .style("stoke-width",function(d){return 5}) 
+          .on("mouseover", function(d) {
+                  tooltip.html("");
+                  tooltip.transition()
+                       .duration(200)
+                       .style("opacity", .9);
+          
+                  tooltip.style("left", (d3.event.pageX ) + "px")
+                       .style("top", function(d){
+                            return (d3.event.pageY - 60) + "px"})
+                       .html(d[0] + "(" + d[1] + ")"
+                            + " <br/>pval: " + yValue(d) 
+                            + " <br/>gene: " + d[6]
+                            + " <br/>aligned GSNP: " + d[7]
+                            + " <br/>aligned: " + alignedValue(d)
+                            + " <br/>tagged: " + taggedValue(d)
+                            );
+              })
+          .on("mouseout", function(d) {
+                  tooltip.transition()
+                       .duration(500)
+                       .style("opacity", 0);
+          });
+
+
+
+
+
+
+
+    //toggle_dotGWAS_and_recteQTL(); 
   }
+
+  function toggle_dotGWAS_and_recteQTL(){
+    var dotGWAS_size = 3.5;
+    var recteQTL_size = 5;
+    var invisible_size = 0.1;
+
+    var alignedValue = function(d){return d[4]};
+    var taggedValue  = function(d){return d[5]};
+
+    var show_unaligned_value    = d3.select("#show_unaligned_SNPs").node().value;
+    var show_unaligned          = (show_unaligned == 'on');
+    var show_untagged_value     = d3.select("#show_untagged_SNPs").node().value;
+    var show_untagged           = (show_untagged == 'on');
+    if (show_unaligned && show_untagged){  
+        d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
+            .style("opacity",1)
+            .attr("r",dotGWAS_size);
+        d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
+            .style("opacity",0.9)
+            .attr("width",  recteQTL_size).attr("height", recteQTL_size);
+   }else{
+        d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
+            .style("opacity",0)
+            .attr("r",invisible_size);
+        d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);})
+            .style("opacity",0)
+            .attr("width", invisible_size).attr("height",invisible_size);
+   }
+   
+   if (show_untagged){ 
+        d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
+            .style("opacity",0.9)
+            .attr("width", recteQTL_size).attr("height",recteQTL_size);
+        d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
+            .style("opacity",1)
+            .attr("r",dotGWAS_size);
+   
+        // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
+        // when showing unaligned_SNPs, both should be brought back to display
+        // BUT when "NOT showing unalinged_SNPs", only untagged_aligned should be brought back to display
+        if ( ! show_unaligned){
+            d3.selectAll(".recteQTL").filter(function(d) {return !alignedValue(d);}) 
+                .style("opacity",0)
+                .attr("width",invisible_size).attr("height",invisible_size);
+            
+            d3.selectAll(".dotGWAS").filter(function(d) {return !alignedValue(d);}) 
+                .style("opacity",0)
+                .attr("r",invisible_size);
+        }                
+    }else{ 
+        d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
+            .style("opacity",0)
+            .attr("width",invisible_size).attr("height",invisible_size);
+        d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
+            .style("opacity",0)
+            .attr("r",invisible_size);
+    }
+
+
+
+
+  }
+
 
   function draw_input_fields_ISA(wrapper_div){
     var ISA_input_wrapper_div = wrapper_div.append("div")
