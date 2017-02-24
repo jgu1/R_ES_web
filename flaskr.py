@@ -292,7 +292,7 @@ def Manhattan():
         #pair_SNP_dict_with_location_curr_gene,GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.Manhattan_enhance_pair_SNP_dict_with_location(pair_SNP_dict,gene)
         
         # directly generate GWAS_SNPlist and eQTL_SNPlist for current gene across all GWAS_eQTL pairs 
-        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,None)
+        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene)
 
         GWAS_SNPlist_dict = Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_curr_gene)
         eQTL_gene_SNPlist_dict = Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_curr_gene,gene) 
@@ -348,13 +348,14 @@ def Manhattan_appendGenes():
     ret['geneNames']            = gene_location_dict.keys()
     ret['gene_location_dict']   = gene_location_dict
    
-    print '#####################appendGenes takes ' + str(time.time() - start_time) + 'seconds'
- 
     return jsonify(ret) 
  
 @app.route('/Manhattan_appendSNPs')
 @app.route("/Manhattan_appendSNPs/<string:geneNames><string:pairNames><string:GSNP_cutoff><string:zoom_domain_min><string:zoom_domain_max><string:zoom_range_min><string:zoom_range_max><string:Manhattan_height>")
 def Manhattan_appendSNPs():
+
+    appendSNPs_starttime = time.time()
+
     zoom_domain_min     = int(request.args.get('zoom_domain_min', 'empty'))
     zoom_domain_max     = int(request.args.get('zoom_domain_max', 'empty'))
     zoom_range_min      = int(request.args.get('zoom_range_min', 'empty'))
@@ -390,7 +391,8 @@ def Manhattan_appendSNPs():
     start_time = time.time()
     for gene in genes:
         # directly generate GWAS_SNPlist and eQTL_SNPlist for current gene across all GWAS_eQTL pairs 
-        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,GSNP_cutoff)
+        GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,GSNP_cutoff,zoom_domain_min,zoom_domain_max)
+        #GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene = dao.fetch_pair_SNP_raw(web_disease_list,web_eQTL_list,gene,GSNP_cutoff)
 
         GWAS_SNPlist_dict = Manhattan_add_GWAS_SNPlist_dict(GWAS_SNPlist_dict,GWAS_SNPlist_dict_curr_gene)
         eQTL_gene_SNPlist_dict = Manhattan_add_eQTL_gene_SNPlist_dict(eQTL_gene_SNPlist_dict,eQTL_SNPlist_dict_curr_gene,gene) 
@@ -398,29 +400,30 @@ def Manhattan_appendSNPs():
         #pair_SNP_dict_with_location_all_genes = Manhattan_add_pair_SNP_dict(pair_SNP_dict_with_location_all_genes,pair_SNP_dict_with_location_curr_gene)
     print 'fetching Manhattan SNP_list takes {} seconds'.format(time.time() - start_time)
 
-    GWAS_SNPlist_dict_within_domain = {}
-    for pairName,GWAS_SNPlist in GWAS_SNPlist_dict.iteritems():
-        GWAS_SNPlist_within_domain = []
-        for GWAS_SNP_tuple in GWAS_SNPlist:
-            GSNP_abs = GWAS_SNP_tuple[2]
-            if GSNP_abs>=zoom_domain_min and GSNP_abs<=zoom_domain_max:
-                GWAS_SNPlist_within_domain.append(GWAS_SNP_tuple)
-        GWAS_SNPlist_dict_within_domain[pairName] = GWAS_SNPlist_within_domain
+    if False:
+        GWAS_SNPlist_dict_within_domain = {}
+        for pairName,GWAS_SNPlist in GWAS_SNPlist_dict.iteritems():
+            GWAS_SNPlist_within_domain = []
+            for GWAS_SNP_tuple in GWAS_SNPlist:
+                GSNP_abs = GWAS_SNP_tuple[2]
+                if GSNP_abs>=zoom_domain_min and GSNP_abs<=zoom_domain_max:
+                    GWAS_SNPlist_within_domain.append(GWAS_SNP_tuple)
+            GWAS_SNPlist_dict_within_domain[pairName] = GWAS_SNPlist_within_domain
 
 
 
-    eQTL_gene_SNPlist_dict_within_domain = {}
-    for pairName,gene_SNPlist_dict in eQTL_gene_SNPlist_dict.iteritems():
-        gene_SNPlist_dict_within_domain = {}
-        for gene in gene_SNPlist_dict:
-            SNP_list_for_curr_gene_within_domain = []
-            SNP_list_for_curr_gene = gene_SNPlist_dict[gene]
-            for SNP_tuple in SNP_list_for_curr_gene:
-                eSNP_abs = SNP_tuple[2]
-                if eSNP_abs >= zoom_domain_min and eSNP_abs <= zoom_domain_max:
-                    SNP_list_for_curr_gene_within_domain.append(SNP_tuple)
-            gene_SNPlist_dict_within_domain[gene] = SNP_list_for_curr_gene_within_domain
-        eQTL_gene_SNPlist_dict_within_domain[pairName] = gene_SNPlist_dict_within_domain
+        eQTL_gene_SNPlist_dict_within_domain = {}
+        for pairName,gene_SNPlist_dict in eQTL_gene_SNPlist_dict.iteritems():
+            gene_SNPlist_dict_within_domain = {}
+            for gene in gene_SNPlist_dict:
+                SNP_list_for_curr_gene_within_domain = []
+                SNP_list_for_curr_gene = gene_SNPlist_dict[gene]
+                for SNP_tuple in SNP_list_for_curr_gene:
+                    eSNP_abs = SNP_tuple[2]
+                    if eSNP_abs >= zoom_domain_min and eSNP_abs <= zoom_domain_max:
+                        SNP_list_for_curr_gene_within_domain.append(SNP_tuple)
+                gene_SNPlist_dict_within_domain[gene] = SNP_list_for_curr_gene_within_domain
+            eQTL_gene_SNPlist_dict_within_domain[pairName] = gene_SNPlist_dict_within_domain
 
 
     ret = {}
@@ -429,8 +432,12 @@ def Manhattan_appendSNPs():
     ret['zoom_range_min']           = zoom_range_min
     ret['zoom_range_max']           = zoom_range_max
     ret['Manhattan_height']         = Manhattan_height
-    ret['GWAS_SNPlist_dict']        = GWAS_SNPlist_dict_within_domain   
-    ret['eQTL_gene_SNPlist_dict']   = eQTL_gene_SNPlist_dict_within_domain   
+    #ret['GWAS_SNPlist_dict']        = GWAS_SNPlist_dict_within_domain   
+    #ret['eQTL_gene_SNPlist_dict']   = eQTL_gene_SNPlist_dict_within_domain  
+
+    ret['GWAS_SNPlist_dict']        = GWAS_SNPlist_dict  
+    ret['eQTL_gene_SNPlist_dict']   = eQTL_gene_SNPlist_dict  
+
     return jsonify(ret) 
 
 # display only those GWAS SNPs that more significant than cutoff, for example 10-3

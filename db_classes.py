@@ -2,7 +2,7 @@ import pdb
 import MySQLdb
 import math
 import pickle
-import os
+import os,sys
 import time
 import multiprocessing
 import copy_reg,types
@@ -497,10 +497,12 @@ class DAO(object):
         table_name = GWAS_name.replace('.','_').replace('-','_')
         return table_name
 
-    def fetch_rows_from_GWAS_raw_database(self,curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff):
+    def fetch_rows_from_GWAS_raw_database(self,curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff,zoom_domain_min,zoom_domain_max):
         GWAS_table_name = self.table_name(GWAS)
-        sql_template = ('select snp,pval,chrom,location from ' + GWAS_table_name + ' ' 
-                        ' where cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + ';'
+        sql_template = (' select snp,pval,chrom,location from ' + GWAS_table_name + ' ' 
+                        ' where cast(pval as decimal(10,5)) < ' + str(GSNP_pval_cutoff) + 'and'
+                        ' location_concat_chr >= ' + str(zoom_domain_min) + ' and '
+                        ' location_concat_chr <= ' + str(zoom_domain_max) + ';'
                         )
         rows = self.exec_fetch_SQL_GWAS_raw_given_cnx(curr_cnx_GWAS_raw,sql_template)
         return rows
@@ -576,14 +578,14 @@ class DAO(object):
     # tagged_dict including all GWAS SNPs that has a aligned eQTL SNP, but not necessarily tagged
     # GWAS_SNPlist_full as input contains all aligned GWAS SNPs, during the function add unaligned GWAS SNPs
     # GSNP_pval_cutoff is the cutoff deciding whether to show this GWAS SNP on web-interface 
-    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff):
+    def fetch_all_SNP_list_for_GWAS(self,curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_dict,GWAS_SNPlist_full,GSNP_pval_cutoff,zoom_domain_min,zoom_domain_max):
         if GSNP_pval_cutoff is None:
             GWAS_SNPlist_full_closest_gene = self.append_closest_gene_for_SNP_using_db(curr_cnx_ES_OUTPUT,GWAS_SNPlist_full)
             return GWAS_SNPlist_full_closest_gene
 
         start_time = time.time() 
         #rows = self.fetch_rows_from_ES_OUTPUT_GWAS_raw_table(GWAS,GSNP_pval_cutoff)
-        rows = self.fetch_rows_from_GWAS_raw_database(curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff)       
+        rows = self.fetch_rows_from_GWAS_raw_database(curr_cnx_GWAS_raw,GWAS,GSNP_pval_cutoff,zoom_domain_min,zoom_domain_max)       
         print '###fetching rows with pvalcutoff for ' +GWAS+' takes ' + str(time.time() -start_time) + ' seconds'
         start_time = time.time()
 
@@ -618,7 +620,8 @@ class DAO(object):
         eQTL             = args[1]
         gene             = args[2]
         GSNP_pval_cutoff = args[3]
-        
+        zoom_domain_min  = args[4]
+        zoom_domain_max  = args[5] 
         # give each thread a new database connection
         curr_cnx_ES_OUTPUT = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
             user="es", # your username
@@ -661,7 +664,7 @@ class DAO(object):
        
         #GSNP_pval_cutoff = 1e-3 
         #include all unaligned GWAS SNPs that pass certain p-value cutoff 
-        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff)
+        GWAS_SNPlist = self.fetch_all_SNP_list_for_GWAS(curr_cnx_GWAS_raw,curr_cnx_ES_OUTPUT,GWAS,tagged_GWAS_SNP_dict,GWAS_SNPlist,GSNP_pval_cutoff,zoom_domain_min,zoom_domain_max)
         
         curr_cnx_ES_OUTPUT.close()
         curr_cnx_GWAS_raw.close()
@@ -746,7 +749,7 @@ class DAO(object):
        
         return patched_dict,all_SNPs_list
 
-    def fetch_pair_SNP_raw(self,web_disease_list,web_eQTL_list,gene,GSNP_cutoff):
+    def fetch_pair_SNP_raw(self,web_disease_list,web_eQTL_list,gene,GSNP_cutoff = None, zoom_domain_min = 0, zoom_domain_max = sys.maxint):
         Merged_name = 'Merged_08212015_pruned_LD02'
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
@@ -781,7 +784,7 @@ class DAO(object):
                 GWAS = GWASs[i]
                 for j in range(len(eQTLs)):
                     eQTL = eQTLs[j]  
-                    args = (GWAS,eQTL,gene,GSNP_cutoff)          
+                    args = (GWAS,eQTL,gene,GSNP_cutoff,zoom_domain_min,zoom_domain_max)          
                     args_list.append(args)        
 
             #concurrently run the function
