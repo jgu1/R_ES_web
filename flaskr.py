@@ -2,7 +2,7 @@
 
 import pdb
 import MySQLdb
-import os
+import os,sys
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash, jsonify, Response
 from contextlib import closing
@@ -304,7 +304,7 @@ def Manhattan():
    
     eQTL_SNPlist_dict = dao.Manhattan_gen_eQTL_SNPlist(location_pval_chrom_SNPlist_dict,genes)
 
-    gene_location_dict = dao.Manhattan_gen_gene_location_dict() 
+    gene_location_dict = dao.Manhattan_gen_gene_location_dict(0,sys.maxint) 
 
     all_eQTL_names = dao.Manhattan_get_all_eQTL_names()
 
@@ -335,25 +335,21 @@ def Manhattan_appendGenes():
     Manhattan_height    = request.args.get('Manhattan_height','empty')
 
     dao = getattr(g, 'dao', None)
-    gene_location_dict = dao.Manhattan_gen_gene_location_dict()
-    geneNames = [] 
-    gene_location_dict_within_domain = {}
-    for gene,location_tuple in gene_location_dict.iteritems():
-    #location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
-        chromStart = location_tuple[2]    
-        if chromStart >= zoom_domain_min and chromStart <= zoom_domain_max:
-            geneNames.append(gene)
-            gene_location_dict_within_domain[gene] = location_tuple
 
+    start_time = time.time()
+
+    gene_location_dict = dao.Manhattan_gen_gene_location_dict(zoom_domain_min,zoom_domain_max)
     ret = {}
     ret['zoom_domain_min']      = zoom_domain_min
     ret['zoom_domain_max']      = zoom_domain_max
     ret['zoom_range_min']       = zoom_range_min
     ret['zoom_range_max']       = zoom_range_max
     ret['Manhattan_height']     = Manhattan_height
-    ret['geneNames']            = geneNames
-    ret['gene_location_dict']   = gene_location_dict_within_domain
-    
+    ret['geneNames']            = gene_location_dict.keys()
+    ret['gene_location_dict']   = gene_location_dict
+   
+    print '#####################appendGenes takes ' + str(time.time() - start_time) + 'seconds'
+ 
     return jsonify(ret) 
  
 @app.route('/Manhattan_appendSNPs')

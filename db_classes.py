@@ -1021,9 +1021,12 @@ class DAO(object):
         chrom_starts.sort()
         return chrom_starts    
 
-    def Manhattan_gen_gene_location_dict(self):
+    def Manhattan_gen_gene_location_dict(self,zoom_domain_min,zoom_domain_max):
         chrom_abs_dict = self.Manhattan_gen_chrom_abs_dict()
-        sql_template = 'select gene,chrom,chromStart,chromEnd from gene_location;'
+        sql_template = (' select gene,chrom,chromStart,chromEnd from gene_location '
+                        ' where chromStart_concat_chr >= ' + str(zoom_domain_min) + ' and '     
+                        ' chromStart_concat_chr <= ' + str(zoom_domain_max) + ';'
+                        )
         rows = self.exec_fetch_SQL(sql_template) 
         gene_location_dict_available_in_db = {} #some gene may not in db
         for row in rows:
