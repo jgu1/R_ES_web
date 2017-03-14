@@ -313,7 +313,7 @@ function createGraph() {
     parentNode.append("text")
          .text("unaligned")
          .attr("id","txt_show_unaligned_SNPs");
-    parentNode.append("input")
+    var checkbox_unaligned= parentNode.append("input")
          .attr("type","checkbox")
          .attr("checked",null)
          .attr("id","show_unaligned_SNPs")
@@ -341,7 +341,7 @@ function createGraph() {
     parentNode.append("text")
          .text("untagged")
          .attr("id","txt_show_untagged_SNPs");
-    parentNode.append("input")
+    var checkbox_untagged = parentNode.append("input")
          .attr("type","checkbox")
          .attr("checked",null)
          .attr("id","show_untagged_SNPs")
@@ -374,7 +374,7 @@ function createGraph() {
          .text("show_all_genes")
          .attr("id","txt_show_all_genes")
          .style("margin-left","600px");
-    parentNode.append("input")
+    var checkbox_show_all_genes = parentNode.append("input")
         .attr("type","checkbox")
         .attr("checked",null)
         .attr("id","show_all_genes")
@@ -396,7 +396,11 @@ function createGraph() {
             d3.selectAll(".gene_within_domain").remove(); 
         }
          });
-   
+  
+    checkbox_unaligned.property('checked', false);
+    checkbox_untagged.property('checked', false);
+    checkbox_show_all_genes.property('checked', false);
+ 
     parentNode.append("div")
         .html("<br/>");
   }
@@ -1280,10 +1284,10 @@ function createGraph() {
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
 
-    var show_unaligned_value    = d3.select("#show_unaligned_SNPs").node().value;
-    var show_unaligned          = (show_unaligned == 'on');
-    var show_untagged_value     = d3.select("#show_untagged_SNPs").node().value;
-    var show_untagged           = (show_untagged == 'on');
+
+    var show_unaligned = document.getElementById('show_unaligned_SNPs').checked;
+    var show_untagged  = document.getElementById('show_untagged_SNPs').checked;
+
     if (show_unaligned && show_untagged){  
         d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})
             .style("opacity",1)
