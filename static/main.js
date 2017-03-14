@@ -1044,6 +1044,8 @@ function createGraph() {
       .style("text-anchor", "start")
       .text(function(d) { return d;})
 
+    toggle_dotGWAS_and_recteQTL();
+
   }
 
   var Manhattan_appendGenes_callback = function(data){
