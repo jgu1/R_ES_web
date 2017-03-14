@@ -1280,13 +1280,11 @@ function createGraph() {
     var dotGWAS_size = 3.5;
     var recteQTL_size = 5;
     var invisible_size = 0.1;
-
     var alignedValue = function(d){return d[4]};
     var taggedValue  = function(d){return d[5]};
-
-
-    var show_unaligned = document.getElementById('show_unaligned_SNPs').checked;
-    var show_untagged  = document.getElementById('show_untagged_SNPs').checked;
+    
+    var show_unaligned = d3.select("#show_unaligned_SNPs").property("checked"); 
+    var show_untagged  = d3.select("#show_untagged_SNPs").property("checked");
 
     if (show_unaligned && show_untagged){  
         d3.selectAll(".dotGWAS") .filter(function(d) {return !alignedValue(d);})

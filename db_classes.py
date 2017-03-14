@@ -750,6 +750,7 @@ class DAO(object):
         return patched_dict,all_SNPs_list
 
     def fetch_pair_SNP_raw(self,web_disease_list,web_eQTL_list,gene,GSNP_cutoff = None, zoom_domain_min = 0, zoom_domain_max = sys.maxint):
+        
         Merged_name = 'Merged_08212015_pruned_LD02'
         GWASs,GWAS_disease_dict = self.gen_GWASs_from_web_disease_list(web_disease_list) 
         eQTLs = web_eQTL_list.strip().split()
@@ -801,7 +802,7 @@ class DAO(object):
             GWAS_SNPlist_dict_curr_gene[display_name] = GWAS_SNPlist
             eQTL_SNPlist_dict_curr_gene[display_name] = eQTL_SNPlist
 
-        print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
+            print '$$ fetching GSNP and eSNP takes ' + str(time.time() - start_time) + 'seconds'
 
         return GWAS_SNPlist_dict_curr_gene,eQTL_SNPlist_dict_curr_gene
 #detail manipulation

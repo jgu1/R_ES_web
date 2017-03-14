@@ -511,6 +511,12 @@ def manual_ISA_filter_sub_cluster(binary_mat, rows, cols, row_cutoff,col_cutoff)
     while True:
         num_row = numpy.count_nonzero(rows)
         num_col = numpy.count_nonzero(cols)
+        
+        if num_row == 0 or num_col == 0:
+            print 'filtering num_row or num_col is zero'
+            break
+
+
         print 'filtering: num_row = ' + str(num_row)
         print 'filtering: num_col = ' + str(num_col) 
         prev_rows = rows
