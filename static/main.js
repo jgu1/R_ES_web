@@ -315,7 +315,7 @@ function createGraph() {
          .attr("id","txt_show_unaligned_SNPs");
     parentNode.append("input")
          .attr("type","checkbox")
-         .attr("checked",true)
+         .attr("checked",null)
          .attr("id","show_unaligned_SNPs")
          .on("change",function(d){
             d3.selectAll(".dotGWAS") .data([]).exit().remove();
@@ -343,7 +343,7 @@ function createGraph() {
          .attr("id","txt_show_untagged_SNPs");
     parentNode.append("input")
          .attr("type","checkbox")
-         .attr("checked",true)
+         .attr("checked",null)
          .attr("id","show_untagged_SNPs")
          .on("change",function(d){
             d3.selectAll(".dotGWAS") .data([]).exit().remove();
@@ -376,7 +376,7 @@ function createGraph() {
          .style("margin-left","600px");
     parentNode.append("input")
         .attr("type","checkbox")
-        .attr("checked",true)
+        .attr("checked",null)
         .attr("id","show_all_genes")
         .on("change",function(d){
         if (this.checked){
@@ -874,11 +874,17 @@ function createGraph() {
             .attr("class","gene_starts")
             .attr("x",function(d){
                 var location_tuple = gene_location_dict[d];
+                if (location_tuple == null){
+                    return 0;
+                }
                 return xMap(location_tuple)
             })
             .attr("width",function(d){
                 //location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
                 var location_tuple = gene_location_dict[d];
+                if (location_tuple == null){
+                    return 0;
+                }
                 var width = 1;
                 chrom_abs_start = location_tuple[2]
                 chrom_abs_end   = location_tuple[3]
@@ -945,6 +951,7 @@ function createGraph() {
                         + " <br/>aligned: " + alignedValue(d)
                         + " <br/>tagged: " + taggedValue(d)
                         + " <br/>closest gene: " + d[6] 
+                        + " <br/>concat_abs: " + d[2]
                         );
               var closest_geneName = d[6];
               var closest_gene_chromStart = d[7];
@@ -1260,7 +1267,7 @@ function createGraph() {
 
 
 
-    //toggle_dotGWAS_and_recteQTL(); 
+    toggle_dotGWAS_and_recteQTL(); 
   }
 
   function toggle_dotGWAS_and_recteQTL(){
