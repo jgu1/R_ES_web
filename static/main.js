@@ -745,19 +745,26 @@ function createGraph() {
 
             Manhattan.selectAll(".Manhattan_group").selectAll(".gene_starts")
                 .attr("x",function(d){
+                    var x = 0;   
                     var location_tuple = gene_location_dict[d];
-                    return gx2(xValue(location_tuple))
+                    if (location_tuple != null){ 
+                        x =  gx2(xValue(location_tuple))
+                    }
+                    return x;
                 })
                 .attr("width",function(d){
                   //location_tuple = (gene,chrom,chrom_abs_start,chrom_abs_end,chromStart,chromEnd)
-                  var location_tuple = gene_location_dict[d];
+                  
                   var width = 1;
-                  chrom_abs_start = location_tuple[2]
-                  chrom_abs_end   = location_tuple[3]
-                  if (chrom_abs_start != null && chrom_abs_end != null){
-                    width = gx2(chrom_abs_end) - gx2(chrom_abs_start);
+                  var location_tuple = gene_location_dict[d];
+                  if (location_tuple != null){
+                      chrom_abs_start = location_tuple[2]
+                      chrom_abs_end   = location_tuple[3]
+                      if (chrom_abs_start != null && chrom_abs_end != null){
+                        width = gx2(chrom_abs_end) - gx2(chrom_abs_start);
+                      }
+                      if (width < 1){ width = 1;}
                   }
-                  if (width < 1){ width = 1;}
                   return width;
                 });
                 /*
@@ -785,12 +792,20 @@ function createGraph() {
             
             Manhattan.selectAll(".Manhattan_group").selectAll(".gene_within_domain")
                 .attr("x1",function(d){
+                    var x1 = 0;
                     var location_tuple = gene_location_dict[d];
-                    return gx2(xValue(location_tuple))
+                    if (location_tuple != null){
+                        x1 =  gx2(xValue(location_tuple))
+                    }
+                    return x1;
                 })
                 .attr("x2",function(d){
+                    var x2 = 0;
                     var location_tuple = gene_location_dict[d];
-                    return gx2(xValue(location_tuple))
+                    if (location_tuple != null){
+                        x2= gx2(xValue(location_tuple));
+                    }
+                    return x2;
                 })
                               /*
                 .attr("x1",function(d){
@@ -877,6 +892,7 @@ function createGraph() {
           .enter().append("rect")
             .attr("class","gene_starts")
             .attr("x",function(d){
+                var x = 0;
                 var location_tuple = gene_location_dict[d];
                 if (location_tuple == null){
                     return 0;
@@ -1082,12 +1098,20 @@ function createGraph() {
           .enter().append("line")
           .attr("class","gene_within_domain")
           .attr("x1",function(d){
+                    var x1 = 0;
                     var location_tuple = gene_location_dict[d];
-                    return gx2(xValue(location_tuple))
+                    if (location_tuple != null){
+                        x1= gx2(xValue(location_tuple))
+                    }
+                    return x1;
                 })
           .attr("x2",function(d){
+                    var x2 = 0;
                     var location_tuple = gene_location_dict[d];
-                    return gx2(xValue(location_tuple))
+                    if (location_tuple != null){
+                        x2= gx2(xValue(location_tuple))
+                    }
+                    return x2;
                 })
           /*
           .attr("x1",function(d){

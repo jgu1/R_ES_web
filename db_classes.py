@@ -396,6 +396,8 @@ class DAO(object):
         display_name = ''
         if eQTL == Merged_name:
             display_name = GWAS_disease_dict[GWAS] + '---Merged'  + '  (' + GWAS + '---Merged)'
+        elif eQTL == 'all':
+            display_name = GWAS_disease_dict[GWAS] + '(' + GWAS + ')---' + eQTL
         else:
             display_name = GWAS_disease_dict[GWAS] + '---' + eQTL_tissue_dict[eQTL] + '  (' + GWAS + '---' + eQTL + ')'
         return display_name 
