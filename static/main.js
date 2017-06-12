@@ -1328,14 +1328,18 @@ function createGraph() {
    
    if (show_untagged){ 
         d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
-            .style("opacity",0.9)
-            .attr("width", recteQTL_size).attr("height",recteQTL_size);
+            .attr("width", recteQTL_size).attr("height",recteQTL_size)
+            //.style("stroke",this.style('fill'))
+            .style("stroke","blue")
+            .style("stroke-width",1)
+            .style("stroke-opacity",1)
+            .style("fill","white");
         d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
             .style("opacity",1)
             .attr("r",dotGWAS_size)
             .style("stroke","black")
             .style("stroke-width",1)
-            .style("fill","none");
+            .style("fill","white");
    
         // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
         // when showing unaligned_SNPs, both should be brought back to display
