@@ -71,12 +71,27 @@ h2              { font-size: 1.2em; }
     display:inline-block;
 }
 #chart{
-    width:1200px;
-    height:300px;
+    width:1000px;
     margin-top:10px;
     overflow:scroll;
 }
 #detail{
+    width:1000px;
     margin-top: 10px;
     overflow:scroll;
+}
+#disease_dropdown{
+    height:300px;
+}
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+input[type="checkbox"]{
+  width: 15px; /*Desired width*/
+  height: 15px; /*Desired height*/
+  padding:0; 
+  margin:0;
 }

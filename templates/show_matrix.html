@@ -1,21 +1,30 @@
 {% extends "layout.html" %}
 {% block body %}
-  <script src={{ url_for ('static',filename='d3.v3.min.js')}}></script>
+  <script src={{ url_for ('static',filename='d3.v4.min.js')}}></script>
   <script src={{ url_for ('static',filename='jquery.min.js')}}></script>
   <script src={{ url_for ('static',filename='main.js')}}></script>
 
 
-  {% if session.logged_in %}
     <form action="{{ url_for('draw') }}" method=post class=draw>
       <dl>
-        <dt>Please choose GWAS and eQTL of your interest:
+        <dt>Please choose disease and eQTL of your interest:
         <dd>
-        <br>please input disease keywords for GWAS<dd><input type=text size=100 name=GWAS_list>
-        <br>check eQTLs of interest<ul id="eQTL_names">
+        <br><strong>please click disease names to add </strong>
+        <br><select name="disease_dropdown" multiple onchange="addDisease(this);" id="disease_dropdown">
+        {% for disease_name in disease_names%}
+            <option value="{{disease_name}}">{{disease_name}}</option>
+        {% endfor %}
+        </select>
+        <dd><input type=text size=100 name=disease_list id="disease_input_text">
+        <br>
+        <br><strong>please check eQTLs of interest</strong>
+        <ul id="eQTL_names">
         {% for eQTL_name in eQTL_names%}
             <li><input name={{ eQTL_name }} type="checkbox" />{{ eQTL_name }}</li>
         {% endfor %}
         </ul>
+        <br><strong>please specify the number of genes for each GWAS-eQTL pair</strong>
+        <dd><input type=text size=10 name=num_genes_per_pair id="num_genes_per_pair">
        {# <br>eQTL list<dd><input type=text size=30 name=eQTL_list>#}
         <dd><input type=submit value=Draw>
       </dl>
@@ -33,10 +42,13 @@
     {% endif %}
 
 
+    <div id="sub_clusters"></div>
+
     <div id = "detail" >
-    <div id = "gene_of_interest"></div>    
+    <div id = "Manhattan">
     </div>
 
     <input type="hidden" id='draw_pair_json_obj' value="{{draw_pair_json_obj}}" />
-  {% endif %}
+    <input type="hidden" id='sub_clusters_json_obj' value="{{sub_clusters_json_obj}}">
+    <input type="hidden" id='show_discover_sub_clusters_button' value="{{show_discover_sub_clusters_button}}">
 {% endblock %}
