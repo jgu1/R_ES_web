@@ -541,7 +541,7 @@ class DAO(object):
     def fetch_closest_gene_for_snp_list(self,curr_cnx_ES_OUTPUT,snp_list):
         snp_gene_dict = {}
         snp_list_str = '","'.join(snp_list)
-        sql_template = 'select snp,gene,gene_pos from SNP_gene_dict where snp in ("'+snp_list_str+'");' 
+        sql_template = 'select snp,gene,gene_genome_start from SNP_gene_dict where snp in ("'+snp_list_str+'");' 
         rows = self.exec_fetch_SQL_given_cnx(curr_cnx_ES_OUTPUT,sql_template)
         for row in rows:
             snp     = row[0]
