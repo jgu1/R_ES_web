@@ -1332,7 +1332,10 @@ function createGraph() {
             .attr("width", recteQTL_size).attr("height",recteQTL_size);
         d3.selectAll(".dotGWAS") .filter(function(d) {return !taggedValue(d);})
             .style("opacity",1)
-            .attr("r",dotGWAS_size);
+            .attr("r",dotGWAS_size)
+            .style("stroke","black")
+            .style("stroke-width",1)
+            .style("fill","none");
    
         // there are two types of untagged SNPs: untagged_aligned, untagged_unaligned
         // when showing unaligned_SNPs, both should be brought back to display
