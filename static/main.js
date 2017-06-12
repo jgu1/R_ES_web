@@ -1329,14 +1329,8 @@ function createGraph() {
    if (show_untagged){ 
         d3.selectAll(".recteQTL").filter(function(d) {return !taggedValue(d);})
             .attr("width", recteQTL_size).attr("height",recteQTL_size)
-            //.style("stroke","rgb(31, 119, 180)")
-            .style("stroke",function(d){
-                var selectThis = d3.select(this);
-                var fill = selectThis.style("fill");
-                return (fill);
-                }
-            )
-            //.style("stroke","blue")
+            //.style("stroke",d3.select(this).style("fill"))
+            .style("stroke",function(d){ return (d3.select(this).style("fill"))})
             .style("stroke-width",1)
             .style("stroke-opacity",1)
             .style("fill","white");
