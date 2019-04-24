@@ -21,36 +21,21 @@ class DAO(object):
     EMPTY_CHR = 'CHROMOSOME NOT FOUND'
     DUMMY_SNP_NAME = 'dummy'
     def __init__(self,web_disease_list,web_eQTL_list):
-        self.db = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
-                    user="es", # your username
-                    passwd="detective", # your password
+        self.db = MySQLdb.connect(host="***", # your host, usually localhost
+                    user="***", # your username
+                    passwd="***", # your password
                     db="ES_OUTPUT") # name of the data base
  
-        self.db_hg19 = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
-                    user="es",
-                    passwd="detective",
+        self.db_hg19 = MySQLdb.connect(host="***", # your host, usually localhost
+                    user="***",
+                    passwd="***",
                     db="hg19")
 
-        self.db_GWAS_raw = MySQLdb.connect(host="genomesvr2", # your host, usually localhost
-                    user="es",
-                    passwd="detective",
+        self.db_GWAS_raw = MySQLdb.connect(host="***", # your host, usually localhost
+                    user="***",
+                    passwd="***",
                     db="GWAS_raw")
 
-
-        #self.db = MySQLdb.connect(host="localhost", # your host, usually localhost
-        #            user="root", # your username
-        #            passwd="genome", # your password
-        #            db="ES_OUTPUT") # name of the data base
-        
-        #self.db_hg19 = MySQLdb.connect(host="localhost",
-        #            user="root",
-        #            passwd="genome",
-        #            db="hg19")
-
-        #self.db_GWAS = MySQLdb.connect(host="localhost",
-        #            user="root",
-        #            passwd="genome",
-        #            db="GWAS")
         if web_disease_list is not None and web_eQTL_list is not None:
             self.gen_display_name_GWAS_eQTL_tuple_dict(web_disease_list,web_eQTL_list)
 
