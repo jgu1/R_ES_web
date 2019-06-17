@@ -1,0 +1,21 @@
+class Solution(object):
+    def divide(self, dividend, divisor):
+        """
+        :type dividend: int
+        :type divisor: int
+        :rtype: int
+        """
+        sign = -1 if dividend * divisor < 0 else 1
+        
+        ans = 0;left = abs(dividend)
+        while left >= abs(divisor):
+            cur = 1
+            shifted = abs(divisor)
+            while left > (shifted <<1):
+                shifted = shifted << 1
+                cur = cur << 1
+            ans += cur
+            left -= shifted
+        return min(ans * sign,(1<<31)-1)
+        
+        
